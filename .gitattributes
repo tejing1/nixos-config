@@ -1,0 +1,6 @@
+secret/** filter=git-crypt diff=git-crypt
+*.secret filter=git-crypt diff=git-crypt
+
+# Just in case, never filter git files
+/.gitattributes !filter !diff
+/.gitignore !filter !diff
