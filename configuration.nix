@@ -20,8 +20,9 @@
     '';
     # Hard link identical files in the store automatically
     autoOptimiseStore = true;
-    # register the system's version of nixpkgs
+    # register the system's version of nixpkgs and home-manager
     registry.nixpkgs.flake = nixpkgs;
+    registry.home-manager.flake = home-manager;
   };
 
   # Use /etc/profiles instead of ~/.nix-profile
