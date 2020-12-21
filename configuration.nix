@@ -174,7 +174,7 @@
   users.extraUsers.tejing = {
     isNormalUser = true;
     uid = 1000;
-    extraGroups = [ "wheel" ];
+    extraGroups = [ "wheel" "audio" ];
     shell = pkgs.fish;
     hashedPassword = builtins.readFile ./pwhash.secret;
   };
