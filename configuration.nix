@@ -39,6 +39,8 @@
   boot.loader.timeout = 1;
   # graphical boot progress display
   boot.plymouth.enable = true;
+  # quiet boot
+  boot.kernelParams = [ "quiet" ];
 
   networking.hostName = "tejingdesk"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
