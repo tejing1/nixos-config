@@ -36,6 +36,7 @@
   # boot.loader.systemd-boot.enable = true;
   # boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub.device = "/dev/sdb";
+  boot.loader.timeout = 1;
 
   networking.hostName = "tejingdesk"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
