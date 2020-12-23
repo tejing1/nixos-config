@@ -8,11 +8,18 @@
     nixosConfigurations.tejingdesk = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       modules = [
-        # Let 'nixos-version --json' know about the Git revision
-        # of this flake.
-	({ pkgs, ... }: {system.configurationRevision = nixpkgs.lib.mkIf (self ? rev) self.rev;})
+	({ pkgs, ... }: {
+          # Let 'nixos-version --json' know about the Git revision
+          # of this flake.
+	  system.configurationRevision = nixpkgs.lib.mkIf (self ? rev) self.rev;
+	  # register the system's version of nixpkgs and home-manager
+	  nix.registry.nixpkgs.flake = nixpkgs;
+	  nix.registry.home-manager.flake = home-manager;
+	})
+	# import home-manager
+	home-manager.nixosModules.home-manager
 	# import configuration.nix
-	(import ./configuration.nix {inherit nixpkgs home-manager;})
+	./configuration.nix
         ];
     };
 

@@ -2,13 +2,12 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{nixpkgs, home-manager}: { config, pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
   imports =
     [ # Include the results of the hardware scan.
-      (import ./hardware-configuration.nix {inherit nixpkgs;})
-      home-manager.nixosModules.home-manager
+      ./hardware-configuration.nix
     ];
 
   nix = {
@@ -20,9 +19,6 @@
     '';
     # Hard link identical files in the store automatically
     autoOptimiseStore = true;
-    # register the system's version of nixpkgs and home-manager
-    registry.nixpkgs.flake = nixpkgs;
-    registry.home-manager.flake = home-manager;
   };
 
   # Use /etc/profiles instead of ~/.nix-profile
