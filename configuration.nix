@@ -182,6 +182,7 @@
 
   home-manager.users.tejing = {
     home.packages = with pkgs; [
+      virtualbox
       rxvt_unicode
       dunst
       feh
