@@ -38,6 +38,8 @@
   # quiet boot
   boot.kernelParams = [ "quiet" ];
 
+  virtualisation.virtualbox.host.enable = true;
+
   networking.hostName = "tejingdesk"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
@@ -182,7 +184,6 @@
 
   home-manager.users.tejing = {
     home.packages = with pkgs; [
-      virtualbox
       rxvt_unicode
       dunst
       feh
