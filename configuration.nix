@@ -223,7 +223,6 @@
       ghc #perhaps this should be left to individual development environments?
       discord
       lastpass-cli
-      unrar
 
       # I don't think I need any of this wine stuff. Keeping it in a comment just in case
       #(wine.override { wineBuild = "wineWow"; wineRelease = "staging"; })
