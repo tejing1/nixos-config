@@ -378,7 +378,7 @@
 	titlebar = false;
       };
       fonts = [ "DejaVuSansMono Nerd Font 8" ];
-      workspaceAutoBackAndForth = true;
+      workspaceAutoBackAndForth = false;
       workspaceLayout = "default";
     };
     programs.i3status = {
