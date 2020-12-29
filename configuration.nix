@@ -28,10 +28,12 @@
   # Use the system's nixpkgs instance
   home-manager.useGlobalPkgs = true;
 
-  # Use the systemd-boot EFI boot loader.
-  # boot.loader.systemd-boot.enable = true;
-  # boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.grub.device = "/dev/sdb";
+  # Configure boot loader
+  boot.loader.grub.enable = true;
+  boot.loader.grub.efiSupport = true;
+  boot.loader.grub.devices = [ "/dev/disk/by-id/wwn-0x50025388a00631fc" ];
+  boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.efi.efiSysMountPoint = "/boot/efi";
   boot.loader.timeout = 1;
   # graphical boot progress display
   boot.plymouth.enable = true;

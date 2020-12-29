@@ -18,6 +18,11 @@
       fsType = "ext4";
     };
 
+  fileSystems."/boot/efi" =
+    { device = "/dev/disk/by-uuid/AEFB-9DCD";
+      fstype = "vfat";
+    };
+
   fileSystems."/mnt/gentoo" =
     { device = "/dev/disk/by-uuid/335db3ee-710f-4c98-ab89-ee871dd56d31";
       fsType = "ext4";
