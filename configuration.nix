@@ -32,7 +32,8 @@
   boot.loader.grub.enable = true;
   boot.loader.grub.efiSupport = true;
   boot.loader.grub.devices = [ "/dev/disk/by-id/wwn-0x50025388a00631fc" ];
-  boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.grub.efiInstallAsRemovable = true; # hopefully temporary, for bootstrapping out of BIOS mode
+  #boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.efi.efiSysMountPoint = "/boot/efi";
   boot.loader.timeout = 1;
   # graphical boot progress display
