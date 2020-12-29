@@ -20,7 +20,7 @@
 
   fileSystems."/boot/efi" =
     { device = "/dev/disk/by-uuid/AEFB-9DCD";
-      fstype = "vfat";
+      fsType = "vfat";
     };
 
   fileSystems."/mnt/gentoo" =
