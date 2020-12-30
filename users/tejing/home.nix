@@ -258,7 +258,7 @@
     };
   };
   programs.emacs.enable = true;
-  programs.emacs.extraPackages = (epkgs: with epkgs; [ nix-mode ]);
+  programs.emacs.extraPackages = (epkgs: with epkgs; [ nix-mode haskell-mode ]);
   services.emacs.enable = true;
   home.sessionVariables.EDITOR = pkgs.emacs + "/bin/emacsclient -nw";
   
