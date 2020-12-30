@@ -325,6 +325,8 @@
   xresources.properties = {
     "Xft.antialias" = 1;
     #"Xft.dpi" = 140;
+    "emacs.background" = "#000000";
+    "emacs.foreground" = "#00FF00";
     "Xft.rgba" = "rgb";
     "Xcursor.size" = 24;
     "Xcursor.theme" = "breeze_cursors";
