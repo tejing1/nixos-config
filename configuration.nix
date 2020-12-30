@@ -150,9 +150,6 @@
   hardware.pulseaudio.support32Bit = true;
   nixpkgs.config.pulseaudio = true;
 
-  # Start emacs daemon with user sessions
-  services.emacs.enable = true;
-
   # Start urxvtd with user sessions
   services.urxvtd.enable = true;
 
@@ -442,6 +439,10 @@
 	};
       };
     };
+    programs.emacs.enable = true;
+    programs.emacs.extraPackages = (epkgs: with epkgs; [ nix-mode ]);
+    services.emacs.enable = true;
+
     programs.starship.enable = true;
     programs.starship.settings = {
       add_newline = false;
