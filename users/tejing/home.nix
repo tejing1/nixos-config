@@ -42,6 +42,7 @@
     discord
     lastpass-cli
     ledger
+    ranger
 
     openra
     superTuxKart
