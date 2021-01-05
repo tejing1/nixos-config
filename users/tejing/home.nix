@@ -332,6 +332,7 @@
     #"Xft.dpi" = 140;
     "emacs.background" = "#000000";
     "emacs.foreground" = "#00FF00";
+    "emacs.toolBar" = "off";
     "Xft.rgba" = "rgb";
     "Xcursor.size" = 24;
     "Xcursor.theme" = "breeze_cursors";
