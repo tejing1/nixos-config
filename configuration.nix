@@ -20,6 +20,10 @@
     '';
     # Hard link identical files in the store automatically
     autoOptimiseStore = true;
+    # automatically trigger garbage collection
+    gc.automatic = true;
+    gc.dates = "weekly";
+    gc.options = "--delete-older-than 30d";
   };
 
   # Configure boot loader
