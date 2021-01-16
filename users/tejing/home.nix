@@ -39,7 +39,7 @@
     youtube-dl
     pavucontrol
     ghc #perhaps this should be left to individual development environments?
-    discord
+#    discord
     lastpass-cli
     ledger
     ranger
@@ -138,7 +138,7 @@
     };
     assigns = {
 	    "12" = [{class = "^Brave-browser$";}];
-	    "10" = [{class = "^discord$";}];
+#	    "10" = [{class = "^discord$";}];
 	    "8" = [{class = "^Steam$";}];
     };
     startup = [
@@ -148,7 +148,7 @@
       { command = "${pkgs.xorg.xinput}/bin/xinput set-prop \"Logitech USB-PS/2 Optical Mouse\" \"libinput Accel Speed\" 0.6"; always = true; notification = false; }
       { command = "${pkgs.xss-lock}/bin/xss-lock -- ${pkgs.i3lock}/bin/i3lock -n -c 000000"; always = false; notification = false; }
       { command = "${pkgs.brave}/bin/brave"; always = false; notification = false; }
-      { command = "${pkgs.discord}/bin/Discord"; always = false; notification = false; }
+#      { command = "${pkgs.discord}/bin/Discord"; always = false; notification = false; }
     ];
     bars = [{
       statusCommand = "${pkgs.i3status}/bin/i3status";
