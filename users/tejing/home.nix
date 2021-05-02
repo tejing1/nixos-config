@@ -137,9 +137,11 @@
 	    "${mod}+r" = "mode resize";
     };
     assigns = {
-	    "12" = [{class = "^Brave-browser$";}];
-#	    "10" = [{class = "^discord$";}];
-	    "8" = [{class = "^Steam$";}];
+	    "12" = [{class = "^Brave-browser$";instance = "^brave-browser$";}];
+      "11" = [{class = "^URxvt$"        ;instance = "^weechat$";}];
+      "10" = [{class = "^Brave-browser$";instance = "^discord.com__app$";}];
+      "9" =  [{class = "^URxvt$"        ;instance = "^ncmpc$";}];
+	    "8" =  [{class = "^Steam$";}];
     };
     startup = [
       { command = "${pkgs.feh}/bin/feh --no-fehbg --bg-fill '${pkgs.plasma-workspace-wallpapers}/share/wallpapers/Path/contents/images/2560x1440.jpg'"; always = true; notification = false; }
@@ -148,6 +150,8 @@
       { command = "${pkgs.xorg.xinput}/bin/xinput set-prop \"Logitech USB-PS/2 Optical Mouse\" \"libinput Accel Speed\" 0.6"; always = true; notification = false; }
       { command = "${pkgs.xss-lock}/bin/xss-lock -- ${pkgs.i3lock}/bin/i3lock -n -c 000000"; always = false; notification = false; }
       { command = "${pkgs.brave}/bin/brave"; always = false; notification = false; }
+      { command = "${pkgs.rxvt-unicode}/bin/urxvtc -name weechat -e weechat"; always = false; notification = false; }
+      { command = "${pkgs.rxvt-unicode}/bin/urxvtc -name ncmpc -e ncmpc"; always = false; notification = false; }
 #      { command = "${pkgs.discord}/bin/Discord"; always = false; notification = false; }
     ];
     bars = [{

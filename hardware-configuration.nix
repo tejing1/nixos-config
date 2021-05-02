@@ -8,29 +8,54 @@
     [ (modulesPath + "/installer/scan/not-detected.nix")
     ];
 
-  boot.initrd.availableKernelModules = [ "ahci" "xhci_pci" "ehci_pci" "usbhid" "sd_mod" "sr_mod" ];
+  boot.initrd.availableKernelModules = [ "ahci" "xhci_pci" "ehci_pci" "usbhid" "usb_storage" "uas" "sd_mod" "sr_mod" ];
   boot.initrd.kernelModules = [ "dm-snapshot" ];
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
-    { device = "/dev/disk/by-uuid/9aa8091d-7153-4524-b937-dd8adfdbaea9";
-      fsType = "ext4";
+    { device = "/dev/disk/by-uuid/98d52540-e5ea-41ee-b012-300cb3424aae";
+      fsType = "btrfs";
+      options = [ "subvol=root/current" ];
+    };
+
+  fileSystems."/home" =
+    { device = "/dev/disk/by-uuid/98d52540-e5ea-41ee-b012-300cb3424aae";
+      fsType = "btrfs";
+      options = [ "subvol=home/current" ];
+    };
+
+  fileSystems."/boot" =
+    { device = "/dev/disk/by-uuid/98d52540-e5ea-41ee-b012-300cb3424aae";
+      fsType = "btrfs";
+      options = [ "subvol=boot" ];
+    };
+
+  fileSystems."/nix" =
+    { device = "/dev/disk/by-uuid/98d52540-e5ea-41ee-b012-300cb3424aae";
+      fsType = "btrfs";
+      options = [ "subvol=nix" ];
+    };
+
+  fileSystems."/mnt/system" =
+    { device = "/dev/disk/by-uuid/98d52540-e5ea-41ee-b012-300cb3424aae";
+      fsType = "btrfs";
+    };
+
+  fileSystems."/share" =
+    { device = "/dev/disk/by-uuid/2bba2a0d-02f8-4243-a139-4c02b5681754";
+      fsType = "btrfs";
+      options = [ "subvol=share" ];
+    };
+
+  fileSystems."/mnt/persist" =
+    { device = "/dev/disk/by-uuid/2bba2a0d-02f8-4243-a139-4c02b5681754";
+      fsType = "btrfs";
     };
 
   fileSystems."/boot/efi" =
-    { device = "/dev/disk/by-uuid/AEFB-9DCD";
+    { device = "/dev/disk/by-uuid/3279-FFF8";
       fsType = "vfat";
-    };
-
-  fileSystems."/mnt/gentoo" =
-    { device = "/dev/disk/by-uuid/335db3ee-710f-4c98-ab89-ee871dd56d31";
-      fsType = "ext4";
-    };
-
-  fileSystems."/mnt/share" =
-    { device = "/dev/disk/by-uuid/760faa93-2b9e-40fc-bb1b-66c5f04cebb8";
-      fsType = "ext4";
     };
 
   swapDevices = [ ];

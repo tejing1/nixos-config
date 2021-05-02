@@ -29,13 +29,13 @@
   # Configure boot loader
   boot.loader.grub.enable = true;
   boot.loader.grub.efiSupport = true;
-  boot.loader.grub.devices = [ "/dev/disk/by-id/wwn-0x50025388a00631fc" ];
+  boot.loader.grub.devices = [ "nodev" ];
   boot.loader.grub.efiInstallAsRemovable = true; # hopefully temporary, for bootstrapping out of BIOS mode
   #boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.efi.efiSysMountPoint = "/boot/efi";
   boot.loader.timeout = 1;
   # graphical boot progress display
-  boot.plymouth.enable = true;
+#  boot.plymouth.enable = true;
   # quiet boot
   boot.kernelParams = [ "quiet" ];
 
@@ -52,7 +52,7 @@
   # };
 
   # Set your time zone.
-  time.timeZone = "US/Pacific";
+  time.timeZone = "US/Eastern";
 
   # Enable NTP synchronization
   #services.ntp.enable = true; # superceded by systemd-timesyncd
@@ -68,6 +68,7 @@
   # List packages installed in system profile. To search by name, run:
   # $ nix-env -qaP | grep wget
   environment.systemPackages = with pkgs; [
+    git
     mpd
     haskellPackages.git-annex
     lsof # needed for git-annex webapp
@@ -81,7 +82,7 @@
   # List services that you want to enable:
 
   # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
+#  services.openssh.enable = true;
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
@@ -90,14 +91,14 @@
   networking.firewall.enable = false;
 
   # Publish hostname via mdns and resolve *.local dns names via mdns
-  services.avahi.enable = true;
-  services.avahi.nssmdns = true;
-  services.avahi.publish.enable = true;
-  services.avahi.publish.addresses = true;
+#  services.avahi.enable = true;
+#  services.avahi.nssmdns = true;
+#  services.avahi.publish.enable = true;
+#  services.avahi.publish.addresses = true;
   #services.avahi.publish.workstation = true;
 
   # hardcoded hosts entry for my Samsung A51 smartphone
-  networking.hosts = { "192.168.0.104" = [ "phone.local" ];};
+#  networking.hosts = { "192.168.0.104" = [ "phone.local" ];};
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
@@ -160,10 +161,6 @@
 		       name     "pulseaudio tcp on 127.0.0.1"
 		       server   "127.0.0.1"
 		}'';
-
-  # Set discard for filesystems that are (or might be) on the SSD 
-  fileSystems."/".options = [ "defaults" "discard" ];
-  fileSystems."/mnt/gentoo".options = [ "defaults" "discard" ];
 
   # This value determines the NixOS release with which your system is to be
   # compatible, in order to avoid breaking some software such as database
