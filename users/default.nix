@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 {
   # Use /etc/profiles instead of ~/.nix-profile
@@ -8,8 +8,6 @@
   # Use the system's nixpkgs instance
   home-manager.useGlobalPkgs = true;
 
-  imports = [
-    # My user account
-    ./tejing
-  ];
+  # Import any subdirectory containing a default.nix file
+  imports = builtins.map (n: ./. + "/${n}") (lib.attrNames (lib.filterAttrs (n: v: v == "directory" && builtins.pathExists (./. + "/${n}/default.nix")) (builtins.readDir ./.)));
 }
