@@ -71,6 +71,8 @@
     # Needed to work with my flake
     git git-crypt
 
+    nix-index
+
     mpd
     haskellPackages.git-annex
     lsof # needed for git-annex webapp
