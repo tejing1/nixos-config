@@ -68,7 +68,9 @@
   # List packages installed in system profile. To search by name, run:
   # $ nix-env -qaP | grep wget
   environment.systemPackages = with pkgs; [
-    git
+    # Needed to work with my flake
+    git git-crypt
+
     mpd
     haskellPackages.git-annex
     lsof # needed for git-annex webapp
