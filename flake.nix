@@ -15,6 +15,7 @@
 	  # register the system's version of nixpkgs and home-manager
 	  nix.registry.nixpkgs.flake = nixpkgs;
 	  nix.registry.home-manager.flake = home-manager;
+    nix.nixPath = [ "nixpkgs=${nixpkgs}" "home-manager=${home-manager}" ];
 	})
 	# import home-manager
 	home-manager.nixosModules.home-manager
