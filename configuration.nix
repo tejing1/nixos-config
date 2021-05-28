@@ -54,6 +54,9 @@
   # Set your time zone.
   time.timeZone = "US/Eastern";
 
+  # Don't bother with the lecture or the need to keep state about who's been lectured
+  security.sudo.extraConfig = "Defaults lecture=\"never\"";
+
   # Enable NTP synchronization
   #services.ntp.enable = true; # superceded by systemd-timesyncd
 
