@@ -154,10 +154,6 @@
   # Start urxvtd with user sessions
   services.urxvtd.enable = true;
 
-  # Let the system-wide mpd service play to the per-user pulseaudio daemon via tcp
-  hardware.pulseaudio.tcp.enable = true;
-  hardware.pulseaudio.tcp.anonymousClients.allowedIpRanges = [ "127.0.0.1" ];
-
   # This value determines the NixOS release with which your system is to be
   # compatible, in order to avoid breaking some software such as database
   # servers. You should change this only after NixOS release notes say you
