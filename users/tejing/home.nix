@@ -271,6 +271,11 @@
   programs.emacs.extraPackages = (epkgs: with epkgs; [ nix-mode haskell-mode ledger-mode ]);
   services.emacs.enable = true;
   home.sessionVariables.EDITOR = pkgs.emacs + "/bin/emacsclient -nw";
+
+  services.mpd.enable = true;
+  services.mpd.network.startWhenNeeded = true;
+  services.mpd.dataDir = "/mnt/persist/tejing/mpd";
+  services.mpd.musicDirectory = "/mnt/persist/share/replaceable/music_database";
   
   programs.starship.enable = true;
   programs.starship.settings = {

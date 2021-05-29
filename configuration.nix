@@ -154,20 +154,9 @@
   # Start urxvtd with user sessions
   services.urxvtd.enable = true;
 
-  # Start mpd service
-  #services.mpd.enable = true;
-  #services.mpd.musicDirectory = "/mnt/share/replaceable/music_database";
-  #services.mpd.startWhenNeeded = true;
-
   # Let the system-wide mpd service play to the per-user pulseaudio daemon via tcp
   hardware.pulseaudio.tcp.enable = true;
   hardware.pulseaudio.tcp.anonymousClients.allowedIpRanges = [ "127.0.0.1" ];
-  #services.mpd.extraConfig = ''
-	#	audio_output {
-	#	       type     "pulse"
-	#	       name     "pulseaudio tcp on 127.0.0.1"
-	#	       server   "127.0.0.1"
-	#	}'';
 
   # This value determines the NixOS release with which your system is to be
   # compatible, in order to avoid breaking some software such as database
