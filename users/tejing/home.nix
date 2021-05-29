@@ -52,6 +52,10 @@
     #winetricks
     ## mono # Needed for some wine programs # maybe?
   ];
+
+  # Automatically (re)start/stop and changed services when activating a home-manager configuration.
+  systemd.user.startServices = true;
+
   xsession.enable = true;
   xsession.windowManager.i3.enable = true;
   xsession.windowManager.i3.config = let mod = "Mod4"; in {
