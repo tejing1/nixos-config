@@ -29,27 +29,14 @@
   # Configure boot loader
   boot.loader.grub.enable = true;
   boot.loader.grub.efiSupport = true;
-  boot.loader.grub.devices = [ "nodev" ];
-  boot.loader.grub.efiInstallAsRemovable = true; # hopefully temporary, for bootstrapping out of BIOS mode
-  #boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.grub.device = "nodev";
+  boot.loader.grub.efiInstallAsRemovable = true;
   boot.loader.efi.efiSysMountPoint = "/boot/efi";
   boot.loader.timeout = 1;
-  # graphical boot progress display
-#  boot.plymouth.enable = true;
-  # quiet boot
   boot.kernelParams = [ "quiet" ];
 
-  virtualisation.virtualbox.host.enable = true;
-
-  networking.hostName = "tejingdesk"; # Define your hostname.
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-
-  # Select internationalisation properties.
-  # i18n = {
-  #   consoleFont = "Lat2-Terminus16";
-  #   consoleKeyMap = "us";
-  #   defaultLocale = "en_US.UTF-8";
-  # };
+  # Define your hostname.
+  networking.hostName = "tejingdesk";
 
   # Set your time zone.
   time.timeZone = "US/Eastern";
@@ -57,15 +44,7 @@
   # Don't bother with the lecture or the need to keep state about who's been lectured
   security.sudo.extraConfig = "Defaults lecture=\"never\"";
 
-  # Enable NTP synchronization
-  #services.ntp.enable = true; # superceded by systemd-timesyncd
-
-  # Allow automatic upgrades, but never auto-reboot
-  #system.autoUpgrade.enable = true;
-  #system.autoUpgrade.allowReboot = false;
-
-  # Enable Microsoft CoreFonts
-  #fonts.enableCoreFonts = true; # OLD format
+  # Set available fonts
   fonts.fonts = with pkgs; [ corefonts nerdfonts ];
 
   # List packages installed in system profile. To search by name, run:
@@ -74,19 +53,16 @@
     # Needed to work with my flake
     git git-crypt
 
-    nix-index
-
-    mpd
     haskellPackages.git-annex
     lsof # needed for git-annex webapp
     rclone # used to connect git-annex to my phone's ftp server
-    wireshark
   ];
 
   # Enable fish
   programs.fish.enable = true;
 
-  # List services that you want to enable:
+  # Enable virtualbox host stuff
+  virtualisation.virtualbox.host.enable = true;
 
   # Enable the OpenSSH daemon.
 #  services.openssh.enable = true;
@@ -108,28 +84,20 @@
 #  networking.hosts = { "192.168.0.104" = [ "phone.local" ];};
 
   # Enable CUPS to print documents.
-  services.printing.enable = true;
+#  services.printing.enable = true;
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;
-  # services.xserver.layout = "us";
+
+  # Disable Caps Lock in X
   services.xserver.xkbOptions = "caps:none";
 
   # Enable touchpad support.
   # I actually just need this for the mouse acceleration settings that I'm used to.
   services.xserver.libinput.enable = true;
 
-  # Enable the KDE Desktop Environment.
-  #services.xserver.displayManager.sddm.enable = true;
+  # Enable LightDM
   services.xserver.displayManager.lightdm.enable = true;
-  #services.xserver.desktopManager.plasma5.enable = true;
-
-  # Enable i3.
-  #services.xserver.windowManager.i3.enable = true;
-  #services.xserver.windowManager.i3.package = pkgs.i3-gaps;
-
-  # Have SDDM enable numlock on boot
-  #services.xserver.displayManager.sddm.autoNumlock = true;
 
   # Use proprietary nvidia graphics driver
   nixpkgs.config.allowUnfree = true;
@@ -141,8 +109,10 @@
     "cirrus"
     "vesa"
     "modesetting"
-    ];
+  ];
+  # Hardware-accelerated video decoding
   hardware.opengl.extraPackages = with pkgs; [ vaapiVdpau libvdpau-va-gl ];
+  # 32-bit graphics libraries
   hardware.opengl.driSupport32Bit = true;
   hardware.opengl.extraPackages32 = with pkgs.pkgsi686Linux; [ vaapiVdpau libvdpau-va-gl ];
 
