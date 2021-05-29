@@ -276,6 +276,11 @@
   services.mpd.network.startWhenNeeded = true;
   services.mpd.dataDir = "/mnt/persist/tejing/mpd";
   services.mpd.musicDirectory = "/mnt/persist/share/replaceable/music_database";
+  services.mpd.extraConfig = ''
+                audio_output {
+                       type     "pulse"
+                       name     "pulseaudio"
+                }'';
   
   programs.starship.enable = true;
   programs.starship.settings = {
