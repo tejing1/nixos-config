@@ -1,0 +1,2 @@
+#! @bash@/bin/bash
+exec @bash@/bin/bash -c "exec $(@dmenu@/bin/dmenu_path | @dmenu@/bin/dmenu "$@")"

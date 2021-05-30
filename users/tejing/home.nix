@@ -1,6 +1,7 @@
-{ config, pkgs, ... }:
+{ config, pkgs, mylib, ... }:
 
 {
+  imports = [ ../../lib ];
   home.packages = with pkgs; [
     rxvt_unicode
     dunst
@@ -72,7 +73,7 @@
     keybindings = {
 	    "${mod}+Return" = "exec --no-startup-id ${pkgs.rxvt-unicode}/bin/urxvtc";
 	    "${mod}+Shift+q" = "kill";
-	    "${mod}+d" = "exec --no-startup-id ~/.config/i3/mydmenu_run";
+	    "${mod}+d" = "exec --no-startup-id ${mylib.templateScript pkgs "mydmenu_run" scripts/mydmenu_run}";
 	    "${mod}+l" = "exec --no-startup-id \"${pkgs.coreutils}/bin/sleep 1; ${pkgs.xorg.xset}/bin/xset dpms force off\"";
       
 	    "${mod}+F1" = "exec --no-startup-id ${pkgs.mpc_cli}/bin/mpc prev";
