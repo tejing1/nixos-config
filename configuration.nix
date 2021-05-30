@@ -93,6 +93,9 @@
   # Disable Caps Lock in X
   services.xserver.xkbOptions = "caps:none";
 
+  # Set console keymap based on X keymap
+  console.useXkbConfig = true;
+
   # Enable touchpad support.
   # I actually just need this for the mouse acceleration settings that I'm used to.
   services.xserver.libinput.enable = true;
