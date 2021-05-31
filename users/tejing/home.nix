@@ -12,7 +12,6 @@
     lutris
     mpv
     htop
-    picom
     weechat
     xss-lock
     i3lock
@@ -151,7 +150,6 @@
     startup = [
       { command = "${pkgs.feh}/bin/feh --no-fehbg --bg-fill '${pkgs.plasma-workspace-wallpapers}/share/wallpapers/Path/contents/images/2560x1440.jpg'"; always = true; notification = false; }
       { command = "${pkgs.bash}/bin/bash -c \"${pkgs.killall}/bin/killall -w dunst; exec ${pkgs.dunst}/bin/dunst\""; always = true; notification = false; }
-      { command = "${pkgs.bash}/bin/bash -c \"${pkgs.killall}/bin/killall -w picom; exec ${pkgs.picom}/bin/picom\""; always = true; notification = false; }
       { command = "${pkgs.xorg.xinput}/bin/xinput set-prop \"Logitech USB-PS/2 Optical Mouse\" \"libinput Accel Speed\" 0.6"; always = true; notification = false; }
       { command = "${pkgs.xss-lock}/bin/xss-lock -- ${pkgs.i3lock}/bin/i3lock -n -c 000000"; always = false; notification = false; }
       { command = "${pkgs.brave}/bin/brave"; always = false; notification = false; }
@@ -272,6 +270,12 @@
 	    };
     };
   };
+
+  services.picom.enable = true;
+  services.picom.backend = "xrender";
+  services.picom.vSync = true;
+  services.picom.opacityRule = [ "0:_NET_WM_STATE@:32a *= '_NET_WM_STATE_HIDDEN'" ];
+
   programs.emacs.enable = true;
   programs.emacs.extraPackages = (epkgs: with epkgs; [ nix-mode haskell-mode ledger-mode ]);
   services.emacs.enable = true;
