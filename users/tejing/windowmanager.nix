@@ -158,7 +158,7 @@
     modules = {
       "volume master".position = 1;
       "volume master".settings = {
-        format = " %volume";
+        format = "墳 %volume";
 	      format_muted = "婢 %volume";
 	      device = "pulse";
 	      color_degraded = "#FF0000";
