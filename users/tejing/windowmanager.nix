@@ -197,7 +197,7 @@
 	    };
 	    "time".position = 6;
 	    "time".settings = {
-	      format = "%Y-%m-%d %H:%M:%S";
+	      format = "%Y-%m-%d %a %H:%M:%S";
 	    };
     };
   };
