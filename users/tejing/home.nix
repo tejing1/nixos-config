@@ -356,10 +356,9 @@
   programs.starship.enable = true;
   programs.starship.settings = {
     add_newline = false;
-    prompt_order = [ "username" "hostname" "nix_shell" "git_branch" "git_commit" "git_state" "git_status" "directory" "cmd_duration" "jobs" "character" ];
-    
+    format = "$username$hostname$nix_shell$git_branch$git_commit$git_state$git_status$directory$cmd_duration$jobs$character";
+
     username = {
-	    user = "tejing";
 	    style_user = "bright-white bold";
 	    style_root = "bright-red bold";
     };
@@ -372,6 +371,7 @@
     };
     git_branch = {
 	    only_attached = true;
+      format = "[$symbol$branch]($style) ";
 	    style = "bright-yellow bold";
     };
     git_commit = {
@@ -385,19 +385,18 @@
 	    style = "bright-green bold";
     };
     directory = {
-	    prefix = "";
 	    truncation_length = 0;
     };
     cmd_duration = {
-	    prefix = "";
+	    format = "[$duration]($style) ";
 	    style = "bright-blue";
     };
     jobs = {
 	    style = "bright-green bold";
     };
     character = {
-	    symbol = "$";
-	    error_symbol = "$";
+	    success_symbol = "\\$";
+	    error_symbol = "\\$";
     };
   };
   xsession.numlock.enable = true;
