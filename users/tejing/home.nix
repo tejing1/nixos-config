@@ -207,7 +207,10 @@
       border = 1;
 	    titlebar = false;
     };
-    fonts = [ "DejaVuSansMono Nerd Font 8" ];
+    fonts = {
+      names = [ "DejaVuSansMono Nerd Font" ];
+      size = 8.0;
+    };
     workspaceAutoBackAndForth = false;
     workspaceLayout = "default";
   };
