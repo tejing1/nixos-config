@@ -5,7 +5,7 @@
     rxvt_unicode
   ];
   programs.urxvt.enable = true;
-  programs.urxvt.fonts = [ "xft:DejaVu Sans Mono:pixelsize=15" ];
+  programs.urxvt.fonts = [ "xft:DejaVuSansMono Nerd Font Mono:pixelsize=15" ];
   programs.urxvt.scroll.bar.enable = false;
   programs.urxvt.scroll.lines = 0;
   programs.urxvt.extraConfig = {
