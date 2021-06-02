@@ -34,7 +34,7 @@
   boot.loader.efi.efiSysMountPoint = "/boot/efi";
   boot.loader.timeout = 1;
   boot.kernelParams = [ "quiet" ];
-  boot.loader.grub.gfxmodeEfi = "3840x2160x24,auto";
+  boot.loader.grub.gfxmodeEfi = "3840x2160,1280x1024,auto";
 
   # Define your hostname.
   networking.hostName = "tejingdesk";
