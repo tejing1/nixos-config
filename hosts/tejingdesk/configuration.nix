@@ -105,15 +105,7 @@
 
   # Use proprietary nvidia graphics driver
   nixpkgs.config.allowUnfree = true;
-  services.xserver.videoDrivers = [
-    # Proprietary NVIDIA driver
-    "nvidia"
-    # default list as a fallback (and for when I used "nixos-rebuild build-vm")
-    "radeon"
-    "cirrus"
-    "vesa"
-    "modesetting"
-  ];
+  services.xserver.videoDrivers = [ "nvidia" ];
   # Hardware-accelerated video decoding
   hardware.opengl.extraPackages = with pkgs; [ vaapiVdpau libvdpau-va-gl ];
   # 32-bit graphics libraries
