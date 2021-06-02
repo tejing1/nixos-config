@@ -1,62 +1,14 @@
-{ config, pkgs, mylib, ... }:
+{ pkgs, mylib, ... }:
 
 {
-  imports = [ ../../lib ];
   home.packages = with pkgs; [
-    rxvt_unicode
-    dunst
-    feh
-    xclip
-    brave
-    steam
-    lutris
-    mpv
-    htop
-    weechat
+    feh # sets background images... but do I need it in my path?
     xss-lock
     i3lock
-    conky
-    killall
-    lxappearance
-    mkpasswd
-    nix-prefetch-github
-    xorg.xev
-    mkvtoolnix
-    ffmpeg
-    coq
-    mpc_cli
-    ncmpc
-    alacritty
-    starship # fancy prompts
-    tmux
-    git
-    ruby
-    unzip
-    lshw
-    pciutils
-    wget
-    fbreader
-    youtube-dl
-    pavucontrol
-    ghc #perhaps this should be left to individual development environments?
-#    discord
-    lastpass-cli
-    ledger
-    ranger
-
-    openra
-    superTuxKart
-    
-    # I don't think I need any of this wine stuff. Keeping it in a comment just in case
-    #(wine.override { wineBuild = "wineWow"; wineRelease = "staging"; })
-    #winetricks
-    ## mono # Needed for some wine programs # maybe?
+    xorg.xev # mainly useful for figuring out keybinds
   ];
-
-  # Automatically (re)start/stop and changed services when activating a home-manager configuration.
-  systemd.user.startServices = true;
-
   xsession.enable = true;
+  xsession.numlock.enable = true;
   xsession.windowManager.i3.enable = true;
   xsession.windowManager.i3.config = let mod = "Mod4"; in {
     modifier = mod;
@@ -70,19 +22,9 @@
 	    "${mod}+r" = "mode default";
     };
     keybindings = {
-	    "${mod}+Return" = "exec --no-startup-id ${pkgs.rxvt-unicode}/bin/urxvtc";
 	    "${mod}+Shift+q" = "kill";
 	    "${mod}+d" = "exec --no-startup-id ${mylib.templateScript pkgs "mydmenu_run" scripts/mydmenu_run}";
 	    "${mod}+l" = "exec --no-startup-id \"${pkgs.coreutils}/bin/sleep 1; ${pkgs.xorg.xset}/bin/xset dpms force off\"";
-      
-	    "${mod}+F1" = "exec --no-startup-id ${pkgs.mpc_cli}/bin/mpc prev";
-	    "${mod}+F2" = "exec --no-startup-id ${pkgs.mpc_cli}/bin/mpc toggle";
-	    "${mod}+F3" = "exec --no-startup-id ${pkgs.mpc_cli}/bin/mpc stop";
-	    "${mod}+F4" = "exec --no-startup-id ${pkgs.mpc_cli}/bin/mpc next";
-      
-	    "${mod}+F5" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ -5% && ${pkgs.killall}/bin/killall -SIGUSR1 i3status";
-	    "${mod}+F6" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ +5% && ${pkgs.killall}/bin/killall -SIGUSR1 i3status";
-	    "${mod}+F7" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-mute @DEFAULT_SINK@ toggle && ${pkgs.killall}/bin/killall -SIGUSR1 i3status";
       
 	    "${mod}+Left" = "focus left";
 	    "${mod}+Down" = "focus down";
@@ -136,25 +78,12 @@
 	    "${mod}+Shift+c" = "reload";
 	    "${mod}+Shift+r" = "restart";
 	    "${mod}+Shift+e" = "exec \"${pkgs.i3}/bin/i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -B 'Yes, exit i3' '${pkgs.i3}/bin/i3-msg exit'\"";
-      "${mod}+c" = "exec --no-startup-id \"${pkgs.killall}/bin/killall -w picom; exec ${pkgs.picom}/bin/picom\"";
-      
 	    "${mod}+r" = "mode resize";
-    };
-    assigns = {
-	    "12" = [{class = "^Brave-browser$";instance = "^brave-browser$";}];
-      "11" = [{class = "^URxvt$"        ;instance = "^weechat$";}];
-      "10" = [{class = "^Brave-browser$";instance = "^discord.com__app$";}];
-      "9" =  [{class = "^URxvt$"        ;instance = "^ncmpc$";}];
-	    "8" =  [{class = "^Steam$";}];
     };
     startup = [
       { command = "${pkgs.feh}/bin/feh --no-fehbg --bg-fill '${pkgs.plasma-workspace-wallpapers}/share/wallpapers/Path/contents/images/2560x1440.jpg'"; always = true; notification = false; }
       { command = "${pkgs.xorg.xinput}/bin/xinput set-prop \"Logitech USB-PS/2 Optical Mouse\" \"libinput Accel Speed\" 0.6"; always = true; notification = false; }
       { command = "${pkgs.xss-lock}/bin/xss-lock -- ${pkgs.i3lock}/bin/i3lock -n -c 000000"; always = false; notification = false; }
-      { command = "${pkgs.brave}/bin/brave"; always = false; notification = false; }
-      { command = "${pkgs.rxvt-unicode}/bin/urxvtc -name weechat -e weechat"; always = false; notification = false; }
-      { command = "${pkgs.rxvt-unicode}/bin/urxvtc -name ncmpc -e ncmpc"; always = false; notification = false; }
-#      { command = "${pkgs.discord}/bin/Discord"; always = false; notification = false; }
     ];
     bars = [{
       statusCommand = "${pkgs.i3status}/bin/i3status";
@@ -272,155 +201,4 @@
 	    };
     };
   };
-
-  services.picom.enable = true;
-  services.picom.backend = "xrender";
-  services.picom.vSync = true;
-  services.picom.opacityRule = [ "0:_NET_WM_STATE@:32a *= '_NET_WM_STATE_HIDDEN'" ];
-
-  services.dunst.enable = true;
-  services.dunst.settings = {
-    global = {
-      font = "Iosevka Term 11";
-      markup = true;
-      plain_text = false;
-      format = "<b>%s</b>\\n%b";
-      sort = false;
-      alignment = "center";
-      bounce_freq = 0;
-      word_wrap = true;
-      hide_duplicate_count = true;
-      geometry = "384x5+0-0";
-      history_length = 15;
-      line_height = 3;
-      padding = 6;
-      horizontal_padding = 6;
-      separator_color = "frame";
-      startup_notification = true;
-      dmenu = "${pkgs.dmenu}/bin/dmenu";
-      browser = "${pkgs.brave}/bin/brave";
-      icon_position = "left";
-      max_icon_size = 80;
-      frame_width = 3;
-      frame_color = "#8EC07C";
-    };
-    # DEPRECATED: define keybindings and should be handled through i3 calling dunstctl
-    shortcuts = {
-      close = "ctrl+space";
-      close_all = "ctrl+shift+space";
-      history = "ctrl+grave";
-      context = "ctrl+shift+period";
-    };
-    urgency_low = {
-      frame_color = "#3B7C87";
-      foreground = "#3B7C87";
-      background = "#191311";
-      timeout = 4;
-    };
-    urgency_normal = {
-      frame_color = "#5B8234";
-      foreground = "#5B8234";
-      background = "#191311";
-      timeout = 6;
-    };
-    urgency_critical = {
-      frame_color = "#B7472A";
-      foreground = "#B7472A";
-      background = "#191311";
-      timeout = 8;
-    };
-    fullscreen = {
-      fullscreen = "pushback";
-    };
-  };
-
-  programs.emacs.enable = true;
-  programs.emacs.extraPackages = (epkgs: with epkgs; [ nix-mode haskell-mode ledger-mode ]);
-  services.emacs.enable = true;
-  home.sessionVariables.EDITOR = pkgs.emacs + "/bin/emacsclient -nw";
-
-  services.mpd.enable = true;
-  services.mpd.network.startWhenNeeded = true;
-  services.mpd.dataDir = "/mnt/persist/tejing/mpd";
-  services.mpd.musicDirectory = "/mnt/persist/share/replaceable/music_database";
-  services.mpd.extraConfig = ''
-                audio_output {
-                       type     "pulse"
-                       name     "pulseaudio"
-                }'';
-
-  programs.gpg.enable = true;
-  programs.gpg.settings.default-key = "44A9 1F6C 152D ADE9 53BD  F9CE DE98 7C7E 445F 1961";
-  services.gpg-agent.enable = true;
-  
-  programs.starship.enable = true;
-  programs.starship.settings = {
-    add_newline = false;
-    format = "$username$hostname$nix_shell$git_branch$git_commit$git_state$git_status$directory$cmd_duration$jobs$character";
-
-    username = {
-	    style_user = "bright-white bold";
-	    style_root = "bright-red bold";
-    };
-    hostname = {
-	    style = "bright-green bold";
-	    ssh_only = true;
-    };
-    nix_shell = {
-	    style = "bright-purple bold";
-    };
-    git_branch = {
-	    only_attached = true;
-      format = "[$symbol$branch]($style) ";
-	    style = "bright-yellow bold";
-    };
-    git_commit = {
-	    only_detached = true;
-	    style = "bright-yellow bold";
-    };
-    git_state = {
-	    style = "bright-purple bold";
-    };
-    git_status = {
-	    style = "bright-green bold";
-    };
-    directory = {
-	    truncation_length = 0;
-    };
-    cmd_duration = {
-	    format = "[$duration]($style) ";
-	    style = "bright-blue";
-    };
-    jobs = {
-	    style = "bright-green bold";
-    };
-    character = {
-	    success_symbol = "\\$";
-	    error_symbol = "\\$";
-    };
-  };
-  xsession.numlock.enable = true;
-  programs.urxvt.enable = true;
-  programs.urxvt.fonts = [ "xft:DejaVu Sans Mono:pixelsize=15" ];
-  #programs.urxvt.fonts = [ "xft:DejaVu Sans Mono:pixelsize=15" "xft:DejaVuSansMono Nerd Font:pixelsize=15" ];
-  #programs.urxvt.fonts = [ "xft:DejaVuSansMono Nerd Font:size=10" ];
-  programs.urxvt.scroll.bar.enable = false;
-  programs.urxvt.scroll.lines = 0;
-  programs.urxvt.extraConfig = {
-    background = "rgba:0000/0000/0000/C000";
-    foreground = "#00ff00";
-    depth = 32;
-    internalBorder = 0;
-  };
-  xresources.properties = {
-    "Xft.antialias" = 1;
-    #"Xft.dpi" = 140;
-    "emacs.background" = "#000000";
-    "emacs.foreground" = "#00FF00";
-    "emacs.toolBar" = "off";
-    "Xft.rgba" = "rgb";
-    "Xcursor.size" = 24;
-    "Xcursor.theme" = "breeze_cursors";
-  };
-  home.stateVersion = "20.09";
 }
