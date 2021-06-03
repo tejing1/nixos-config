@@ -52,17 +52,17 @@
   programs.starship.enable = true;
   programs.starship.settings = {
     add_newline = false;
-    format = "$shlvl$shell$username$hostname$nix_shell$git_branch$git_commit$git_state$git_status$directory$cmd_duration$jobs$character";
+    format = "$shlvl$shell$username$hostname$nix_shell$git_branch$git_commit$git_state$git_status$directory$jobs$cmd_duration$character";
     shlvl = {
       disabled = false;
-      symbol = "+";
+      symbol = "ﰬ";
       style = "bright-red bold";
     };
     shell = {
       disabled = false;
       format = "$indicator";
       fish_indicator = "";
-      bash_indicator = "BASH ";
+      bash_indicator = "[BASH](bright-white) ";
     };
     username = {
 	    style_user = "bright-white bold";
@@ -73,6 +73,8 @@
 	    ssh_only = true;
     };
     nix_shell = {
+      symbol = "";
+      format = "[$symbol$name]($style) ";
 	    style = "bright-purple bold";
     };
     git_branch = {
@@ -93,6 +95,7 @@
 	    style = "bright-green bold";
     };
     directory = {
+      read_only = " ";
 	    truncation_length = 0;
     };
     cmd_duration = {
@@ -103,8 +106,8 @@
 	    style = "bright-green bold";
     };
     character = {
-	    success_symbol = "\\$";
-	    error_symbol = "\\$";
+	    success_symbol = "[\\$](bright-green bold)";
+	    error_symbol = "[\\$](bright-red bold)";
     };
   };
   programs.dircolors.enable = true;
