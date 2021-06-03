@@ -78,10 +78,12 @@
     git_branch = {
 	    only_attached = true;
       format = "[$symbol$branch]($style) ";
+      symbol = "שׂ";
 	    style = "bright-yellow bold";
     };
     git_commit = {
 	    only_detached = true;
+      format = "[ﰖ$hash]($style) ";
 	    style = "bright-yellow bold";
     };
     git_state = {
