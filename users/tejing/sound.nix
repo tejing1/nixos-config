@@ -29,4 +29,24 @@
                        type     "pulse"
                        name     "pulseaudio"
                 }'';
+  home.file.".config/ncmpc/config".text = ''
+    host = 127.0.0.1
+    port = 6600
+    enable-colors = yes
+    color background             = none
+    color title                  = none,dim/none
+    color title-bold             = cyan/none
+    color line                   = blue/none
+    color line-flags             = green/none
+    color list                   = none,dim/none
+    color list-bold              = cyan/none
+    color browser-directory      = cyan,dim/none
+    color browser-playlist       = magenta,dim/none
+    color progressbar            = cyan/none
+    color progressbar-background = blue,dim/none
+    color status-state           = green/none
+    color status-song            = none,dim/none
+    color status-time            = green/none
+    color alert                  = magenta/none
+  '';
 }
