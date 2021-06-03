@@ -17,7 +17,7 @@
   xsession.windowManager.i3.config.keybindings = let
     mod = config.xsession.windowManager.i3.config.modifier;
   in {
-    "${mod}+Return" = "exec --no-startup-id ${pkgs.rxvt-unicode}/bin/urxvtc";
+    "${mod}+Return" = "exec --no-startup-id ${pkgs.coreutils}/bin/env SHLVL= ${pkgs.rxvt-unicode}/bin/urxvtc";
   };
   xresources.properties = {
     "Xft.antialias" = 1;
