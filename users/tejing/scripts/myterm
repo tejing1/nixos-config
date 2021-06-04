@@ -1,0 +1,7 @@
+#! @bash@/bin/bash
+
+cd ~/data || cd ~ || cd /
+env SHLVL= @rxvt-unicode@/bin/urxvtc "${@}"
+if [ "$?" -eq 2 ]; then
+    exec env SHLVL= @rxvt-unicode@/bin/urxvt "${@}"
+fi

@@ -1,8 +1,9 @@
-{ config, pkgs, ... }:
+{ config, pkgs, mylib, ... }:
 
 {
   home.packages = with pkgs; [
     rxvt_unicode
+    (mylib.templateScriptBin pkgs "myterm" scripts/myterm)
   ];
   programs.urxvt.enable = true;
   programs.urxvt.fonts = [ "xft:DejaVuSansMono Nerd Font Mono:pixelsize=15" ];
@@ -17,7 +18,7 @@
   xsession.windowManager.i3.config.keybindings = let
     mod = config.xsession.windowManager.i3.config.modifier;
   in {
-    "${mod}+Return" = "exec --no-startup-id ${pkgs.coreutils}/bin/env -C \"\${HOME}/data\" PWD=\"\${HOME}/data\" SHLVL= ${pkgs.rxvt-unicode}/bin/urxvtc";
+    "${mod}+Return" = "exec --no-startup-id ${mylib.templateScriptBin pkgs "myterm" scripts/myterm}/bin/myterm";
   };
   xresources.properties = {
     "Xft.antialias" = 1;
