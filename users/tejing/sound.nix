@@ -17,7 +17,7 @@
 	  "${mod}+F6" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ +5% && ${pkgs.killall}/bin/killall -SIGUSR1 i3status";
 	  "${mod}+F7" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-mute @DEFAULT_SINK@ toggle && ${pkgs.killall}/bin/killall -SIGUSR1 i3status";
   };
-  xsession.windowManager.i3.config.assigns."9" = [{class = "^URxvt$";instance = "^ncmpc$";}];
+  xsession.windowManager.i3.config.assigns."10" = [{class = "^URxvt$";instance = "^ncmpc$";}];
   xsession.windowManager.i3.config.startup = [{ command = "${pkgs.rxvt-unicode}/bin/urxvtc -name ncmpc -e ncmpc"; always = false; notification = false; }];
 
   services.mpd.enable = true;
