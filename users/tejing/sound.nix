@@ -13,9 +13,9 @@
 	  "${mod}+F2" = "exec --no-startup-id ${pkgs.mpc_cli}/bin/mpc toggle";
 	  "${mod}+F3" = "exec --no-startup-id ${pkgs.mpc_cli}/bin/mpc stop";
 	  "${mod}+F4" = "exec --no-startup-id ${pkgs.mpc_cli}/bin/mpc next";
-	  "${mod}+F5" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ -5% && ${pkgs.killall}/bin/killall -SIGUSR1 i3status";
-	  "${mod}+F6" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ +5% && ${pkgs.killall}/bin/killall -SIGUSR1 i3status";
-	  "${mod}+F7" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-mute @DEFAULT_SINK@ toggle && ${pkgs.killall}/bin/killall -SIGUSR1 i3status";
+	  "${mod}+F5" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ -5%";
+	  "${mod}+F6" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ +5%";
+	  "${mod}+F7" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-mute @DEFAULT_SINK@ toggle";
   };
   xsession.windowManager.i3.config.assigns."10" = [{class = "^URxvt$";instance = "^ncmpc$";}];
   xsession.windowManager.i3.config.startup = [{ command = "${pkgs.rxvt-unicode}/bin/urxvtc -name ncmpc -e ncmpc"; always = false; notification = false; }];
