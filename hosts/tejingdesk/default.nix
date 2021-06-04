@@ -29,7 +29,7 @@ nixpkgs.lib.nixosSystem {
       environment.etc."nix/path/config".source = "/mnt/persist/tejing/flake";
 
       # the (runtime) current version of nixos stable
-      nix.registry.nixpkgs-stable.to = { type = "github"; owner = "NixOS"; repo = "nixpkgs"; ref = "nixos-20.09"; };
+      nix.registry.nixpkgs-stable.to = { type = "github"; owner = "NixOS"; repo = "nixpkgs"; ref = "nixos-21.05"; };
 
       # the (runtime) current version of nixos unstable
       nix.registry.nixpkgs-unstable.to = { type = "github"; owner = "NixOS"; repo = "nixpkgs"; ref = "nixos-unstable"; };
