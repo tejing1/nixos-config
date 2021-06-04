@@ -12,6 +12,7 @@
   xsession.windowManager.i3.enable = true;
   xsession.windowManager.i3.config = let mod = "Mod4"; in {
     modifier = mod;
+    defaultWorkspace = "workspace number 1";
     modes.resize = {
 	    Left   = "resize shrink width 10 px or 1 ppt";
       Down   = "resize grow height 10 px or 1 ppt";
