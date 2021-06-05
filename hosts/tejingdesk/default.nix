@@ -6,7 +6,7 @@ nixpkgs.lib.nixosSystem {
 	  # import home-manager
 	  home-manager.nixosModules.home-manager
 
-	  ({ pkgs, ... }: {
+	  ({ config, pkgs, ... }: {
       # Let 'nixos-version --json' know about the Git revision
       # of this flake.
 	    system.configurationRevision = pkgs.lib.mkIf (self ? rev) self.rev;
@@ -23,6 +23,17 @@ nixpkgs.lib.nixosSystem {
 	    # the version of this flake used to build the system
 	    nix.registry.activeconfig.flake = self;
       environment.etc."nix/path/activeconfig".source = self;
+
+      # build and register a flake to capture this config's pkgs attribute
+      nix.registry.pkgs.flake = pkgs.writeTextFile { name = "source"; destination = "/flake.nix"; text = ''
+        {
+          inputs.config.url = "path:${self.outPath}?narHash=${self.narHash}";
+          inputs.nixpkgs.follows = "config/nixpkgs"; # Shouldn't be necessary, but is due to the current implementation of '.follows' in input flakes.
+          outputs = { self, config, nixpkgs }: {
+            legacyPackages."${config.nixpkgs.system}" = config.nixosConfigurations."${config.system.name}".pkgs;
+          };
+        }
+      '';};
 
       # the (runtime) current version of this flake
       nix.registry.config.to = { type = "path"; path = "/mnt/persist/tejing/flake"; };
