@@ -8,6 +8,9 @@
     shell = pkgs.fish;
     hashedPassword = builtins.readFile ./pwhash.secret;
   };
+
+  systemd.tmpfiles.rules = [ "d /mnt/persist/tejing 0755 tejing users - -" ];
+
   home-manager.users.tejing.imports = [
     ../../lib
     ./browser.nix
