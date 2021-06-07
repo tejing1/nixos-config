@@ -1,0 +1,3 @@
+#! @bash@/bin/bash
+
+exec @mylaunch@/bin/mylaunch app brave @brave@/bin/brave --no-first-run "$@"

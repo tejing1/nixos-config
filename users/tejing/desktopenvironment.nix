@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, my, ... }:
 
 {
   home.packages = with pkgs; [
@@ -30,7 +30,7 @@
       horizontal_padding = 6;
       separator_color = "frame";
       dmenu = "${pkgs.dmenu}/bin/dmenu";
-      browser = "${pkgs.brave}/bin/brave";
+      browser = "${my.scripts.mybrowser}";
       icon_position = "left";
       max_icon_size = 80;
       frame_width = 3;
