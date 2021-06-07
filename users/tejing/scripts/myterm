@@ -1,7 +1,15 @@
 #! @bash@/bin/bash
 
-cd ~/data || cd ~ || cd /
-env SHLVL= @rxvt-unicode@/bin/urxvtc "${@}"
+cd ~/data 2>/dev/null || cd ~ || cd /
+name="$(basename "$SHELL")"
+if [ "$(readlink -f "$(which "$name")")" == "$(readlink -f "$SHELL")" ]; then
+    cmd="$name"
+elif [ "$(basename "$(readlink -f "$SHELL")")" == "$name" ]; then
+    cmd="$(readlink -f "$SHELL")"
+else
+    cmd="$SHELL"
+fi
+env SHLVL= @rxvt-unicode@/bin/urxvtc -name "$name" -title "$name" -e @mylaunch@/bin/mylaunch shells "$name" "$cmd"
 if [ "$?" -eq 2 ]; then
-    exec env SHLVL= @rxvt-unicode@/bin/urxvt "${@}"
+    exec env SHLVL= @rxvt-unicode@/bin/urxvt -name "$name" -title "$name" -e @mylaunch@/bin/mylaunch shells "$name" "$cmd"
 fi

@@ -2,9 +2,9 @@
 
 {
   home.packages = with pkgs; [
-    rxvt_unicode
-    (my.templateScriptBin pkgs "myterm" scripts/myterm)
+    my.pkgs.myterm
     my.pkgs.mylaunchterm
+    my.pkgs.mylaunch
   ];
   programs.urxvt.enable = true;
   programs.urxvt.fonts = [ "xft:DejaVuSansMono Nerd Font Mono:pixelsize=15" ];
@@ -19,7 +19,7 @@
   xsession.windowManager.i3.config.keybindings = let
     mod = config.xsession.windowManager.i3.config.modifier;
   in {
-    "${mod}+Return" = "exec --no-startup-id ${my.templateScriptBin pkgs "myterm" scripts/myterm}/bin/myterm";
+    "${mod}+Return" = "exec --no-startup-id ${my.scripts.myterm}";
   };
   xresources.properties = {
     "Xft.antialias" = 1;
