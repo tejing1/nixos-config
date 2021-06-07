@@ -11,21 +11,7 @@
 
   systemd.tmpfiles.rules = [ "d /mnt/persist/tejing 0755 tejing users - -" ];
 
-  home-manager.users.tejing.imports = [
-    ../../lib
-    ./browser.nix
-    ./chat.nix
-    ./desktopenvironment.nix
-    ./editor.nix
-    ./encryption.nix
-    ./gaming.nix
-    ./media.nix
-    ./programming.nix
-    ./shell.nix
-    ./sound.nix
-    ./windowmanager.nix
-    ./xterminal.nix
-  ];
+  home-manager.users.tejing.imports = [ ../../lib ] ++ (import ../../lib/listimports.nix {}).my.listImports ./.;
 
   # Automatically (re)start/stop and changed services when activating a home-manager configuration.
   home-manager.users.tejing.systemd.user.startServices = true;
