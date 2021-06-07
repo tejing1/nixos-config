@@ -4,6 +4,7 @@
   home.packages = with pkgs; [
     rxvt_unicode
     (my.templateScriptBin pkgs "myterm" scripts/myterm)
+    my.pkgs.mylaunchterm
   ];
   programs.urxvt.enable = true;
   programs.urxvt.fonts = [ "xft:DejaVuSansMono Nerd Font Mono:pixelsize=15" ];
