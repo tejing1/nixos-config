@@ -29,7 +29,6 @@
       padding = 6;
       horizontal_padding = 6;
       separator_color = "frame";
-      startup_notification = true;
       dmenu = "${pkgs.dmenu}/bin/dmenu";
       browser = "${pkgs.brave}/bin/brave";
       icon_position = "left";
