@@ -9,4 +9,4 @@ name="${2}"
 cmd="${3}"
 shift 3
 
-exec @systemd@/bin/systemd-run --user --no-ask-password --quiet --same-dir --collect --scope --slice="${slice}" --unit="${name}"-"$(date '+%Y-%m-%d-%H-%M-%S-%N')"-pid-"${$}" @bash@/bin/bash -c "exec $(printf "%q" "${cmd}") \"\$@\"" -- "$@"
+exec @systemd@/bin/systemd-run --user --no-ask-password --quiet --same-dir --collect --scope --slice="${slice}" --unit="${name}"-"$(date '+%Y-%m-%d-%H:%M:%S.%N')"-pid-"${$}" @bash@/bin/bash -c "exec $(printf "%q" "${cmd}") \"\$@\"" -- "$@"
