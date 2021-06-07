@@ -2,7 +2,7 @@
 
 {
   options.my = with lib; mkOption {
-    type = types.attrsOf types.anything;
+    type = types.lazyAttrsOf types.anything;
     default = {};
     description = "A value to be merged and passed as argument 'my'.";
   };
