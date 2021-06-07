@@ -1,4 +1,4 @@
-{ pkgs, my, ... }:
+{ config, lib, pkgs, my, ... }:
 
 {
   home.packages = with pkgs; [
@@ -10,6 +10,7 @@
   xsession.enable = true;
   xsession.numlock.enable = true;
   xsession.windowManager.i3.enable = true;
+  xsession.windowManager.command = lib.mkForce "${my.scripts.mylaunch} app i3 ${config.xsession.windowManager.i3.package}/bin/i3";
   xsession.windowManager.i3.config = let mod = "Mod4"; in {
     modifier = mod;
     defaultWorkspace = "workspace number 1";
