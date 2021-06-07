@@ -1,0 +1,12 @@
+#! @bash@/bin/bash
+
+if [ "$#" -lt 3 ]; then
+    echo "Usage: $0 [slice] [name] [command] [args...]"
+    exit 1
+fi
+slice="${1}"
+name="${2}"
+cmd="${3}"
+shift 3
+
+exec @systemd@/bin/systemd-run --user --no-ask-password --quiet --same-dir --collect --scope --slice="${slice}" --unit="${name}"-"$(date '+%Y-%m-%d-%H-%M-%S-%N')"-pid-"${$}" @bash@/bin/bash -c "exec $(printf "%q" "${cmd}") \"\$@\"" -- "$@"
