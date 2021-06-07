@@ -1,13 +1,13 @@
-{ pkgs, mylib, ... }:
+{ pkgs, my, ... }:
 
 {
   home.packages = with pkgs; [
     weechat
   ];
   xsession.windowManager.i3.config.startup = [
-    { command = "${pkgs.rxvt-unicode}/bin/urxvtc -name weechat -e ${mylib.templateScript pkgs "mylaunch" scripts/mylaunch} app weechat ${pkgs.weechat}/bin/weechat"; always = false; notification = false; }
-    { command = "${mylib.templateScript pkgs "mylaunch" scripts/mylaunch} app brave ${pkgs.brave}/bin/brave --app=https://discord.com/app";always = false; notification = false; }
-    { command = "${mylib.templateScript pkgs "mylaunch" scripts/mylaunch} app brave ${pkgs.brave}/bin/brave --app=https://app.element.io";always = false; notification = false; }
+    { command = "${pkgs.rxvt-unicode}/bin/urxvtc -name weechat -e ${my.templateScript pkgs "mylaunch" scripts/mylaunch} app weechat ${pkgs.weechat}/bin/weechat"; always = false; notification = false; }
+    { command = "${my.templateScript pkgs "mylaunch" scripts/mylaunch} app brave ${pkgs.brave}/bin/brave --app=https://discord.com/app";always = false; notification = false; }
+    { command = "${my.templateScript pkgs "mylaunch" scripts/mylaunch} app brave ${pkgs.brave}/bin/brave --app=https://app.element.io";always = false; notification = false; }
   ];
   xsession.windowManager.i3.config.window.commands = [{ criteria = { class = "^URxvt$"; instance = "^weechat$"; }; command = "layout tabbed"; }];
   xsession.windowManager.i3.config.assigns."11" = [

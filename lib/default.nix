@@ -1,15 +1,16 @@
-{ config, pkgs, ... }:
-
+{ ... }:
 {
-  _module.args.mylib = config.lib.my;
-  lib.my = rec {
-    readTemplate = with builtins; subs: src:
-      let
-        contents = if isPath src then readFile src else src;
-        needed = filter (n: ! isNull (match ".*@(${n})@.*" contents)) (attrNames subs);
-      in
-        replaceStrings (map (n: "@" + n + "@") needed) (map (n: toString subs."${n}") needed) contents;
-    templateScript = subs: name: src: pkgs.writeScript name (readTemplate subs src);
-    templateScriptBin = subs: name: src: pkgs.writeScriptBin name (readTemplate subs src);
-  };
+  imports = with builtins;
+    let
+      filterAttrs = pred: set: listToAttrs (filter (x: pred x.name x.value) (map (n: { name = n; value = getAttr n set; }) (attrNames set)));
+    in
+      map (n: ./. + "/${n}") (attrNames (filterAttrs (
+        n: v: (
+          v == "directory" &&
+          pathExists (./. + "/${n}/default.nix")
+        ) || (
+          v == "regular" &&
+          isList (match ".+\\.nix" n) &&
+          n != "default.nix"
+        )) (readDir ./.)));
 }
