@@ -25,7 +25,7 @@
     keybindings = {
 	    "${mod}+Shift+q" = "kill";
 	    "${mod}+d" = "exec --no-startup-id ${mylib.templateScript pkgs "mydmenu_run" scripts/mydmenu_run}";
-	    "${mod}+l" = "exec --no-startup-id \"${pkgs.coreutils}/bin/sleep 1; ${pkgs.xorg.xset}/bin/xset dpms force off\"";
+	    "--release ${mod}+l" = "exec --no-startup-id ${pkgs.xorg.xset}/bin/xset dpms force off";
       
 	    "${mod}+Left" = "focus left";
 	    "${mod}+Down" = "focus down";
