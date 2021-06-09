@@ -6,7 +6,6 @@
     killall
     mkpasswd
     tmux
-    git
     unzip
     lshw
     pciutils
