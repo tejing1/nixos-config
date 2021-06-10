@@ -1,4 +1,4 @@
-{ ... }:
+{ pkgs, ... }:
 
 {
   programs.gpg.enable = true;
@@ -19,4 +19,9 @@
         maxCacheTtlSsh = 1*days;
         sshKeys = [ "0B9AF8FB49262BBE699A9ED715A7177702D9E640" ];
       };
+  programs.password-store.enable = true;
+  programs.password-store.package = pkgs.pass.withExtensions (e: [ e.pass-otp e.pass-import ]);
+  programs.password-store.settings = {
+    PASSWORD_STORE_SIGNING_KEY = "963D3AFB8AA4D693153C150046E96F6FF44F3D74";
+  };
 }
