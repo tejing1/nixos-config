@@ -16,6 +16,7 @@
     foreground = "#00ff00";
     depth = 32;
     internalBorder = 0;
+    perl-ext-common = "default,-readline,-searchable-scrollback";
   };
   xsession.windowManager.i3.config.keybindings = let
     mod = config.xsession.windowManager.i3.config.modifier;
