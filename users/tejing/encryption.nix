@@ -5,8 +5,15 @@
     git-remote-gcrypt
   ];
   programs.gpg.enable = true;
-  programs.gpg.settings.default-key = "963D 3AFB 8AA4 D693 153C  1500 46E9 6F6F F44F 3D74";
-  programs.gpg.settings.default-recipient-self = true;
+  programs.gpg.settings = {
+    default-key = "963D 3AFB 8AA4 D693 153C  1500 46E9 6F6F F44F 3D74";
+    default-recipient-self = true;
+    auto-key-locate = "local,wkd,keyserver";
+    keyserver = "hkps://keys.openpgp.org";
+    auto-key-retrieve = true;
+    auto-key-import = true;
+    keyserver-options = "honor-keyserver-url";
+  };
   services.gpg-agent =
     let
       mins = 60;
