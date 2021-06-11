@@ -1,5 +1,6 @@
 { pkgs, ... }:
 
+let m = 60; h = 60*m; d = 24*h; in
 {
   home.packages = with pkgs; [
     git-remote-gcrypt
@@ -15,18 +16,13 @@
     keyserver-options = "honor-keyserver-url";
   };
   services.gpg-agent =
-    let
-      mins = 60;
-      hours = 60*mins;
-      days = 24*hours;
-    in
       {
         enable = true;
         enableSshSupport = true;
-        defaultCacheTtl = 6*hours;
-        defaultCacheTtlSsh = 6*hours;
-        maxCacheTtl = 1*days;
-        maxCacheTtlSsh = 1*days;
+        defaultCacheTtl = 6*h;
+        defaultCacheTtlSsh = 6*h;
+        maxCacheTtl = 1*d;
+        maxCacheTtlSsh = 1*d;
         sshKeys = [ "0B9AF8FB49262BBE699A9ED715A7177702D9E640" ];
       };
   programs.password-store.enable = true;
