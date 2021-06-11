@@ -15,5 +15,4 @@
   programs.git.signing.key = "963D3AFB8AA4D693153C150046E96F6FF44F3D74";
   programs.git.signing.signByDefault = true;
   programs.git.extraConfig.tag.gpgSign = true;
-  programs.git.extraConfig.push.gpgSign = "if-asked";
 }
