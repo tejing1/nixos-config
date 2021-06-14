@@ -55,7 +55,7 @@
     # use sudo where appropriate
     lvm = "sudo lvm";
   };
-  
+
   programs.bash.enable = true;
   programs.dircolors.enableBashIntegration = true;
   programs.starship.enableBashIntegration = true;
@@ -77,49 +77,49 @@
       bash_indicator = "[BASH](bright-white) ";
     };
     username = {
-	    style_user = "bright-white bold";
-	    style_root = "bright-red bold";
+      style_user = "bright-white bold";
+      style_root = "bright-red bold";
     };
     hostname = {
-	    style = "bright-green bold";
-	    ssh_only = true;
+      style = "bright-green bold";
+      ssh_only = true;
     };
     nix_shell = {
       symbol = "";
       format = "[$symbol$name]($style) ";
-	    style = "bright-purple bold";
+      style = "bright-purple bold";
     };
     git_branch = {
-	    only_attached = true;
+      only_attached = true;
       format = "[$symbol$branch]($style) ";
       symbol = "שׂ";
-	    style = "bright-yellow bold";
+      style = "bright-yellow bold";
     };
     git_commit = {
-	    only_detached = true;
+      only_detached = true;
       format = "[ﰖ$hash]($style) ";
-	    style = "bright-yellow bold";
+      style = "bright-yellow bold";
     };
     git_state = {
-	    style = "bright-purple bold";
+      style = "bright-purple bold";
     };
     git_status = {
-	    style = "bright-green bold";
+      style = "bright-green bold";
     };
     directory = {
       read_only = " ";
-	    truncation_length = 0;
+      truncation_length = 0;
     };
     cmd_duration = {
-	    format = "[$duration]($style) ";
-	    style = "bright-blue";
+      format = "[$duration]($style) ";
+      style = "bright-blue";
     };
     jobs = {
-	    style = "bright-green bold";
+      style = "bright-green bold";
     };
     character = {
-	    success_symbol = "[\\$](bright-green bold)";
-	    error_symbol = "[\\$](bright-red bold)";
+      success_symbol = "[\\$](bright-green bold)";
+      error_symbol = "[\\$](bright-red bold)";
     };
   };
   programs.dircolors.enable = true;

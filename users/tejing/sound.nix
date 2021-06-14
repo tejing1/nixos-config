@@ -9,13 +9,13 @@
   xsession.windowManager.i3.config.keybindings = let
     mod = config.xsession.windowManager.i3.config.modifier;
   in {
-  	"${mod}+F1" = "exec --no-startup-id ${pkgs.mpc_cli}/bin/mpc prev";
-	  "${mod}+F2" = "exec --no-startup-id ${pkgs.mpc_cli}/bin/mpc toggle";
-	  "${mod}+F3" = "exec --no-startup-id ${pkgs.mpc_cli}/bin/mpc stop";
-	  "${mod}+F4" = "exec --no-startup-id ${pkgs.mpc_cli}/bin/mpc next";
-	  "${mod}+F5" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ -5%";
-	  "${mod}+F6" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ +5%";
-	  "${mod}+F7" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-mute @DEFAULT_SINK@ toggle";
+    "${mod}+F1" = "exec --no-startup-id ${pkgs.mpc_cli}/bin/mpc prev";
+    "${mod}+F2" = "exec --no-startup-id ${pkgs.mpc_cli}/bin/mpc toggle";
+    "${mod}+F3" = "exec --no-startup-id ${pkgs.mpc_cli}/bin/mpc stop";
+    "${mod}+F4" = "exec --no-startup-id ${pkgs.mpc_cli}/bin/mpc next";
+    "${mod}+F5" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ -5%";
+    "${mod}+F6" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ +5%";
+    "${mod}+F7" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-mute @DEFAULT_SINK@ toggle";
   };
   xsession.windowManager.i3.config.assigns."10" = [{class = "^URxvt$";instance = "^ncmpc$";}];
   xsession.windowManager.i3.config.startup = [{ command = "${my.scripts.mylaunchterm} app ncmpc ${pkgs.ncmpc}/bin/ncmpc"; always = false; notification = false; }];
