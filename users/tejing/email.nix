@@ -1,17 +1,11 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
-{
-  accounts.email.maildirBasePath = "/mnt/persist/tejing/mail";
-  accounts.email.accounts.fastmail = {
-    primary = true;
+let
+  accountTemplate = name: {
     realName = "Jeff Huffman";
-    address = "tejing@tejing.com";
-    aliases = [ "tejing@fastmail.com" ];
-    maildir.path = "fastmail";
-    imap.host = "imap.fastmail.com";
-    smtp.host = "smtp.fastmail.com";
-    userName = "tejing@fastmail.com";
-    passwordCommand = "${pkgs.writeShellScript "get-fastmail-app-password" "${pkgs.pass}/bin/pass fastmail.com/app | ${pkgs.coreutils}/bin/head -n 1"}";
+    maildir.path = name;
+    imap.host = "imap.${name}.com";
+    smtp.host = "smtp.${name}.com";
     gpg = {
       encryptByDefault = true;
       signByDefault = true;
@@ -20,75 +14,55 @@
     imapnotify = {
       enable = true;
       boxes = [ "Inbox" ];
-      onNotify = "${pkgs.isync}/bin/mbsync fastmail";
-      # onNotifyPost = {};
+      onNotify = "${pkgs.isync}/bin/mbsync ${name}";
     };
     mbsync = {
       enable = true;
       create = "both";
+      remove = "both";
       expunge = "both";
       patterns = [ "*" ];
     };
     msmtp.enable = true;
     neomutt.enable = true;
+    neomutt.sendMailCommand = "msmtpq --read-envelope-from";
   };
-  accounts.email.accounts.yahoo = {
-    realName = "Jeff Huffman";
+in
+{
+  accounts.email.maildirBasePath = "/mnt/persist/tejing/mail";
+  accounts.email.accounts.fastmail = lib.recursiveUpdate (accountTemplate "fastmail") {
+    primary = true;
+    address = "tejing@tejing.com";
+    aliases = [ "tejing@fastmail.com" ];
+    userName = "tejing@fastmail.com";
+    passwordCommand = "${pkgs.writeShellScript "get-fastmail-app-password" "${pkgs.pass}/bin/pass fastmail.com/app | ${pkgs.coreutils}/bin/head -n 1"}";
+  };
+  accounts.email.accounts.yahoo = lib.recursiveUpdate (accountTemplate "yahoo") {
     address = "tejing2001@yahoo.com";
-    maildir.path = "yahoo";
     imap.host = "imap.mail.yahoo.com";
     smtp.host = "smtp.mail.yahoo.com";
     userName = "tejing2001@yahoo.com";
     passwordCommand = "${pkgs.writeShellScript "get-yahoo-app-password" "${pkgs.pass}/bin/pass yahoo.com/app | ${pkgs.coreutils}/bin/head -n 1"}";
-    gpg = {
-      encryptByDefault = true;
-      signByDefault = true;
-      key = "46E96F6FF44F3D74";
+    mbsync.groups.yahoo.channels = builtins.mapAttrs (n: v:{extraConfig={Create="both";Remove="both";Expunge="both";};}//v) {
+      drafts = { nearPattern = "Drafts"; farPattern = "Draft";     };
+      spam   = { nearPattern = "Spam";   farPattern = "Bulk Mail"; };
+      other.patterns = [ "*" "!Draft" "!Drafts" "\"!Bulk Mail\"" "!Spam" ];
     };
-    imapnotify = {
-      enable = true;
-      boxes = [ "Inbox" ];
-      onNotify = "${pkgs.isync}/bin/mbsync yahoo";
-      # onNotifyPost = {};
-    };
-    mbsync = {
-      enable = true;
-      create = "both";
-      # expunge = "both";
-      patterns = [ "*" ];
-      extraConfig.account.PipelineDepth = 1;
-    };
-    msmtp.enable = true;
-    neomutt.enable = true;
+    mbsync.extraConfig.account.PipelineDepth = 1; # yahoo's imap servers are horrible
   };
-  accounts.email.accounts.gmail = {
-    realName = "Jeff Huffman";
+  accounts.email.accounts.gmail = lib.recursiveUpdate (accountTemplate "gmail") {
     address = "ttejing@gmail.com";
-    maildir.path = "gmail";
-    imap.host = "imap.gmail.com";
-    smtp.host = "smtp.gmail.com";
     userName = "ttejing@gmail.com";
     passwordCommand = "${pkgs.writeShellScript "get-google-password" "${pkgs.pass}/bin/pass google.com | ${pkgs.coreutils}/bin/head -n 1"}";
-    gpg = {
-      encryptByDefault = true;
-      signByDefault = true;
-      key = "46E96F6FF44F3D74";
+    mbsync.groups.gmail.channels = builtins.mapAttrs (n: v:{extraConfig={Create="both";Remove="both";Expunge="both";};}//v) {
+      inbox = { patterns = [ "INBOX" ]; };
+      sent  = { nearPattern = "Sent"; farPattern = "[Gmail]/Sent Mail"; };
+      all   = { nearPattern = "All";  farPattern = "[Gmail]/All Mail";  };
+      other = {
+        farPattern = "[Gmail]/";
+        patterns = [ "*" "!INBOX" "\"!Sent Mail\"" "!Sent" "\"!All Mail\"" "!All" "!Important" "!Starred" ];
+      };
     };
-    imapnotify = {
-      enable = true;
-      boxes = [ "Inbox" ];
-      onNotify = "${pkgs.isync}/bin/mbsync gmail";
-      # onNotifyPost = {};
-    };
-    mbsync = {
-      enable = true;
-      create = "both";
-      # expunge = "both";
-      patterns = [ "*" ];
-      extraConfig.account.PipelineDepth = 1;
-    };
-    msmtp.enable = true;
-    neomutt.enable = true;
   };
   xsession.importedVariables = [ "PASSWORD_STORE_DIR" ]; # So imapnotify knows where to find the password store
   services.imapnotify.enable = true;
@@ -103,11 +77,11 @@
       unset wait_key
       unmailboxes *
       set folder='${config.accounts.email.maildirBasePath}/${config.accounts.email.accounts.fastmail.maildir.path}'
-      mailboxes +Inbox +Sent +Drafts +Archive +Spam +Trash
+      mailboxes +Inbox +Sent +Drafts +Spam +Trash +Archive
       set folder='${config.accounts.email.maildirBasePath}/${config.accounts.email.accounts.yahoo.maildir.path}'
-      mailboxes +Inbox +Archive '+Bulk Mail' +Draft +Drafts +Sent +Trash
+      mailboxes +Inbox +Sent +Drafts +Spam +Trash +Archive
       set folder='${config.accounts.email.maildirBasePath}/${config.accounts.email.accounts.gmail.maildir.path}'
-      mailboxes +Inbox +Drafts +Sent '+[Gmail]/All Mail' '+[Gmail]/Drafts' '+[Gmail]/Important' '+[Gmail]/Sent Mail' '+[Gmail]/Spam' '+[Gmail]/Starred' '+[Gmail]/Trash'
+      mailboxes +Inbox +Sent +Drafts +Spam +Trash +All
       set pgp_default_key=46E96F6FF44F3D74
     '';
   };
