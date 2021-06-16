@@ -72,7 +72,7 @@
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
-  networking.firewall.enable = false;
+  # networking.firewall.enable = false;
 
   # Publish hostname via mdns and resolve *.local dns names via mdns
 #  services.avahi.enable = true;
