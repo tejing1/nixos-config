@@ -29,5 +29,6 @@ let m = 60; h = 60*m; d = 24*h; in
   programs.password-store.package = pkgs.pass.withExtensions (e: [ e.pass-otp e.pass-import ]);
   programs.password-store.settings = {
     PASSWORD_STORE_SIGNING_KEY = "963D3AFB8AA4D693153C150046E96F6FF44F3D74";
+    PASSWORD_STORE_X_SELECTION = "primary";
   };
 }
