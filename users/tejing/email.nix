@@ -75,6 +75,7 @@ in
     extraConfig = ''
       set mail_check_stats
       set text_flowed
+      set reflow_wrap=140
       unset wait_key
       unmailboxes *
       set folder='${config.accounts.email.maildirBasePath}/${config.accounts.email.accounts.fastmail.maildir.path}'
