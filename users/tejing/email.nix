@@ -74,6 +74,7 @@ in
     sort = "reverse-date-received";
     extraConfig = ''
       set mail_check_stats
+      set text_flowed
       unset wait_key
       unmailboxes *
       set folder='${config.accounts.email.maildirBasePath}/${config.accounts.email.accounts.fastmail.maildir.path}'
