@@ -9,6 +9,8 @@
     hashedPassword = builtins.readFile ./pwhash.secret;
   };
 
+  services.xserver.libinput.mouse.accelSpeed = "0.6";
+
   systemd.tmpfiles.rules = [ "d /mnt/persist/tejing 0755 tejing users - -" ];
 
   home-manager.users.tejing.imports = [ ../../lib ] ++ (import ../../lib/listimports.nix {}).my.listImports ./.;

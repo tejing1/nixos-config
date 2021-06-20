@@ -93,7 +93,6 @@
     };
     startup = [
       { command = "${pkgs.feh}/bin/feh --no-fehbg --bg-fill '/mnt/persist/tejing/wallpapers/background'"; always = true; notification = false; }
-      { command = "${pkgs.xorg.xinput}/bin/xinput set-prop \"Logitech USB-PS/2 Optical Mouse\" \"libinput Accel Speed\" 0.6"; always = true; notification = false; }
     ];
     bars = [{
       statusCommand = "${pkgs.i3status}/bin/i3status";
