@@ -2,9 +2,6 @@
 
 {
   home.packages = with pkgs; [
-    feh # sets background images... but do I need it in my path?
-    xss-lock
-    i3lock
     xorg.xev # mainly useful for figuring out keybinds
   ];
   systemd.user.services.xss-lock = {
