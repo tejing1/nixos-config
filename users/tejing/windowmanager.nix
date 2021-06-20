@@ -7,6 +7,15 @@
     i3lock
     xorg.xev # mainly useful for figuring out keybinds
   ];
+  systemd.user.services.xss-lock = {
+    Unit = {
+      Description = "xss-lock, session locker service";
+      After = [ "graphical-session-pre.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Install.WantedBy = [ "graphical-session.target" ];
+    Service.ExecStart = "${pkgs.xss-lock}/bin/xss-lock -s \${XDG_SESSION_ID} -- ${pkgs.i3lock}/bin/i3lock -n -i /mnt/persist/tejing/wallpapers/lockscreen.png";
+  };
   xsession.enable = true;
   xsession.numlock.enable = true;
   xsession.windowManager.i3.enable = true;
@@ -85,7 +94,6 @@
     startup = [
       { command = "${pkgs.feh}/bin/feh --no-fehbg --bg-fill '/mnt/persist/tejing/wallpapers/background'"; always = true; notification = false; }
       { command = "${pkgs.xorg.xinput}/bin/xinput set-prop \"Logitech USB-PS/2 Optical Mouse\" \"libinput Accel Speed\" 0.6"; always = true; notification = false; }
-      { command = "${pkgs.xss-lock}/bin/xss-lock -- ${pkgs.i3lock}/bin/i3lock -n -i /mnt/persist/tejing/wallpapers/lockscreen.png"; always = false; notification = false; }
     ];
     bars = [{
       statusCommand = "${pkgs.i3status}/bin/i3status";
