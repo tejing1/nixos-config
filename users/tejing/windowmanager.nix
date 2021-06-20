@@ -83,9 +83,9 @@
       "${mod}+r" = "mode resize";
     };
     startup = [
-      { command = "${pkgs.feh}/bin/feh --no-fehbg --bg-fill '${pkgs.plasma-workspace-wallpapers}/share/wallpapers/Path/contents/images/2560x1440.jpg'"; always = true; notification = false; }
+      { command = "${pkgs.feh}/bin/feh --no-fehbg --bg-fill '/mnt/persist/tejing/wallpapers/background'"; always = true; notification = false; }
       { command = "${pkgs.xorg.xinput}/bin/xinput set-prop \"Logitech USB-PS/2 Optical Mouse\" \"libinput Accel Speed\" 0.6"; always = true; notification = false; }
-      { command = "${pkgs.xss-lock}/bin/xss-lock -- ${pkgs.i3lock}/bin/i3lock -n -c 000000"; always = false; notification = false; }
+      { command = "${pkgs.xss-lock}/bin/xss-lock -- ${pkgs.i3lock}/bin/i3lock -n -i /mnt/persist/tejing/wallpapers/lockscreen.png"; always = false; notification = false; }
     ];
     bars = [{
       statusCommand = "${pkgs.i3status}/bin/i3status";
