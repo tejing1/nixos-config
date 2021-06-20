@@ -16,6 +16,17 @@
     Install.WantedBy = [ "graphical-session.target" ];
     Service.ExecStart = "${pkgs.xss-lock}/bin/xss-lock -s \${XDG_SESSION_ID} -- ${pkgs.i3lock}/bin/i3lock -n -i /mnt/persist/tejing/wallpapers/lockscreen.png";
   };
+  systemd.user.services.set-desktop-background = {
+    Unit = {
+      Description = "Set the desktop background using feh --bg-fill";
+      After = [ "graphical-session-pre.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Install.WantedBy = [ "graphical-session.target" ];
+    Service.Type = "oneshot";
+    Service.RemainAfterExit = true;
+    Service.ExecStart = "${pkgs.feh}/bin/feh --no-fehbg --bg-fill /mnt/persist/tejing/wallpapers/background";
+  };
   xsession.enable = true;
   xsession.numlock.enable = true;
   xsession.windowManager.i3.enable = true;
@@ -91,9 +102,6 @@
       "${mod}+Shift+e" = "exec \"${pkgs.i3}/bin/i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -B 'Yes, exit i3' '${pkgs.i3}/bin/i3-msg exit'\"";
       "${mod}+r" = "mode resize";
     };
-    startup = [
-      { command = "${pkgs.feh}/bin/feh --no-fehbg --bg-fill '/mnt/persist/tejing/wallpapers/background'"; always = true; notification = false; }
-    ];
     bars = [{
       statusCommand = "${pkgs.i3status}/bin/i3status";
       position = "top";
