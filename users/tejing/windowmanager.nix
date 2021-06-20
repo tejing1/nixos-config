@@ -11,7 +11,7 @@
       PartOf = [ "graphical-session.target" ];
     };
     Install.WantedBy = [ "graphical-session.target" ];
-    Service.ExecStart = "${pkgs.xss-lock}/bin/xss-lock -s \${XDG_SESSION_ID} -- ${pkgs.i3lock}/bin/i3lock -n -i /mnt/persist/tejing/wallpapers/lockscreen.png";
+    Service.ExecStart = "${pkgs.xss-lock}/bin/xss-lock -s \${XDG_SESSION_ID} -- ${my.scripts.mylockcmd}";
   };
   systemd.user.services.set-desktop-background = {
     Unit = {
@@ -43,7 +43,7 @@
     keybindings = {
       "${mod}+Shift+q" = "kill";
       "${mod}+d" = "exec --no-startup-id ${my.scripts.mydmenu_run}";
-      "--release ${mod}+l" = "exec --no-startup-id ${pkgs.xorg.xset}/bin/xset dpms force off";
+      "${mod}+l" = "exec --no-startup-id ${my.scripts.mylock}";
 
       "${mod}+Left" = "focus left";
       "${mod}+Down" = "focus down";

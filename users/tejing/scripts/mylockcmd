@@ -1,0 +1,13 @@
+#! @bash@/bin/bash
+fixsettings () {
+    @xorg.xset@/bin/xset dpms 0 0 600
+}
+cleanquit () {
+    fixsettings
+    kill %1
+}
+trap cleanquit HUP INT TERM
+@xorg.xset@/bin/xset dpms 0 0 15
+@i3lock@/bin/i3lock -n -i /mnt/persist/tejing/wallpapers/lockscreen.png &
+while ! wait;do true;done
+fixsettings

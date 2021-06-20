@@ -13,6 +13,6 @@ let
   ) ./.));
 in
 {
-  my.pkgs = scriptPkgs;
+  my.pkgs = scriptPkgs // { "xorg.xset" = pkgs.xorg.xset; }; # FIXME: ugly hack. should make the template code handle the general case
   my.scripts = my.mapAttrs (n: v: "${v}/bin/${n}") scriptPkgs;
 }
