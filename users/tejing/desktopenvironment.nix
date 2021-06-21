@@ -67,8 +67,12 @@
       fullscreen = "pushback";
     };
   };
-  xresources.properties = {
-    "Xcursor.size" = 24;
-    "Xcursor.theme" = "breeze_cursors";
-  };
+
+  gtk.enable = true;
+  gtk.gtk3.bookmarks = [ "file:///home/tejing/data" ];
+  gtk.font = { package = pkgs.nerdfonts; name = "DejaVuSansMono Nerd Font"; size = 8; };
+  gtk.iconTheme = { package = pkgs.arc-icon-theme; name = "Arc"; };
+  gtk.theme = { package = pkgs.arc-theme; name = "Arc-Dark"; };
+
+  xsession.pointerCursor = { package = pkgs.numix-cursor-theme; name = "Numix-Cursor-Light"; size = 24; };
 }

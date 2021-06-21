@@ -11,6 +11,8 @@
 
   services.xserver.libinput.mouse.accelSpeed = "0.6";
 
+  programs.dconf.enable = true;
+
   systemd.tmpfiles.rules = [ "d /mnt/persist/tejing 0755 tejing users - -" ];
 
   home-manager.users.tejing.imports = [ ../../lib ] ++ (import ../../lib/listimports.nix {}).my.listImports ./.;
