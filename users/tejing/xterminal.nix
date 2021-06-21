@@ -5,7 +5,6 @@
     my.pkgs.myterm
     my.pkgs.mylaunchterm
     my.pkgs.mylaunch
-    feh
   ];
   programs.urxvt.enable = true;
   programs.urxvt.fonts = [ "xft:DejaVuSansMono Nerd Font Mono:pixelsize=15" ];

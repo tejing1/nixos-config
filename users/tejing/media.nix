@@ -2,7 +2,12 @@
 
 {
   home.packages = with pkgs; [
-    mpv
     fbreader
+    feh
   ];
+  programs.mpv.enable = true;
+  programs.mpv.config = {
+    osc = false;
+    hwdec = "auto-safe";
+  };
 }
