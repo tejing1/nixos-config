@@ -1,5 +1,6 @@
 #! @bash@/bin/bash
 fixsettings () {
+    PATH="@dbus@/bin${PATH:+:$PATH}" @dunst@/bin/dunstctl set-paused false
     @xorg.xset@/bin/xset dpms 0 0 600
 }
 cleanquit () {
@@ -8,6 +9,7 @@ cleanquit () {
 }
 trap cleanquit HUP INT TERM
 @xorg.xset@/bin/xset dpms 0 0 15
+PATH="@dbus@/bin${PATH:+:$PATH}" @dunst@/bin/dunstctl set-paused true
 @i3lock@/bin/i3lock -n -i /mnt/persist/tejing/wallpapers/lockscreen.png &
 while ! wait;do true;done
 fixsettings
