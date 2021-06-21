@@ -1,4 +1,4 @@
-{ pkgs, my, ... }:
+{ config, pkgs, my, ... }:
 
 {
   home.packages = with pkgs; [
@@ -10,6 +10,15 @@
   services.picom.backend = "xrender";
   services.picom.vSync = true;
   services.picom.opacityRule = [ "0:_NET_WM_STATE@:32a *= '_NET_WM_STATE_HIDDEN'" ];
+
+  xsession.windowManager.i3.config.keybindings = let
+    mod = config.xsession.windowManager.i3.config.modifier;
+  in {
+    "${mod}+BackSpace"       = "exec --no-startup-id ${pkgs.dunst}/bin/dunstctl close";
+    "${mod}+Shift+BackSpace" = "exec --no-startup-id ${pkgs.dunst}/bin/dunstctl close-all";
+    "${mod}+backslash"       = "exec --no-startup-id ${pkgs.dunst}/bin/dunstctl history-pop";
+    "${mod}+slash"           = "exec --no-startup-id ${pkgs.dunst}/bin/dunstctl context";
+  };
 
   services.dunst.enable = true;
   services.dunst.settings = {
@@ -35,13 +44,6 @@
       max_icon_size = 80;
       frame_width = 3;
       frame_color = "#8EC07C";
-    };
-    # DEPRECATED: define keybindings and should be handled through i3 calling dunstctl
-    shortcuts = {
-      close = "ctrl+space";
-      close_all = "ctrl+shift+space";
-      history = "ctrl+grave";
-      context = "ctrl+shift+period";
     };
     urgency_low = {
       frame_color = "#3B7C87";
