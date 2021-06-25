@@ -61,6 +61,11 @@
   programs.starship.enableBashIntegration = true;
   programs.bash.shellAliases = config.programs.fish.shellAliases;
 
+  programs.zsh.enable = true;
+  programs.dircolors.enableZshIntegration = true;
+  programs.starship.enableZshIntegration = true;
+  programs.zsh.shellAliases = config.programs.fish.shellAliases;
+
   programs.starship.enable = true;
   programs.starship.settings = {
     add_newline = false;
@@ -75,6 +80,7 @@
       format = "$indicator";
       fish_indicator = "";
       bash_indicator = "[BASH](bright-white) ";
+      zsh_indicator = "[ZSH](bright-white) ";
     };
     username = {
       style_user = "bright-white bold";

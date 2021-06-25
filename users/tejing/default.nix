@@ -8,6 +8,7 @@
     shell = pkgs.fish;
     hashedPassword = builtins.readFile ./pwhash.secret;
   };
+  programs.zsh.enable = true;
 
   services.xserver.libinput.mouse.accelSpeed = "0.6";
 
