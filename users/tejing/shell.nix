@@ -16,6 +16,7 @@
     mkvtoolnix
     ffmpeg
     nix-prefetch-github
+    jq jo gron yj # json/toml/yaml/hcl handling
   ];
   programs.fish.enable = true;
   programs.dircolors.enableFishIntegration = true;
