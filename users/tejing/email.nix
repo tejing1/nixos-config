@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, my, ... }:
 
 let
   accountTemplate = name: {
@@ -66,6 +66,15 @@ in
   };
   xsession.importedVariables = [ "PASSWORD_STORE_DIR" ]; # So imapnotify knows where to find the password store
   services.imapnotify.enable = true;
+  systemd.user.services.mymailwatch = {
+    Unit = {
+      Description = "Show desktop notifications for new mail in /mnt/persist/tejing/mail";
+      After = [ "graphical-session-pre.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Install.WantedBy = [ "graphical-session.target" ];
+    Service.ExecStart = "${my.scripts.mymailwatch}";
+  };
   programs.mbsync.enable = true;
   programs.msmtp.enable = true;
   programs.neomutt = {

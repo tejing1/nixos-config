@@ -1,0 +1,67 @@
+#! @bash@/bin/bash
+
+PATH="@coreutils@/bin${PATH:+:$PATH}"
+
+kill_dunstify () {
+    if [ -n "$DUNSTIFY_PID" ]; then
+        kill "$DUNSTIFY_PID"
+        wait "$DUNSTIFY_PID" 2>/dev/null
+    fi
+}
+
+replace_note () {
+    kill_dunstify
+    if [ -z "$notification_id" ]; then
+        coproc DUNSTIFY { exec @dunst@/bin/dunstify -pb "$@"; }
+    else
+        coproc DUNSTIFY { exec @dunst@/bin/dunstify -pbr "$notification_id" "$@"; }
+    fi
+    read -u "${DUNSTIFY[0]}" notification_id
+}
+
+close_note () {
+    kill_dunstify
+    if [ -n "$notification_id" ]; then
+        @dunst@/bin/dunstify -C "$notification_id"
+        unset notification_id
+    fi
+}
+trap close_note EXIT
+
+alter_note () {
+    [ -n "$DUNSTIFY_PID" ] && replace_note "$@"
+}
+
+update_count () {
+    prev_message_count="$message_count"
+    message_count="$(for d in "${maildirs[@]}";do ls -A1q "$d/new/";done | wc -l)"
+    if [ "$message_count" -eq 0 ]; then
+        close_note
+    elif [ "$message_count" -lt "$prev_message_count" ]; then
+        alter_note -t 0 "You have $message_count new messages."
+    elif [ "$message_count" -gt "$prev_message_count" ]; then
+        replace_note -t 0 "You have $message_count new messages."
+    fi
+}
+
+
+cd /mnt/persist/tejing/mail/
+exec {tmpfd}< <(@findutils@/bin/find -type d -execdir test -d '{}/new' -a -d '{}/cur' -a -d '{}/tmp' ';' -print0 | @gnused@/bin/sed -ze 's/^\.\///')
+readarray -td $'\0' -u $tmpfd maildirs
+unset tmpfd
+
+[ "${#maildirs}" -eq 0 ] && { echo "No maildirs found!" >&2; exit 1; }
+
+message_count=0
+exec {inotifyfd}< <(exec @inotify-tools@/bin/inotifywait -me create,move,delete,close_write --format '%w%0' --no-newline "${maildirs[@]/%//new/}")
+while true; do
+    if read -rd $'\0' -u $inotifyfd -t 0; then
+        # still some rapid-fire changes to read
+        read -rd $'\0' -u $inotifyfd
+    else
+        # ran out of rapid-fire changes. update now
+        update_count
+        read -rd $'\0' -u $inotifyfd || break # most of the idle time happens here
+        sleep 0.1 # wait for multiple rapid-fire changes before updating
+    fi
+done
