@@ -11,6 +11,10 @@
       ../../users
     ];
 
+  nixpkgs.overlays = [ (final: prev: {
+    editline = prev.editline.overrideAttrs (old:{patches = old.patches ++ [ ./urxvt_fix.patch ];});
+  }) ];
+
   nix = {
     # Use a version of nix with flake support
     package = pkgs.nixFlakes;
