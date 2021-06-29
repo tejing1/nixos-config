@@ -66,6 +66,39 @@
   programs.dircolors.enableZshIntegration = true;
   programs.starship.enableZshIntegration = true;
   programs.zsh.shellAliases = config.programs.fish.shellAliases;
+  programs.zsh.enableAutosuggestions = true;
+  programs.zsh.defaultKeymap = "emacs";
+  programs.zsh.initExtra = ''
+    setopt extended_glob
+    setopt interactivecomments
+    unset RPS1
+    bindkey "^I" complete-word
+    bindkey "^[l" reset-prompt
+    bindkey "$(echoti kend)" end-of-line
+    bindkey "$(echoti khome)" beginning-of-line
+    bindkey "$(echoti kdch1)" delete-char
+    function _nix() {
+        local ifs_bk="$IFS"
+        local input=("''${(Q)words[@]}")
+        IFS=$'\n'
+        local res=($(NIX_GET_COMPLETIONS=$((CURRENT - 1)) "$input[@]"  | sed -e 's/\t$//'))
+        IFS="$ifs_bk"
+        local tpe="''${''${res[1]}%%>*}"
+        local -a suggestions
+        declare -a suggestions
+        for suggestion in ''${res:1}; do
+            # FIXME: This doesn't work properly if the suggestion word contains a `:`
+            # itself
+            suggestions+="''${suggestion//:}"
+        done
+        if [[ "$tpe" == filenames ]]; then
+            compadd -f
+        fi
+        _describe 'nix' suggestions
+    }
+
+    compdef _nix nix
+  '';
 
   programs.starship.enable = true;
   programs.starship.settings = {

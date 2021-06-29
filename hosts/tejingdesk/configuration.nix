@@ -56,6 +56,9 @@
   # Set available fonts
   fonts.fonts = with pkgs; [ corefonts nerdfonts ];
 
+  # cancel the default alias 'l'
+  environment.shellAliases.l = null;
+
   # List packages installed in system profile. To search by name, run:
   # $ nix-env -qaP | grep wget
   environment.systemPackages = with pkgs; [
