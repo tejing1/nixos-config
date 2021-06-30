@@ -98,6 +98,7 @@
     }
 
     compdef _nix nix
+    . ${pkgs.zsh-syntax-highlighting}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
   '';
 
   programs.starship.enable = true;
