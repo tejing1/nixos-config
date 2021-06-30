@@ -44,6 +44,7 @@
       "${mod}+Shift+q" = "kill";
       "${mod}+d" = "exec --no-startup-id ${my.scripts.mydmenu_run}";
       "${mod}+l" = "exec --no-startup-id ${my.scripts.mylock}";
+      "${mod}+o" = "exec --no-startup-id ${my.scripts.myclipopen}";
 
       "${mod}+Left" = "focus left";
       "${mod}+Down" = "focus down";
