@@ -73,9 +73,6 @@
   # Enable fish
   programs.fish.enable = true;
 
-  # Enable virtualbox host stuff
-  virtualisation.virtualbox.host.enable = true;
-
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
   services.openssh.permitRootLogin = "no";
