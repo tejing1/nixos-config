@@ -64,10 +64,18 @@
 
   programs.zsh.enable = true;
   programs.dircolors.enableZshIntegration = true;
-  programs.starship.enableZshIntegration = true;
+  programs.starship.enableZshIntegration = false;
   programs.zsh.shellAliases = config.programs.fish.shellAliases;
   programs.zsh.enableAutosuggestions = true;
   programs.zsh.defaultKeymap = "emacs";
+  programs.zsh.initExtraFirst = ''
+    # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+    # Initialization code that may require console input (password prompts, [y/n]
+    # confirmations, etc.) must go above this block; everything else may go below.
+    if [[ -r "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh" ]]; then
+      source "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh"
+    fi
+  '';
   programs.zsh.initExtra = ''
     setopt extended_glob
     setopt interactivecomments
@@ -98,6 +106,8 @@
     }
 
     compdef _nix nix
+    . ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
+    [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
     . ${pkgs.zsh-syntax-highlighting}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
   '';
 
