@@ -32,7 +32,7 @@
       bounce_freq = 0;
       word_wrap = true;
       hide_duplicate_count = true;
-      geometry = "384x5+0-0";
+      geometry = "384x5-0-0";
       history_length = 15;
       line_height = 3;
       padding = 6;
