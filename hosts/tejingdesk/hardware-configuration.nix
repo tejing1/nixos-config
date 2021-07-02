@@ -16,41 +16,37 @@
   fileSystems."/" =
     { device = "/dev/disk/by-uuid/98d52540-e5ea-41ee-b012-300cb3424aae";
       fsType = "btrfs";
-      options = [ "subvol=root/current" ];
+      options = [ "subvol=tejingdesk/root/new" ];
     };
 
   fileSystems."/home" =
     { device = "/dev/disk/by-uuid/98d52540-e5ea-41ee-b012-300cb3424aae";
       fsType = "btrfs";
-      options = [ "subvol=home/current" ];
+      options = [ "subvol=tejingdesk/home/new" ];
     };
 
   fileSystems."/boot" =
     { device = "/dev/disk/by-uuid/98d52540-e5ea-41ee-b012-300cb3424aae";
       fsType = "btrfs";
-      options = [ "subvol=boot" ];
+      options = [ "subvol=tejingdesk/boot" ];
     };
 
   fileSystems."/nix" =
     { device = "/dev/disk/by-uuid/98d52540-e5ea-41ee-b012-300cb3424aae";
       fsType = "btrfs";
-      options = [ "subvol=nix" ];
+      options = [ "subvol=tejingdesk/nix" ];
     };
 
-  fileSystems."/mnt/system" =
+  fileSystems."/mnt/cache" =
     { device = "/dev/disk/by-uuid/98d52540-e5ea-41ee-b012-300cb3424aae";
       fsType = "btrfs";
-    };
-
-  fileSystems."/share" =
-    { device = "/dev/disk/by-uuid/2bba2a0d-02f8-4243-a139-4c02b5681754";
-      fsType = "btrfs";
-      options = [ "subvol=share" ];
+      neededForBoot = true;
     };
 
   fileSystems."/mnt/persist" =
     { device = "/dev/disk/by-uuid/2bba2a0d-02f8-4243-a139-4c02b5681754";
       fsType = "btrfs";
+      neededForBoot = true;
     };
 
   fileSystems."/boot/efi" =

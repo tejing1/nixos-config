@@ -6,8 +6,9 @@
 
 {
   imports =
-    [ # Include the results of the hardware scan.
+    [
       ./hardware-configuration.nix
+      ./optin-state.nix
       ../../users
     ];
 
@@ -49,9 +50,6 @@
 
   # Set your time zone.
   time.timeZone = "US/Eastern";
-
-  # Don't bother with the lecture or the need to keep state about who's been lectured
-  security.sudo.extraConfig = "Defaults lecture=\"never\"";
 
   # Set available fonts
   fonts.fonts = with pkgs; [ corefonts nerdfonts ];
