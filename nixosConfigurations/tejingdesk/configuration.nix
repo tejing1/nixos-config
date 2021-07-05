@@ -5,13 +5,6 @@
 { config, pkgs, ... }:
 
 {
-  imports =
-    [
-      ./hardware-configuration.nix
-      ./optin-state.nix
-      ../../users
-    ];
-
   nixpkgs.overlays = [
     # make `nix repl` handle home and end keys in urxvt properly
     (final: prev: {editline = prev.editline.overrideAttrs (old:{patches = old.patches ++ [ ./urxvt_fix.patch ];});})
@@ -45,9 +38,6 @@
   boot.kernelParams = [ "quiet" ];
   boot.loader.grub.gfxmodeEfi = "3840x2160,1280x1024,auto";
 
-  # Define your hostname.
-  networking.hostName = "tejingdesk";
-
   # Set your time zone.
   time.timeZone = "US/Eastern";
 
@@ -79,25 +69,6 @@
     { type = "rsa"; bits = 4096; path = "/mnt/persist/tejingdesk/ssh_host_keys/ssh_host_rsa_key"; }
     { type = "ed25519";          path = "/mnt/persist/tejingdesk/ssh_host_keys/ssh_host_ed25519_key"; }
   ];
-
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
-
-  # Publish hostname via mdns and resolve *.local dns names via mdns
-#  services.avahi.enable = true;
-#  services.avahi.nssmdns = true;
-#  services.avahi.publish.enable = true;
-#  services.avahi.publish.addresses = true;
-  #services.avahi.publish.workstation = true;
-
-  # hardcoded hosts entry for my Samsung A51 smartphone
-#  networking.hosts = { "192.168.0.104" = [ "phone.local" ];};
-
-  # Enable CUPS to print documents.
-#  services.printing.enable = true;
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;
