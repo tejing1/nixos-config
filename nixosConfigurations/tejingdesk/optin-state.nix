@@ -16,6 +16,7 @@
   # keep hardware clock adjustment data
   environment.etc.adjtime.source = "/mnt/cache/tejingdesk/adjtime";
 
+  # TODO: don't do this if building for a VM (use (config.fileSystems."/tmp/xchg".fsType == "9p")?)
   # just before mounting, create empty subvolume where nixos' mounting code expects it
   boot.initrd.postDeviceCommands = lib.mkAfter ''
     # wait for device to show up
