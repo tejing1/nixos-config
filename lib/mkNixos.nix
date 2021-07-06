@@ -1,4 +1,4 @@
-{ lib, my, inputs, ... }:
+{ lib, my, ... }:
 with builtins;
 with lib;
 with my.lib;

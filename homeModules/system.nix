@@ -1,4 +1,4 @@
-{ config, nixosConfig, lib, ... }:
+{ nixosConfig, lib, ... }:
 with builtins;
 with lib;
 {

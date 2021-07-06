@@ -4,26 +4,32 @@ with pkgs;
 with lib;
 with lib.strings;
 
-flakeInputs: outputsCode:
 let
-  inputsCode = "{${concatStrings (
-    mapAttrsToList (n: v: "${escapeNixIdentifier n}.url=${escapeNixString "path:${v.sourceInfo.outPath}?narHash=${v.sourceInfo.narHash}"};") flakeInputs
-  )}}";
   cleanNode = flake:
     let spec = {type="path";path=flake.sourceInfo.outPath;inherit (flake.sourceInfo) narHash;};
-    in {inputs = mapAttrs (n: v: cleanNode v) flake.inputs;locked = spec;original = spec;};
-  rootNode = {inputs = mapAttrs (n: cleanNode) flakeInputs;};
+    in {inputs = mapAttrs (_: cleanNode) flake.inputs;locked = spec;original = spec;};
   flattenNode = prefix: node:
     let
       ids = mapAttrs (n: v: (flattenNode (prefix + "-" + n) v).name) node.inputs;
       nod = concatMap (x: x) (attrValues (mapAttrs (n: v: (flattenNode (prefix + "-" + n) v).value) node.inputs));
     in nameValuePair prefix ([ (nameValuePair prefix (node // { inputs = ids; })) ] ++ nod);
+in
+
+flakeInputs:
+let
+  inputsCode = "{${concatStrings (
+    mapAttrsToList (n: v: "${escapeNixIdentifier n}.url=${escapeNixString "path:${v.sourceInfo.outPath}?narHash=${v.sourceInfo.narHash}"};") flakeInputs
+  )}}";
+  rootNode = {inputs = mapAttrs (_: cleanNode) flakeInputs;};
   lockJSON = toJSON {
     version = 7;
     root = "self";
     nodes = listToAttrs (flattenNode "self" rootNode).value;
   };
 in
+
+outputsCode:
+
 runCommand "source" {} ''
 mkdir -p $out
 cat <<"EOF" >$out/flake.nix

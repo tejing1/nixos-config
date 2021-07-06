@@ -1,4 +1,4 @@
-inputs@{ nixpkgs, self, ... }:
+inputs@{ nixpkgs, ... }:
 with builtins;
 with nixpkgs.lib;
 

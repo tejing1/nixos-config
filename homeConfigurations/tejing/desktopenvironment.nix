@@ -39,7 +39,7 @@
       horizontal_padding = 6;
       separator_color = "frame";
       dmenu = "${pkgs.dmenu}/bin/dmenu";
-      browser = "${my.scripts.mybrowser}";
+      browser = my.scripts.mybrowser;
       icon_position = "left";
       max_icon_size = 80;
       frame_width = 3;

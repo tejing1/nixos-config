@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ ... }:
 
 {
   # Use /etc/profiles instead of ~/.nix-profile

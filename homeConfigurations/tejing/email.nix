@@ -43,7 +43,7 @@ in
     smtp.host = "smtp.mail.yahoo.com";
     userName = "tejing2001@yahoo.com";
     passwordCommand = "${pkgs.writeShellScript "get-yahoo-app-password" "${pkgs.pass}/bin/pass yahoo.com/app | ${pkgs.coreutils}/bin/head -n 1"}";
-    mbsync.groups.yahoo.channels = builtins.mapAttrs (n: v:{extraConfig={Create="both";Remove="both";Expunge="both";};}//v) {
+    mbsync.groups.yahoo.channels = builtins.mapAttrs (_: v:{extraConfig={Create="both";Remove="both";Expunge="both";};}//v) {
       drafts = { nearPattern = "Drafts"; farPattern = "Draft";     };
       spam   = { nearPattern = "Spam";   farPattern = "Bulk Mail"; };
       other.patterns = [ "*" "!Draft" "!Drafts" "\"!Bulk Mail\"" "!Spam" ];
@@ -54,7 +54,7 @@ in
     address = "ttejing@gmail.com";
     userName = "ttejing@gmail.com";
     passwordCommand = "${pkgs.writeShellScript "get-google-password" "${pkgs.pass}/bin/pass google.com | ${pkgs.coreutils}/bin/head -n 1"}";
-    mbsync.groups.gmail.channels = builtins.mapAttrs (n: v:{extraConfig={Create="both";Remove="both";Expunge="both";};}//v) {
+    mbsync.groups.gmail.channels = builtins.mapAttrs (_: v:{extraConfig={Create="both";Remove="both";Expunge="both";};}//v) {
       inbox = { patterns = [ "INBOX" ]; };
       sent  = { nearPattern = "Sent"; farPattern = "[Gmail]/Sent Mail"; };
       all   = { nearPattern = "All";  farPattern = "[Gmail]/All Mail";  };
@@ -73,7 +73,7 @@ in
       PartOf = [ "graphical-session.target" ];
     };
     Install.WantedBy = [ "graphical-session.target" ];
-    Service.ExecStart = "${my.scripts.mymailwatch}";
+    Service.ExecStart = my.scripts.mymailwatch;
   };
   programs.mbsync.enable = true;
   programs.msmtp.enable = true;

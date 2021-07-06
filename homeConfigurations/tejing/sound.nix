@@ -23,13 +23,13 @@
   services.mpd.enable = true;
   services.mpd.network.startWhenNeeded = true;
   services.mpd.dataDir = "/mnt/persist/tejing/mpd";
-  services.mpd.musicDirectory = "${pkgs.runCommand "music-lib" {} ''
+  services.mpd.musicDirectory = pkgs.runCommand "music-lib" {} ''
       mkdir $out
       ln -s /mnt/persist/share/unique/music $out
       ln -s /mnt/persist/share/replaceable/ocremix $out
       ln -s /mnt/persist/share/unique/unsorted_music $out
       ln -s /mnt/persist/share/data/tejing/work/youtube_favorite_music $out
-    ''}";
+    '';
   services.mpd.extraConfig = ''
                 audio_output {
                        type     "pulse"

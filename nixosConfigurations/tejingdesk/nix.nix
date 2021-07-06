@@ -3,10 +3,10 @@
 {
   nixpkgs.overlays = [
     # make `nix repl` handle home and end keys in urxvt properly
-    (final: prev: {editline = prev.editline.overrideAttrs (old:{patches = old.patches ++ [ ./urxvt_fix.patch ];});})
+    (_final: prev: {editline = prev.editline.overrideAttrs (old:{patches = old.patches ++ [ ./urxvt_fix.patch ];});})
 
     # prevent nixos-option from pointlessly pulling in stable nix
-    (final: prev: {nix = config.nix.package;})
+    (_final: _prev: {nix = config.nix.package;})
   ];
 
   nix = {
