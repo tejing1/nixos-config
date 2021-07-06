@@ -19,9 +19,12 @@
     # Hard link identical files in the store automatically
     autoOptimiseStore = true;
     # automatically trigger garbage collection
-    gc.automatic = true;
-    gc.dates = "weekly";
-    gc.options = "--delete-older-than 30d";
+    gc = {
+      automatic = true;
+      persistent = true;
+      dates = "weekly";
+      options = "--delete-older-than 30d";
+    };
   };
 
   environment.systemPackages = with pkgs; [
