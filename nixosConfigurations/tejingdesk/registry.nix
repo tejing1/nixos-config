@@ -1,5 +1,7 @@
-{ config, pkgs, inputs, ... }:
+{ config, pkgs, lib, my, inputs, ... }:
 with inputs;
+with lib.strings;
+with my.lib;
 {
   # Let 'nixos-version --json' know about the Git revision
   # of this flake.
@@ -19,15 +21,8 @@ with inputs;
   environment.etc."nix/path/activeconfig".source = self;
 
   # build and register a flake to capture this config's pkgs attribute
-  nix.registry.pkgs.flake = pkgs.writeTextFile { name = "source"; destination = "/flake.nix"; text = ''
-    {
-      inputs.config.url = "path:${self.outPath}?narHash=${self.narHash}";
-      inputs.nixpkgs.follows = "config/nixpkgs"; # Shouldn't be necessary, but is due to the current implementation of '.follows' in input flakes.
-      outputs = { self, config, nixpkgs }: {
-        legacyPackages."${config.nixpkgs.system}" = config.nixosConfigurations."${config.networking.hostName}".pkgs;
-      };
-    }
-  '';};
+  nix.registry.pkgs.flake = mkFlake {config = self;}
+    "{config,...}: {legacyPackages.${escapeNixIdentifier config.nixpkgs.system}=config.nixosConfigurations.${escapeNixIdentifier config.networking.hostName}.pkgs;}";
 
   # the (runtime) current version of this flake
   nix.registry.config.to = { type = "path"; path = "/mnt/persist/tejing/flake"; };
