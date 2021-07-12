@@ -26,7 +26,7 @@ in
     };
   };
   config = {
-    my.pkgs = scriptPkgs // { "xorg.xset" = pkgs.xorg.xset; }; # FIXME: ugly hack. should make the template code handle the general case
+    my.pkgs = scriptPkgs;
     my.scripts = mapAttrs (n: v: "${v}/bin/${n}") scriptPkgs;
   };
 }
