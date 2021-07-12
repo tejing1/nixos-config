@@ -1,8 +1,8 @@
 inputs@{ nixpkgs, ... }:
-with builtins;
-with nixpkgs.lib;
-
 let
+  inherit (builtins) listToAttrs;
+  inherit (nixpkgs.lib) nameValuePair;
+
   # functions needed to construct 'lib' itself
   bootstrapFunctions = [
     "importAllExceptWithArg"

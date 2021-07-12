@@ -1,5 +1,7 @@
 { self, nixpkgs, ... }:
-with nixpkgs.lib;
-with self.lib;
+let
+  inherit (nixpkgs.lib) fileContents;
+  inherit (self.lib) mkHome listImportablePathsExcept;
+in
 
 mkHome (listImportablePathsExcept ./. [ "default.nix" ]) (fileContents ./system)

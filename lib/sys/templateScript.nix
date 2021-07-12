@@ -1,7 +1,8 @@
 { pkgs, my, ... }:
-with builtins;
-with pkgs;
-with my.lib;
+let
+  inherit (pkgs) writeScript;
+  inherit (my.lib) readTemplate;
+in
 
 subs: name: src:
 # generate a file named 'name' from a 'src' template containing

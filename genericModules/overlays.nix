@@ -1,5 +1,7 @@
 { lib, inputs, ... }:
-with lib;
+let
+  inherit (lib) mkOption types;
+in
 {
   options.my.overlays = mkOption {
     type = types.unspecified;

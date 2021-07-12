@@ -1,5 +1,7 @@
 { lib, ... }:
-with lib;
+let
+  inherit (lib) genAttrs mkOverride;
+in
 
 {
   # undo default shellAliases

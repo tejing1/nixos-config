@@ -1,7 +1,8 @@
 { lib, my, ... }:
-with builtins;
-with lib;
-with my.lib;
+let
+  inherit (lib) nixosSystem;
+  inherit (my.lib) mkDefaultNixosModule;
+in
 
 modules: system: hostname:
 let

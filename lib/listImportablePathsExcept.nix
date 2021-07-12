@@ -1,7 +1,7 @@
-{lib, my, ... }:
-with builtins;
-with lib;
-with my.lib;
+{ my, ... }:
+let
+  inherit (my.lib) listImportableExcept;
+in
 
 dir: except:
 # list importable paths in the directory 'dir', except the files named

@@ -1,7 +1,7 @@
-{ lib, my, ... }:
-with builtins;
-with lib;
-with my.lib;
+{ ... }:
+let
+  inherit (builtins) isPath readFile filter match attrNames replaceStrings;
+in
 
 subs: src:
 # generate a string from a 'src' template containing @foo@-style

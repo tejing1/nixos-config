@@ -1,8 +1,9 @@
 { pkgs, lib, my, ... }:
-with builtins;
-with lib;
-with my.lib;
 let
+  inherit (builtins) mapAttrs readDir;
+  inherit (lib) filterAttrs hasSuffix mkOption types;
+  inherit (my.lib) templateScriptBin;
+
   scriptPkgs = mapAttrs (n: _: templateScriptBin (pkgs // my.pkgs) n (./. + "/${n}"))
     (filterAttrs (n: v:
       v == "regular" &&

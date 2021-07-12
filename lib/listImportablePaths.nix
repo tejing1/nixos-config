@@ -1,7 +1,7 @@
-{lib, my, ... }:
-with builtins;
-with lib;
-with my.lib;
+{ my, ... }:
+let
+  inherit (my.lib) listImportable;
+in
 
 dir:
 # list importable paths in the directory 'dir',

@@ -1,5 +1,7 @@
 { config, lib, inputs, ... }:
-with lib;
+let
+  inherit (lib) mkOption types;
+in
 {
   options.my.lib = mkOption {
     type = types.unspecified;

@@ -1,6 +1,7 @@
-{ lib, ... }:
-with builtins;
-with lib;
+{ ... }:
+let
+  inherit (builtins) hasAttr getAttr;
+in
 
 default: attr: set:
 # gets attribute 'attr' of set 'set', defaulting to 'default' if absent

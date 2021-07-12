@@ -1,9 +1,8 @@
-{ lib, my, inputs, ... }:
-with builtins;
-with lib;
-with my.lib;
-
+{ lib, inputs, ... }:
 let
+  inherit (builtins) concatMap isAttrs attrValues catAttrs;
+  inherit (lib) attrVals;
+
   # inputs from which to import all nixosModules
   importFrom = [ "self" "home-manager" ];
 in

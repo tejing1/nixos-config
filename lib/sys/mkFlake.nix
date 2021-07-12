@@ -1,10 +1,10 @@
 { lib, pkgs, ... }:
-with builtins;
-with pkgs;
-with lib;
-with lib.strings;
-
 let
+  inherit (builtins) mapAttrs concatMap attrValues toJSON listToAttrs;
+  inherit (pkgs) runCommand;
+  inherit (lib) nameValuePair concatStrings mapAttrsToList;
+  inherit (lib.strings) escapeNixIdentifier escapeNixString;
+
   cleanNode = flake:
     let spec = {type="path";path=flake.sourceInfo.outPath;inherit (flake.sourceInfo) narHash;};
     in {inputs = mapAttrs (_: cleanNode) flake.inputs;locked = spec;original = spec;};

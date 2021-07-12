@@ -1,6 +1,7 @@
 { nixosConfig, lib, ... }:
-with builtins;
-with lib;
+let
+  inherit (lib) mkOption types;
+in
 {
   options.my.system = mkOption {
     type = types.unspecified;

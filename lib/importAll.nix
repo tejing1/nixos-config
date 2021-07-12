@@ -1,7 +1,9 @@
 { lib, my, ... }:
-with builtins;
-with lib;
-with my.lib;
+let
+  inherit (builtins) listToAttrs;
+  inherit (lib) nameValuePair removeSuffix;
+  inherit (my.lib) listImportable;
+in
 
 dir:
 # import every importable path in the directory 'dir', returns an

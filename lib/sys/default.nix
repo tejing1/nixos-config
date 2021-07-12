@@ -1,7 +1,9 @@
 inputs@{ lib, my, flake-utils, nixpkgs, ... }:
-with flake-utils.lib;
-with lib;
-with my.lib;
+let
+  inherit (flake-utils.lib) defaultSystems;
+  inherit (lib) genAttrs;
+  inherit (my.lib) importAllExceptWithArg;
+in
 
 # do everything for each default system and collect results in an
 # attrset so for example, a function in 'foo.nix' in this directory

@@ -1,8 +1,8 @@
-{ lib, my, inputs, ... }:
-with builtins;
-with lib;
-with my.lib;
-with inputs.home-manager.lib;
+{ my, inputs, ... }:
+let
+  inherit (my.lib) mkDefaultHomeModule;
+  inherit (inputs.home-manager.lib) homeManagerConfiguration;
+in
 
 modules: system: username:
 let

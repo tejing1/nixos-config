@@ -1,7 +1,8 @@
 { pkgs, my, ... }:
-with builtins;
-with pkgs;
-with my.lib;
+let
+  inherit (pkgs) writeScriptBin;
+  inherit (my.lib) readTemplate;
+in
 
 subs: name: src:
 # generate a package with name 'name' with a single binary also named

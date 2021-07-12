@@ -1,7 +1,9 @@
 {lib, my, ... }:
-with builtins;
-with lib;
-with my.lib;
+let
+  inherit (builtins) pathExists attrNames readDir;
+  inherit (lib) hasSuffix filterAttrs;
+  inherit (my.lib) getAttrWithDefault;
+in
 
 dir:
 # list importable filenames in the directory 'dir',

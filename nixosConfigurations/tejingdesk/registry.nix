@@ -1,11 +1,14 @@
-{ config, pkgs, lib, my, inputs, ... }:
-with inputs;
-with lib.strings;
-with my.lib;
+{ config, lib, my, inputs, ... }:
+let
+  inherit (inputs) nixpkgs home-manager self;
+  inherit (lib) mkIf;
+  inherit (lib.strings) escapeNixIdentifier;
+  inherit (my.lib) mkFlake;
+in
 {
   # Let 'nixos-version --json' know about the Git revision
   # of this flake.
-  system.configurationRevision = pkgs.lib.mkIf (self ? rev) self.rev;
+  system.configurationRevision = mkIf (self ? rev) self.rev;
   nix.nixPath = [ "/etc/nix/path" ];
 
   # the version of nixpkgs used to build the system
