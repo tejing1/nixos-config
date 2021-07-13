@@ -56,6 +56,8 @@
     # use sudo where appropriate
     lvm = "sudo lvm";
     nixos-rebuild = "sudo nice -n 19 nixos-rebuild";
+    # colorize grep output
+    grep = "grep --color=auto";
   };
 
   programs.bash.enable = true;
