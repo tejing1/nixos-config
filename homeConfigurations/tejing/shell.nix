@@ -71,6 +71,9 @@
   programs.zsh.shellAliases = config.programs.fish.shellAliases;
   programs.zsh.enableAutosuggestions = true;
   programs.zsh.defaultKeymap = "emacs";
+  programs.zsh.loginExtra = ''
+    cd ~/data
+  '';
   programs.zsh.initExtraFirst = ''
     # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
     # Initialization code that may require console input (password prompts, [y/n]
