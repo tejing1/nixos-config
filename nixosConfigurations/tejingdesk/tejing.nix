@@ -5,7 +5,7 @@
     isNormalUser = true;
     uid = 1000;
     extraGroups = [ "wheel" "audio" ];
-    shell = pkgs.fish;
+    shell = pkgs.zsh;
     hashedPassword = builtins.readFile ./pwhash.secret;
   };
   home-manager.users.tejing.imports = [ inputs.self.homeConfigurations.tejing.configurationModule ];
