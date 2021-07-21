@@ -10,6 +10,12 @@
   };
   home-manager.users.tejing.imports = [ inputs.self.homeConfigurations.tejing.configurationModule ];
 
+  # unlock gpg keys with my login password
+  security.pam.services.login.gnupg.enable = true;
+  security.pam.services.login.gnupg.noAutostart = true;
+  security.pam.services.login.gnupg.storeOnly = true;
+  security.pam.services.i3lock.gnupg.enable = true;
+
   programs.fish.enable = true;
   programs.zsh.enable = true;
 

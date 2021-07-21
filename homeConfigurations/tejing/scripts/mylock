@@ -1,5 +1,0 @@
-#! @bash@/bin/bash
-
-@systemd@/bin/loginctl lock-session
-sleep 1
-@xorg.xset@/bin/xset dpms force off

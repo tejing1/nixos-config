@@ -1,6 +1,7 @@
 { config, pkgs, lib, my, ... }:
-
 let
+  inherit (lib) mkForce;
+
   accountTemplate = name: {
     realName = "Jeff Huffman";
     maildir.path = name;
@@ -66,6 +67,24 @@ in
   };
   xsession.importedVariables = [ "PASSWORD_STORE_DIR" ]; # So imapnotify knows where to find the password store
   services.imapnotify.enable = true;
+  systemd.user.services.imapnotify-fastmail = {
+    Unit.After = [ "passphrases.service" ];
+    Unit.BindsTo = [ "passphrases.service" ];
+    Install.WantedBy = mkForce [ "passphrases.service" ];
+    Service.ExecStartPost = "${pkgs.isync}/bin/mbsync fastmail";
+  };
+  systemd.user.services.imapnotify-yahoo = {
+    Unit.After = [ "passphrases.service" ];
+    Unit.BindsTo = [ "passphrases.service" ];
+    Install.WantedBy = mkForce [ "passphrases.service" ];
+    Service.ExecStartPost = "${pkgs.isync}/bin/mbsync yahoo";
+  };
+  systemd.user.services.imapnotify-gmail = {
+    Unit.After = [ "passphrases.service" ];
+    Unit.BindsTo = [ "passphrases.service" ];
+    Install.WantedBy = mkForce [ "passphrases.service" ];
+    Service.ExecStartPost = "${pkgs.isync}/bin/mbsync gmail";
+  };
   systemd.user.services.mymailwatch = {
     Unit = {
       Description = "Show desktop notifications for new mail in /mnt/persist/tejing/mail";

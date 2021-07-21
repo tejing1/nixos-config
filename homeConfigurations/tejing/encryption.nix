@@ -1,6 +1,7 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
+let inherit (lib) mkBefore mkAfter; in
 
-let m = 60; h = 60*m; d = 24*h; in
+let m = 60; h = 60*m; d = 24*h; y = 365*d; in
 {
   home.packages = with pkgs; [
     git-remote-gcrypt
@@ -15,16 +16,65 @@ let m = 60; h = 60*m; d = 24*h; in
     auto-key-import = true;
     keyserver-options = "honor-keyserver-url";
   };
-  services.gpg-agent =
-      {
-        enable = true;
-        enableSshSupport = true;
-        defaultCacheTtl = 6*h;
-        defaultCacheTtlSsh = 6*h;
-        maxCacheTtl = 1*d;
-        maxCacheTtlSsh = 1*d;
-        sshKeys = [ "0B9AF8FB49262BBE699A9ED715A7177702D9E640" ];
-      };
+  services.gpg-agent = {
+    enable = true;
+    enableSshSupport = true;
+    defaultCacheTtl = 6*h;
+    defaultCacheTtlSsh = 6*h;
+    maxCacheTtl = 100*y; # effectively unlimited
+    maxCacheTtlSsh = 100*y; # effectively unlimited
+    sshKeys = [ "0B9AF8FB49262BBE699A9ED715A7177702D9E640" ];
+    extraConfig = ''
+      allow-preset-passphrase
+    '';
+  };
+  # it's important that this file be sorted, because I use it in the
+  # passphrases service
+  home.file.".pam-gnupg".source = pkgs.runCommand ".pam-gnupg" {keys = [
+    "0283E984AD421E8903D27C147E92DE82ABED47E6"
+    "089DF248E14CACA5F2C19EB7F8CDFBF73B82BAEA"
+    "0B9AF8FB49262BBE699A9ED715A7177702D9E640"
+  ];} "for k in $keys; do echo \"$k\" >> file;done;sort file > $out";
+  systemd.user.services.passphrases = {
+    Unit = {
+      Description = "Preset passphrases in gpg-agent";
+      After = [ "graphical-session-pre.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Install.WantedBy = [ "graphical-session.target" ];
+    Service = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = "${pkgs.writeShellScript "passphrases-start" ''
+        ${pkgs.gnupg}/bin/gpg-connect-agent 'keyinfo --list' /bye |
+        ${pkgs.gawk}/bin/awk '/^S / { if ($7 == 1 && $10 == "-") print $3 }' |
+        ${pkgs.coreutils}/bin/sort |
+        ${pkgs.diffutils}/bin/diff -q - ~/.pam-gnupg
+      ''}";
+      ExecStop = "${pkgs.writeShellScript "passphrases-stop" ''
+        exec < ~/.pam-gnupg
+        while read keygrip; do
+          cmd="clear_passphrase $keygrip"
+          echo -n "$cmd: ";${pkgs.gnupg}/bin/gpg-connect-agent "$cmd" /bye
+          cmd="clear_passphrase --mode=normal $keygrip"
+          echo -n "$cmd: ";${pkgs.gnupg}/bin/gpg-connect-agent "$cmd" /bye
+          cmd="clear_passphrase --mode=ssh $keygrip"
+          echo -n "$cmd: ";${pkgs.gnupg}/bin/gpg-connect-agent "$cmd" /bye
+        done
+      ''}";
+    };
+  };
+
+  # make GPG_TTY initialization and p10k's instant prompt play nice
+  programs.zsh.initExtraFirst = mkBefore ''
+    current_tty="$(tty)"
+    tty() { echo "$current_tty"; }
+  '';
+  programs.zsh.initExtra = mkAfter ''
+    unfunction tty
+    unset current_tty
+  '';
+
   programs.password-store.enable = true;
   programs.password-store.package = pkgs.pass.withExtensions (e: [ e.pass-otp e.pass-import ]);
   programs.password-store.settings = {

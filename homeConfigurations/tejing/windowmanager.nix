@@ -43,7 +43,7 @@
     keybindings = {
       "${mod}+Shift+q" = "kill";
       "${mod}+d" = "exec --no-startup-id ${my.scripts.mydmenu_run}";
-      "${mod}+l" = "exec --no-startup-id ${my.scripts.mylock}";
+      "${mod}+l" = "exec --no-startup-id ${pkgs.systemd}/bin/loginctl lock-session";
       "${mod}+o" = "exec --no-startup-id ${my.scripts.myclipopen}";
 
       "${mod}+Left" = "focus left";
