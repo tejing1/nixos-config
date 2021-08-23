@@ -11,7 +11,7 @@
       PartOf = [ "graphical-session.target" ];
     };
     Install.WantedBy = [ "graphical-session.target" ];
-    Service.ExecStart = "${pkgs.xss-lock}/bin/xss-lock -s \${XDG_SESSION_ID} -- ${my.scripts.mylockcmd}";
+    Service.ExecStart = "${pkgs.xss-lock}/bin/xss-lock -n ${my.scripts.mylocknotify} -s \${XDG_SESSION_ID} -- ${my.scripts.mylockcmd}";
   };
   systemd.user.services.set-desktop-background = {
     Unit = {
