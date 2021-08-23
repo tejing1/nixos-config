@@ -119,4 +119,7 @@ in
     text/html; ${pkgs.lynx}/bin/lynx %s; nametemplate=%s.html
     text/html; ${pkgs.lynx}/bin/lynx -dump -width ''${COLUMNS:-80} %s; nametemplate=%s.html; copiousoutput
   '';
+  xsession.windowManager.i3.config.assigns."10" = [{class = "^URxvt$";instance = "^neomutt$";}];
+  xsession.windowManager.i3.config.window.commands = [{ criteria = { class = "^URxvt$"; instance = "^neomutt$"; }; command = "layout tabbed"; }];
+  xsession.windowManager.i3.config.startup = [{ command = "${my.scripts.mylaunchterm} app neomutt ${pkgs.neomutt}/bin/neomutt"; always = false; notification = false; }];
 }
