@@ -10,8 +10,8 @@
   # switch-to-configuration refuses to operate without this tag
   environment.etc.NIXOS.text = "";
 
-  # keep machine id for log continuity
-  environment.etc.machine-id.source = "/mnt/cache/tejingdesk/machine-id";
+  # set machine id for log continuity
+  environment.etc.machine-id.source = ./machine-id;
 
   # keep hardware clock adjustment data
   environment.etc.adjtime.source = "/mnt/cache/tejingdesk/adjtime";
