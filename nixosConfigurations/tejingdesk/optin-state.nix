@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   # Don't bother with the lecture or the need to keep state about who's been lectured
@@ -56,4 +56,30 @@
     # needs to be a bind mount because the activation script reacts to symlinks
     mount -o bind $targetRoot/mnt/cache/tejingdesk/systemd/timesync $targetRoot/var/lib/systemd/timesync
   '';
+  # clean up old root subvolumes periodically
+  # leaves a minimum of 'keepAtLeast' copies
+  # keeps anything whose successor is newer than 'cutoffDate'
+  # TODO: implement proper recursive subvolume deletion, rather than hardcoding the expected subvolumes
+  systemd.services.root-subvol-cleanup = let
+    keepAtLeast = 5;
+    cutoffDate = "30 days ago";
+  in
+    {
+      description = "old root subvolume cleaner";
+      startAt = "daily";
+      script = ''
+        cutoff="$(date -d ${lib.escapeShellArg cutoffDate} '+%s')"
+        prev=$(date '+%s')
+        count=${toString keepAtLeast}
+        for f in $(ls -1Adt --time=birth /mnt/cache/tejingdesk/root/root-*);do
+          cur="$(stat -c '%W' "$f")"
+          if [ "$prev" -lt "$cutoff" ] && [ "$count" -lt 1 ]; then
+            echo Removing subvolume "$f"
+            ${pkgs.btrfs-progs}/bin/btrfs subvolume delete "$f/srv" "$f/var/lib/machines" "$f"
+          fi
+          prev="$cur"
+          count=$(($count - 1))
+        done
+      '';
+    };
 }
