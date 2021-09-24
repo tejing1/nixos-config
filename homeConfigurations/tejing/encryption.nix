@@ -1,7 +1,8 @@
-{ pkgs, lib, ... }:
-let inherit (lib) mkBefore mkAfter; in
-
-let m = 60; h = 60*m; d = 24*h; y = 365*d; in
+{ lib, pkgs, ... }:
+let
+  inherit (lib) mkBefore mkAfter;
+  m = 60; h = 60*m; d = 24*h; y = 365*d;
+in
 {
   home.packages = with pkgs; [
     git-remote-gcrypt

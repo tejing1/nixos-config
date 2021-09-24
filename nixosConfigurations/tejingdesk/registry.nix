@@ -1,4 +1,4 @@
-{ config, lib, my, inputs, ... }:
+{ config, inputs, lib, my, ... }:
 let
   inherit (inputs) nixpkgs home-manager self;
   inherit (lib) mkIf;

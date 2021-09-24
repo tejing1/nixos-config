@@ -1,4 +1,4 @@
-{ my, inputs, ... }:
+{ inputs, my, ... }:
 let
   inherit (my.lib) mkDefaultHomeModule;
   inherit (inputs.home-manager.lib) homeManagerConfiguration;

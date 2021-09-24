@@ -1,4 +1,4 @@
-{ lib, inputs, ... }:
+{ inputs, lib, ... }:
 let
   inherit (builtins) concatMap isAttrs attrValues catAttrs;
   inherit (lib) attrVals mkDefault;

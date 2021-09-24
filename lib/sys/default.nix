@@ -1,4 +1,4 @@
-inputs@{ lib, my, flake-utils, nixpkgs, ... }:
+inputs@{ flake-utils, lib, my, nixpkgs, ... }:
 let
   inherit (flake-utils.lib) defaultSystems;
   inherit (lib) genAttrs;

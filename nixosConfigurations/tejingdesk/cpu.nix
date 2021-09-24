@@ -1,5 +1,3 @@
-{ ... }:
-
 {
   boot.kernelModules = [ "kvm-intel" ];
 

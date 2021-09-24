@@ -1,5 +1,3 @@
-{ ... }:
-
 {
   # Use /etc/profiles instead of ~/.nix-profile
   # In particular, this allows 'nixos-rebuild build-vm' and home-manager to work together

@@ -1,5 +1,3 @@
-{ ... }:
-
 {
   # Enable pulseaudio
   hardware.pulseaudio.enable = true;

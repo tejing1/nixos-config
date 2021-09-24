@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, lib, pkgs, ... }:
 
 {
   # Don't bother with the lecture or the need to keep state about who's been lectured

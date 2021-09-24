@@ -1,4 +1,4 @@
-{ pkgs, lib, my, ... }:
+{ lib, my, pkgs, ... }:
 let
   inherit (builtins) mapAttrs readDir;
   inherit (lib) filterAttrs hasSuffix mkOption types;

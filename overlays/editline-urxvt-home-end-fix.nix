@@ -1,4 +1,4 @@
-{ ... }:
+_inputs:
 
 _final: prev:
 {

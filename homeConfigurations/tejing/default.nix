@@ -1,4 +1,4 @@
-{ self, nixpkgs, ... }:
+{ nixpkgs, self, ... }:
 let
   inherit (nixpkgs.lib) fileContents;
   inherit (self.lib) mkHome listImportablePathsExcept;

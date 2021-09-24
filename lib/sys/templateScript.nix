@@ -1,4 +1,4 @@
-{ pkgs, my, ... }:
+{ my, pkgs, ... }:
 let
   inherit (pkgs) writeScript;
   inherit (my.lib) readTemplate;
