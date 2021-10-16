@@ -104,6 +104,8 @@ in
       set mail_check_stats
       set text_flowed
       set reflow_wrap=140
+      set alias_file=/mnt/persist/tejing/mail/neomutt_aliases
+      source /mnt/persist/tejing/mail/neomutt_aliases
       unset wait_key
       unmailboxes *
       set folder='${config.accounts.email.maildirBasePath}/${config.accounts.email.accounts.fastmail.maildir.path}'
