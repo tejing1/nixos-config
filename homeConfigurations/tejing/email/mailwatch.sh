@@ -44,6 +44,44 @@ update_count () {
     fi
 }
 
+read_changed () {
+    read -rd $'\0' -u $inotifyfd || return
+    newbox="${REPLY%/???/}"
+    for box in "${changed[@]}"; do
+        [ "$box" == "$newbox" ] && return
+    done
+    changed+=( "$newbox" )
+}
+
+sync_changed () {
+    local -A channel=(
+        [fastmail/Inbox]=fastmail:INBOX
+        [fastmail/Archive]=fastmail:Archive
+        [fastmail/Drafts]=fastmail:Drafts
+        [fastmail/Sent]=fastmail:Sent
+        [fastmail/Spam]=fastmail:Spam
+        [fastmail/Trash]=fastmail:Trash
+        [yahoo/Sent]=yahoo-other:Sent
+        [yahoo/Trash]=yahoo-other:Trash
+        [yahoo/Archive]=yahoo-other:Archive
+        [yahoo/Inbox]=yahoo-other:INBOX
+        [yahoo/Spam]=yahoo-spam
+        [yahoo/Drafts]=yahoo-drafts
+        [gmail/Drafts]=gmail-other:Drafts
+        [gmail/Spam]=gmail-other:Spam
+        [gmail/Trash]=gmail-other:Trash
+        [gmail/Inbox]=gmail-inbox
+        [gmail/Sent]=gmail-sent
+        [gmail/All]=gmail-all
+    )
+    local -a args=()
+    for box in "${changed[@]}"; do
+        args+=( "${channel[$box]}" )
+    done
+    @isync@/bin/mbsync -- "${args[@]}"
+    changed=()
+    update_count
+}
 
 cd /mnt/persist/tejing/mail/
 exec {tmpfd}< <(@findutils@/bin/find -type d -execdir test -d '{}/new' -a -d '{}/cur' -a -d '{}/tmp' ';' -print0 | @gnused@/bin/sed -ze 's/^\.\///')
@@ -53,15 +91,25 @@ unset tmpfd
 [ "${#maildirs}" -eq 0 ] && { echo "No maildirs found!" >&2; exit 1; }
 
 message_count=0
-exec {inotifyfd}< <(exec @inotify-tools@/bin/inotifywait -me create,move,delete,close_write --format '%w%0' --no-newline "${maildirs[@]/%//new/}")
+changed=( "${maildirs[@]}" )
+exec {inotifyfd}< <(exec @inotify-tools@/bin/inotifywait -me create,move,delete,close_write,attrib --format '%w%0' --no-newline "${maildirs[@]/%//new/}" "${maildirs[@]/%//cur/}")
 while true; do
     if read -rd $'\0' -u $inotifyfd -t 0; then
         # still some rapid-fire changes to read
-        read -rd $'\0' -u $inotifyfd
+        read_changed
+
     else
         # ran out of rapid-fire changes. update now
-        update_count
-        read -rd $'\0' -u $inotifyfd || break # most of the idle time happens here
-        sleep 0.1 # wait for multiple rapid-fire changes before updating
+        sync_changed
+
+        # don't reconnect too soon after syncing
+        sleep 5
+
+        # most of the idle time happens here
+        read_changed || break
+
+        # wait for multiple rapid-fire changes before updating
+        sleep 1
+
     fi
 done

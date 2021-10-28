@@ -15,7 +15,7 @@ let
     imapnotify = {
       enable = true;
       boxes = [ "Inbox" ];
-      onNotify = "${pkgs.isync}/bin/mbsync ${name}";
+      onNotify = "${pkgs.coreutils}/bin/touch -c -- ${config.accounts.email.maildirBasePath}/${name}/Inbox/new";
     };
     mbsync = {
       enable = true;
@@ -36,15 +36,15 @@ in
     address = "tejing@tejing.com";
     aliases = [ "tejing@fastmail.com" ];
     userName = "tejing@fastmail.com";
-    passwordCommand = "${pkgs.writeShellScript "get-fastmail-app-password" "${pkgs.pass}/bin/pass fastmail.com/app | ${pkgs.coreutils}/bin/head -n 1"}";
+    passwordCommand = "${my.scripts.mygetpass} fastmail.com/app";
   };
   accounts.email.accounts.yahoo = lib.recursiveUpdate (accountTemplate "yahoo") {
     address = "tejing2001@yahoo.com";
     imap.host = "imap.mail.yahoo.com";
     smtp.host = "smtp.mail.yahoo.com";
     userName = "tejing2001@yahoo.com";
-    passwordCommand = "${pkgs.writeShellScript "get-yahoo-app-password" "${pkgs.pass}/bin/pass yahoo.com/app | ${pkgs.coreutils}/bin/head -n 1"}";
-    mbsync.groups.yahoo.channels = builtins.mapAttrs (_: v:{extraConfig={Create="both";Remove="both";Expunge="both";};}//v) {
+    passwordCommand = "${my.scripts.mygetpass} yahoo.com/app";
+    mbsync.groups.yahoo.channels = builtins.mapAttrs (_: v:{extraConfig={Create="both";Remove="both";Expunge="both";SyncState="*";};}//v) {
       drafts = { nearPattern = "Drafts"; farPattern = "Draft";     };
       spam   = { nearPattern = "Spam";   farPattern = "Bulk Mail"; };
       other.patterns = [ "*" "!Draft" "!Drafts" "\"!Bulk Mail\"" "!Spam" ];
@@ -54,8 +54,8 @@ in
   accounts.email.accounts.gmail = lib.recursiveUpdate (accountTemplate "gmail") {
     address = "ttejing@gmail.com";
     userName = "ttejing@gmail.com";
-    passwordCommand = "${pkgs.writeShellScript "get-google-password" "${pkgs.pass}/bin/pass google.com | ${pkgs.coreutils}/bin/head -n 1"}";
-    mbsync.groups.gmail.channels = builtins.mapAttrs (_: v:{extraConfig={Create="both";Remove="both";Expunge="both";};}//v) {
+    passwordCommand = "${my.scripts.mygetpass} google.com";
+    mbsync.groups.gmail.channels = builtins.mapAttrs (_: v:{extraConfig={Create="both";Remove="both";Expunge="both";SyncState="*";};}//v) {
       inbox = { patterns = [ "INBOX" ]; };
       sent  = { nearPattern = "Sent"; farPattern = "[Gmail]/Sent Mail"; };
       all   = { nearPattern = "All";  farPattern = "[Gmail]/All Mail";  };
@@ -71,28 +71,25 @@ in
     Unit.After = [ "passphrases.service" ];
     Unit.BindsTo = [ "passphrases.service" ];
     Install.WantedBy = mkForce [ "passphrases.service" ];
-    Service.ExecStartPost = "${pkgs.isync}/bin/mbsync fastmail";
   };
   systemd.user.services.imapnotify-yahoo = {
     Unit.After = [ "passphrases.service" ];
     Unit.BindsTo = [ "passphrases.service" ];
     Install.WantedBy = mkForce [ "passphrases.service" ];
-    Service.ExecStartPost = "${pkgs.isync}/bin/mbsync yahoo";
   };
   systemd.user.services.imapnotify-gmail = {
     Unit.After = [ "passphrases.service" ];
     Unit.BindsTo = [ "passphrases.service" ];
     Install.WantedBy = mkForce [ "passphrases.service" ];
-    Service.ExecStartPost = "${pkgs.isync}/bin/mbsync gmail";
   };
-  systemd.user.services.mymailwatch = {
+  systemd.user.services.mailwatch = {
     Unit = {
-      Description = "Show desktop notifications for new mail in /mnt/persist/tejing/mail";
-      After = [ "graphical-session-pre.target" ];
-      PartOf = [ "graphical-session.target" ];
+      Description = "New mail notifier and mail syncer";
+      After = [ "passphrases.service" ];
+      BindsTo = [ "passphrases.service" ];
     };
-    Install.WantedBy = [ "graphical-session.target" ];
-    Service.ExecStart = my.scripts.mymailwatch;
+    Install.WantedBy = mkForce [ "passphrases.service" ];
+    Service.ExecStart = "${my.lib.templateScript pkgs "mailwatch.sh" ./mailwatch.sh}";
   };
   programs.mbsync.enable = true;
   programs.msmtp.enable = true;
