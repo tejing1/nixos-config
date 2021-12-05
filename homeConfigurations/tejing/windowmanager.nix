@@ -11,6 +11,9 @@
       PartOf = [ "graphical-session.target" ];
     };
     Install.WantedBy = [ "graphical-session.target" ];
+    # It's important that the screensaver fully locks before dpms engages... otherwise it doesn't seem to lock at all :-/
+    # since dpms is set to engage at 600 seconds, I have it set to notify at 530 seconds and lock at 530+60=590 seconds
+    Service.ExecStartPre = "-${pkgs.xorg.xset}/bin/xset s 530 60";
     Service.ExecStart = "${pkgs.xss-lock}/bin/xss-lock -n ${my.scripts.mylocknotify} -s \${XDG_SESSION_ID} -- ${my.scripts.mylockcmd}";
   };
   systemd.user.services.set-desktop-background = {
