@@ -17,7 +17,8 @@
       experimental-features = nix-command flakes
     '';
     # Make builds run with low priority so my system stays responsive
-    daemonNiceLevel = 19;
+    daemonCPUSchedPolicy = "idle";
+    daemonIOSchedClass = "idle";
     # Hard link identical files in the store automatically
     autoOptimiseStore = true;
     # automatically trigger garbage collection
