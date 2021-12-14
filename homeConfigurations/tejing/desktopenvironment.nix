@@ -24,15 +24,16 @@
   services.dunst.settings = {
     global = {
       font = "Iosevka Term 11";
-      markup = true;
-      plain_text = false;
+      markup = "full";
       format = "<b>%s</b>\\n%b";
       sort = false;
       alignment = "center";
-      bounce_freq = 0;
+      show_age_threshold = -1;
       word_wrap = true;
       hide_duplicate_count = true;
-      geometry = "384x5-0-0";
+      width = 384;
+      origin = "bottom-right";
+      offset = "0x0";
       history_length = 15;
       line_height = 3;
       padding = 6;
@@ -44,6 +45,7 @@
       max_icon_size = 80;
       frame_width = 3;
       frame_color = "#8EC07C";
+      fullscreen = "pushback";
     };
     urgency_low = {
       frame_color = "#3B7C87";
@@ -62,9 +64,6 @@
       foreground = "#B7472A";
       background = "#191311";
       timeout = 8;
-    };
-    fullscreen = {
-      fullscreen = "pushback";
     };
   };
 
