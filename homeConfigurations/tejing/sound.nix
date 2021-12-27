@@ -1,11 +1,13 @@
 { config, my, pkgs, ... }:
 
 {
-  home.packages = with pkgs; [
-    mpc_cli
-    ncmpc
-    pavucontrol
-  ];
+  home.packages = builtins.attrValues {
+    inherit (pkgs)
+      mpc_cli
+      ncmpc
+      pavucontrol
+    ;
+  };
   xsession.windowManager.i3.config.keybindings = let
     mod = config.xsession.windowManager.i3.config.modifier;
   in {

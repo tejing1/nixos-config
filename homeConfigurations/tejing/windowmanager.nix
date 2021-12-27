@@ -1,9 +1,11 @@
 { config, lib, my, pkgs, ... }:
 
 {
-  home.packages = with pkgs; [
-    xorg.xev # mainly useful for figuring out keybinds
-  ];
+  home.packages = builtins.attrValues {
+    inherit (pkgs.xorg)
+      xev # mainly useful for figuring out keybinds
+    ;
+  };
   systemd.user.services.xss-lock = {
     Unit = {
       Description = "xss-lock, session locker service";

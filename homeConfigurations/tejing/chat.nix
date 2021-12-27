@@ -1,9 +1,11 @@
 { my, pkgs, ... }:
 
 {
-  home.packages = with pkgs; [
-    weechat
-  ];
+  home.packages = builtins.attrValues {
+    inherit (pkgs)
+      weechat
+    ;
+  };
   xsession.windowManager.i3.config.startup = [
     { command = "${my.scripts.mylaunchterm} app weechat ${pkgs.weechat}/bin/weechat"; always = false; notification = false; }
     { command = "${my.scripts.mybrowser} --app=https://discord.com/app";always = false; notification = false; }

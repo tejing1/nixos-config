@@ -30,8 +30,10 @@
     };
   };
 
-  environment.systemPackages = with pkgs; [
-    # Needed to work with my flake
-    git git-crypt
-  ];
+  environment.systemPackages = builtins.attrValues {
+    inherit (pkgs)
+      # Needed to work with my flake
+      git git-crypt
+    ;
+  };
 }

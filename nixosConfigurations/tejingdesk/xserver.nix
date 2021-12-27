@@ -11,9 +11,19 @@
   services.xserver.videoDrivers = [ "nvidia" ];
 
   # Hardware-accelerated video decoding
-  hardware.opengl.extraPackages = with pkgs; [ vaapiVdpau libvdpau-va-gl ];
+  hardware.opengl.extraPackages = builtins.attrValues {
+    inherit (pkgs)
+      vaapiVdpau
+      libvdpau-va-gl
+    ;
+  };
 
   # 32-bit graphics libraries
   hardware.opengl.driSupport32Bit = true;
-  hardware.opengl.extraPackages32 = with pkgs.pkgsi686Linux; [ vaapiVdpau libvdpau-va-gl ];
+  hardware.opengl.extraPackages32 = builtins.attrValues {
+    inherit (pkgs.pkgsi686Linux)
+      vaapiVdpau
+      libvdpau-va-gl
+    ;
+  };
 }

@@ -1,23 +1,25 @@
 { config, pkgs, ... }:
 
 {
-  home.packages = with pkgs; [
-    htop
-    killall
-    mkpasswd
-    tmux
-    unzip
-    lshw
-    pciutils
-    wget
-    lastpass-cli
-    ranger
-    youtube-dl
-    mkvtoolnix
-    ffmpeg
-    nix-prefetch-github
-    jq jo gron yj # json/toml/yaml/hcl handling
-  ];
+  home.packages = builtins.attrValues {
+    inherit (pkgs)
+      htop
+      killall
+      mkpasswd
+      tmux
+      unzip
+      lshw
+      pciutils
+      wget
+      lastpass-cli
+      ranger
+      youtube-dl
+      mkvtoolnix
+      ffmpeg
+      nix-prefetch-github
+      jq jo gron yj # json/toml/yaml/hcl handling
+    ;
+  };
   programs.fish.enable = true;
   programs.dircolors.enableFishIntegration = true;
   programs.starship.enableFishIntegration = true;

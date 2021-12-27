@@ -1,11 +1,13 @@
 { config, my, pkgs, ... }:
 
 {
-  home.packages = with pkgs; [
-    my.pkgs.myterm
-    my.pkgs.mylaunchterm
-    my.pkgs.mylaunch
-  ];
+  home.packages = builtins.attrValues {
+    inherit (my.pkgs)
+      myterm
+      mylaunchterm
+      mylaunch
+    ;
+  };
   programs.urxvt.enable = true;
   programs.urxvt.fonts = [ "xft:DejaVuSansMono Nerd Font Mono:pixelsize=15" ];
   programs.urxvt.scroll.bar.enable = false;

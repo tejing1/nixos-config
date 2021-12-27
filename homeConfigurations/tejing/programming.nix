@@ -1,13 +1,15 @@
 { pkgs, ... }:
 
 {
-  home.packages = with pkgs; [
-    github-cli
-    coq
-    # perhaps this should be left to individual development environments?
-    ruby
-    ghc
-  ];
+  home.packages = builtins.attrValues {
+    inherit (pkgs)
+      github-cli
+      coq
+      # perhaps this should be left to individual development environments?
+      ruby
+      ghc
+    ;
+  };
   programs.git.enable = true;
   programs.git.userName = "Jeff Huffman";
   programs.git.userEmail = "tejing@tejing.com";

@@ -1,10 +1,12 @@
 { config, my, pkgs, ... }:
 
 {
-  home.packages = with pkgs; [
-    dunst
-    xclip
-  ];
+  home.packages = builtins.attrValues {
+    inherit (pkgs)
+      dunst
+      xclip
+    ;
+  };
 
   services.picom.enable = true;
   services.picom.backend = "xrender";

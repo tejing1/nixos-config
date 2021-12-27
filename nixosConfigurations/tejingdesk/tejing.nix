@@ -20,15 +20,24 @@
   programs.zsh.enable = true;
 
   # Set available fonts
-  fonts.fonts = with pkgs; [ corefonts nerdfonts ];
+  fonts.fonts = builtins.attrValues {
+    inherit (pkgs)
+      corefonts
+      nerdfonts
+    ;
+  };
 
   # List packages installed in system profile. To search by name, run:
   # $ nix-env -qaP | grep wget
-  environment.systemPackages = with pkgs; [
-    haskellPackages.git-annex
-    lsof # needed for git-annex webapp
-    rclone # used to connect git-annex to my phone's ftp server
-  ];
+  environment.systemPackages = builtins.attrValues {
+    inherit (pkgs.haskellPackages)
+      git-annex
+    ;
+    inherit (pkgs)
+      lsof # needed for git-annex webapp
+      rclone # used to connect git-annex to my phone's ftp server
+    ;
+  };
 
   # Enable touchpad support.
   # I actually just need this for the mouse acceleration settings that I'm used to.
