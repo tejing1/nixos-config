@@ -18,6 +18,7 @@
     "${mod}+F5" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ -5%";
     "${mod}+F6" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ +5%";
     "${mod}+F7" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-mute @DEFAULT_SINK@ toggle";
+    "${mod}+F8" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-source-mute @DEFAULT_SOURCE@ toggle";
   };
   xsession.windowManager.i3.config.assigns."9" = [{class = "^URxvt$";instance = "^ncmpc$";}];
   xsession.windowManager.i3.config.startup = [{ command = "${my.scripts.mylaunchterm} app ncmpc ${pkgs.ncmpc}/bin/ncmpc"; always = false; notification = false; }];
