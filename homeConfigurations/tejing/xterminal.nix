@@ -19,6 +19,7 @@
     depth = 32;
     internalBorder = 0;
     perl-ext-common = "default,-readline,-searchable-scrollback";
+    pointerBlank = true;
   };
   xsession.windowManager.i3.config.keybindings = let
     mod = config.xsession.windowManager.i3.config.modifier;
