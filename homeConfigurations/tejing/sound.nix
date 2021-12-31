@@ -5,7 +5,7 @@
     inherit (pkgs)
       mpc_cli
       ncmpc
-      pavucontrol
+      pulsemixer
     ;
   };
   xsession.windowManager.i3.config.keybindings = let
