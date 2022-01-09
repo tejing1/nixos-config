@@ -57,7 +57,7 @@
     df = "df -x tmpfs -x devtmpfs -x fuse.portal";
     # use sudo where appropriate
     lvm = "sudo lvm";
-    nixos-rebuild = "sudo nice -n 19 nixos-rebuild";
+    nixos-rebuild = "nixos-rebuild --use-remote-sudo";
     # colorize grep output
     grep = "grep --color=auto";
   };
