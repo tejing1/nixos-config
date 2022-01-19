@@ -13,9 +13,6 @@
       wget
       lastpass-cli
       ranger
-      youtube-dl
-      mkvtoolnix
-      ffmpeg
       nix-prefetch-github
       jq jo gron yj # json/toml/yaml/hcl handling
     ;
