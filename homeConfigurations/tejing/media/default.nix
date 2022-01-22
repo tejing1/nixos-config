@@ -3,7 +3,7 @@
 {
   home.packages = builtins.attrValues {
     inherit (pkgs)
-      fbreader
+      zathura
       feh
       youtube-dl
       mkvtoolnix
