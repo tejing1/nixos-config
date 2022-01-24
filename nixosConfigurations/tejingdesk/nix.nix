@@ -9,8 +9,10 @@
   nix = {
     # Use the new CLI and enable flakes
     extraOptions = ''
-      experimental-features = nix-command flakes
+      experimental-features = nix-command flakes ca-derivations ca-references
     '';
+    binaryCaches = [ "https://cache.ngi0.nixos.org/" ];
+    binaryCachePublicKeys = [ "cache.ngi0.nixos.org-1:KqH5CBLNSyX184S9BKZJo1LxrxJ9ltnY2uAs5c/f1MA=" ];
     # Make builds run with low priority so my system stays responsive
     daemonCPUSchedPolicy = "idle";
     daemonIOSchedClass = "idle";
