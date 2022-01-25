@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ nixosConfig, pkgs, ... }:
 
 let
   mySteam = pkgs.steam.override {
@@ -10,6 +10,11 @@ let
 
       ;
     };
+
+    # copied from nixos steam module
+    extraLibraries = pkgs:
+      let inherit (nixosConfig.hardware.opengl) package package32 extraPackages extraPackages32; in
+      if pkgs.hostPlatform.is64bit then [ package ] ++ extraPackages else [ package32 ] ++ extraPackages32;
   };
 in
 {
