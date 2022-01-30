@@ -14,7 +14,7 @@
       lastpass-cli
       ranger
       nix-prefetch-github
-      jq jo gron yj # json/toml/yaml/hcl handling
+      jq jc jo gron yj yq pup # json/toml/yaml/hcl/xml/html handling
     ;
   };
   programs.fish.enable = true;
