@@ -1,5 +1,6 @@
 { config, inputs, lib, my, ... }:
 let
+  inherit (builtins) toFile;
   inherit (inputs) nixpkgs home-manager self;
   inherit (lib) mkIf;
   inherit (lib.strings) escapeNixIdentifier;
@@ -10,6 +11,10 @@ in
   # of this flake.
   system.configurationRevision = mkIf (self ? rev) self.rev;
   nix.nixPath = [ "/etc/nix/path" ];
+
+  # Don't talk to the internet every time I use the registry
+  # I don't use it anyway
+  nix.extraOptions = "flake-registry = ${toFile "global-registry.json" ''{"flakes":[],"version":2}''}";
 
   # the version of nixpkgs used to build the system
   nix.registry.nixpkgs.flake = nixpkgs;
