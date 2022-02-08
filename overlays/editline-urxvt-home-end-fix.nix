@@ -1,5 +1,3 @@
-_inputs:
-
 _final: prev:
 {
   # make `nix repl` handle home and end keys in urxvt properly
