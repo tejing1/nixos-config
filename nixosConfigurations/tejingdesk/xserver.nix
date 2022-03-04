@@ -14,7 +14,6 @@
   hardware.opengl.extraPackages = builtins.attrValues {
     inherit (pkgs)
       vaapiVdpau
-      libvdpau-va-gl
     ;
   };
 
@@ -23,7 +22,6 @@
   hardware.opengl.extraPackages32 = builtins.attrValues {
     inherit (pkgs.pkgsi686Linux)
       vaapiVdpau
-      libvdpau-va-gl
     ;
   };
 }
