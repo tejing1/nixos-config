@@ -54,7 +54,7 @@ in
   accounts.email.accounts.gmail = lib.recursiveUpdate (accountTemplate "gmail") {
     address = "ttejing@gmail.com";
     userName = "ttejing@gmail.com";
-    passwordCommand = "${my.scripts.mygetpass} google.com";
+    passwordCommand = "${my.scripts.mygetpass} google.com/app";
     mbsync.groups.gmail.channels = builtins.mapAttrs (_: v:{extraConfig={Create="both";Remove="both";Expunge="both";SyncState="*";};}//v) {
       inbox = { patterns = [ "INBOX" ]; };
       sent  = { nearPattern = "Sent"; farPattern = "[Gmail]/Sent Mail"; };
