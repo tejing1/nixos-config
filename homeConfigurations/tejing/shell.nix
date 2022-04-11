@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, my, pkgs, ... }:
 
 {
   home.packages = builtins.attrValues {
@@ -15,6 +15,9 @@
       ranger
       nix-prefetch-github
       jq jc jo gron yj yq pup # json/toml/yaml/hcl/xml/html handling
+    ;
+    inherit (my.pkgs)
+      hred
     ;
   };
   programs.fish.enable = true;

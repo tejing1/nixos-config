@@ -4,7 +4,7 @@ let
   inherit (lib) filterAttrs hasSuffix mkOption types;
   inherit (my.lib) templateScriptBin;
 
-  scriptPkgs = mapAttrs (n: _: templateScriptBin (pkgs // my.pkgs) n (./. + "/${n}"))
+  scriptPkgs = mapAttrs (n: _: templateScriptBin (pkgs // my.scriptPkgs) n (./. + "/${n}"))
     (filterAttrs (n: v:
       v == "regular" &&
       ! hasSuffix ".nix" n
@@ -12,7 +12,7 @@ let
 in
 {
   options = {
-    my.pkgs = mkOption {
+    my.scriptPkgs = mkOption {
       type = types.unspecified;
       description = "My scripts (package form)";
       visible = false;
@@ -26,7 +26,7 @@ in
     };
   };
   config = {
-    my.pkgs = scriptPkgs;
+    my.scriptPkgs = scriptPkgs;
     my.scripts = mapAttrs (n: v: "${v}/bin/${n}") scriptPkgs;
   };
 }

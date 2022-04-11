@@ -2,7 +2,7 @@
 
 {
   home.packages = builtins.attrValues {
-    inherit (my.pkgs)
+    inherit (my.scriptPkgs)
       mybrowser
     ;
   };
