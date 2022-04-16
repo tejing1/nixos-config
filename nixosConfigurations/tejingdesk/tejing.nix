@@ -6,7 +6,7 @@
     uid = 1000;
     extraGroups = [ "wheel" "audio" ];
     shell = pkgs.zsh;
-    hashedPassword = builtins.readFile ./pwhash.secret;
+    hashedPassword = builtins.readFile ../../homeConfigurations/tejing/pwhash.secret;
   };
   home-manager.users.tejing.imports = [ inputs.self.homeConfigurations.tejing.configurationModule ];
 
