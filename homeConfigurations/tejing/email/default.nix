@@ -89,7 +89,16 @@ in
       BindsTo = [ "passphrases.service" ];
     };
     Install.WantedBy = mkForce [ "passphrases.service" ];
-    Service.ExecStart = "${my.lib.templateScript pkgs "mailwatch.sh" ./mailwatch.sh}";
+    Service.ExecStart = "${pkgs.resholveScript "mailwatch.sh" {
+      interpreter = "${pkgs.bash}/bin/bash";
+      inputs = builtins.attrValues {
+        inherit (pkgs) coreutils dunst isync findutils gnused inotify-tools;
+      };
+      execer = [
+        "cannot:${pkgs.isync}/bin/mbsync"
+        "cannot:${pkgs.dunst}/bin/dunstify"
+      ];
+    } (builtins.readFile ./mailwatch.sh)}";
   };
   programs.mbsync.enable = true;
   programs.msmtp.enable = true;

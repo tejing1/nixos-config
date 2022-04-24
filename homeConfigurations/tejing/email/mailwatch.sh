@@ -1,35 +1,33 @@
-#! @bash@/bin/bash
-
-PATH="@coreutils@/bin${PATH:+:$PATH}"
+#! /usr/bin/env bash
 
 kill_dunstify () {
-    if [ -n "$DUNSTIFY_PID" ]; then
-        kill "$DUNSTIFY_PID"
-        wait "$DUNSTIFY_PID" 2>/dev/null
+    if [ -n "$COPROC_PID" ]; then
+        kill "$COPROC_PID"
+        wait "$COPROC_PID" 2>/dev/null
     fi
 }
 
 replace_note () {
     kill_dunstify
     if [ -z "$notification_id" ]; then
-        coproc DUNSTIFY { exec @dunst@/bin/dunstify -pb "$@"; }
+        coproc dunstify -pb "$@"
     else
-        coproc DUNSTIFY { exec @dunst@/bin/dunstify -pbr "$notification_id" "$@"; }
+        coproc dunstify -pbr "$notification_id" "$@"
     fi
-    read -u "${DUNSTIFY[0]}" notification_id
+    read -u "${COPROC[0]}" notification_id
 }
 
 close_note () {
     kill_dunstify
     if [ -n "$notification_id" ]; then
-        @dunst@/bin/dunstify -C "$notification_id"
+        dunstify -C "$notification_id"
         unset notification_id
     fi
 }
 trap close_note EXIT
 
 alter_note () {
-    [ -n "$DUNSTIFY_PID" ] && replace_note "$@"
+    [ -n "$COPROC_PID" ] && replace_note "$@"
 }
 
 update_count () {
@@ -78,13 +76,13 @@ sync_changed () {
     for box in "${changed[@]}"; do
         args+=( "${channel[$box]}" )
     done
-    @isync@/bin/mbsync -- "${args[@]}"
+    mbsync -- "${args[@]}"
     changed=()
     update_count
 }
 
 cd /mnt/persist/tejing/mail/
-exec {tmpfd}< <(@findutils@/bin/find -type d -execdir test -d '{}/new' -a -d '{}/cur' -a -d '{}/tmp' ';' -print0 | @gnused@/bin/sed -ze 's/^\.\///')
+exec {tmpfd}< <(find -type d -execdir test -d '{}/new' -a -d '{}/cur' -a -d '{}/tmp' ';' -print0 | sed -ze 's/^\.\///')
 readarray -td $'\0' -u $tmpfd maildirs
 unset tmpfd
 
@@ -92,7 +90,7 @@ unset tmpfd
 
 message_count=0
 changed=( "${maildirs[@]}" )
-exec {inotifyfd}< <(exec @inotify-tools@/bin/inotifywait -me create,move,delete,close_write,attrib --format '%w%0' --no-newline "${maildirs[@]/%//new/}" "${maildirs[@]/%//cur/}")
+exec {inotifyfd}< <(exec inotifywait -me create,move,delete,close_write,attrib --format '%w%0' --no-newline "${maildirs[@]/%//new/}" "${maildirs[@]/%//cur/}")
 while true; do
     if read -rd $'\0' -u $inotifyfd -t 0; then
         # still some rapid-fire changes to read

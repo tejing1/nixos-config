@@ -9,7 +9,13 @@
       mkvtoolnix
       ffmpeg
     ;
-    yt-dlp = my.lib.templateScriptBin pkgs "yt-dlp" ./yt-dlp.sh;
+    yt-dlp = pkgs.resholveScriptBin "yt-dlp" {
+      interpreter = "${pkgs.bash}/bin/bash";
+      inputs = builtins.attrValues {
+        inherit (pkgs) coreutils curl sfeed jq nix;
+      };
+      execer = [ "cannot:${pkgs.nix}/bin/nix" ];
+    } (builtins.readFile ./yt-dlp);
   };
   programs.mpv.enable = true;
   programs.mpv.config = {
