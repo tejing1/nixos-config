@@ -1,3 +1,0 @@
-#! @bash@/bin/bash
-
-exec @feh@/bin/feh -F /mnt/persist/tejing/wallpapers/lockscreen.png

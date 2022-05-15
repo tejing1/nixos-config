@@ -19,7 +19,46 @@
     # It's important that the screensaver fully locks before dpms engages... otherwise it doesn't seem to lock at all :-/
     # since dpms is set to engage at 600 seconds, I have it set to notify at 530 seconds and lock at 530+60=590 seconds
     Service.ExecStartPre = "-${pkgs.xorg.xset}/bin/xset s 530 60";
-    Service.ExecStart = "${pkgs.xss-lock}/bin/xss-lock -n ${my.scripts.mylocknotify} -s \${XDG_SESSION_ID} -- ${my.scripts.mylockcmd}";
+    Service.ExecStart = "${pkgs.xss-lock}/bin/xss-lock -n ${
+      pkgs.resholveScript "mylocknotify" {
+        interpreter = "${pkgs.bash}/bin/bash";
+        inputs = builtins.attrValues {
+          inherit (pkgs) feh;
+        };
+        execer = [ "cannot:${pkgs.feh}/bin/feh" ];
+      } ''
+        exec feh -F /mnt/persist/tejing/wallpapers/lockscreen.png
+      ''
+    } -s \${XDG_SESSION_ID} -- ${
+      pkgs.resholveScript "mylockcmd" {
+        interpreter = "${pkgs.bash}/bin/bash";
+        inputs = builtins.attrValues {
+          inherit (pkgs) dbus dunst systemd i3lock;
+          inherit (pkgs.xorg) xset;
+        };
+        execer = [
+          "cannot:${pkgs.systemd}/bin/systemctl"
+          "cannot:${pkgs.dunst}/bin/dunstctl"
+        ];
+      } ''
+        fixsettings () {
+            PATH="${pkgs.dbus}/bin''${PATH:+:$PATH}" dunstctl set-paused false
+            xset dpms 0 0 600
+            systemctl --user start passphrases.service
+        }
+        cleanquit () {
+            fixsettings
+            kill %1
+        }
+        trap cleanquit HUP INT TERM
+        i3lock -n -i /mnt/persist/tejing/wallpapers/lockscreen.png &
+        PATH="${pkgs.dbus}/bin''${PATH:+:$PATH}" dunstctl set-paused true
+        xset dpms 0 0 15
+        systemctl --user stop passphrases.service
+        while ! wait;do true;done
+        fixsettings
+      ''
+    }";
   };
   systemd.user.services.set-desktop-background = {
     Unit = {
