@@ -116,7 +116,26 @@
 
       "${mod}+Shift+c" = "reload";
       "${mod}+Shift+r" = "restart";
-      "${mod}+Shift+e" = "exec --no-startup-id ${my.scripts.myi3exit}";
+      "${mod}+Shift+e" = "exec --no-startup-id ${
+        pkgs.resholveScript "myi3exit" {
+          interpreter = "${pkgs.bash}/bin/bash";
+          inputs = builtins.attrValues {
+            inherit (pkgs) coreutils i3;
+          };
+        } ''
+          dir="/run/user/$(id -u)/myi3exit"
+          stamp="$dir/stamp"
+          tempstamp="$dir/tempstamp"
+          mkdir -p "$dir"
+          touch -d '2 sec ago' "$tempstamp"
+          if test "$stamp" -nt "$tempstamp"; then
+              i3-msg exit
+          else
+              touch "$stamp"
+          fi
+          rm "$tempstamp"
+        ''
+      }";
       "${mod}+r" = "mode resize";
     };
     bars = [{
