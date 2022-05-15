@@ -89,7 +89,22 @@
     };
     keybindings = {
       "${mod}+Shift+q" = "kill";
-      "${mod}+d" = "exec --no-startup-id ${my.scripts.mydmenu_run}";
+      "${mod}+d" = "exec --no-startup-id ${
+        pkgs.resholveScript "mydmenu_run" {
+          interpreter = "${pkgs.bash}/bin/bash";
+          inputs = builtins.attrValues {
+            inherit (pkgs) coreutils dmenu;
+            mylaunch = my.scriptPkgs.mylaunch;
+          };
+          execer = [ "cannot:${my.scripts.mylaunch}" ]; # false, but doesn't matter in this case
+        } ''
+          function docmd {
+              exec mylaunch progs "$(basename $1)" "$@"
+          }
+
+          docmd $(dmenu_path | dmenu "$@")
+        ''
+      }";
       "${mod}+l" = "exec --no-startup-id ${pkgs.systemd}/bin/loginctl lock-session";
       "${mod}+o" = "exec --no-startup-id ${
         pkgs.resholveScript "myclipopen" {

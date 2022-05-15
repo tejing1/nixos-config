@@ -1,7 +1,0 @@
-#! @bash@/bin/bash
-
-function docmd {
-    exec @mylaunch@/bin/mylaunch progs "$(basename $1)" "$@"
-}
-
-docmd $(@dmenu@/bin/dmenu_path | @dmenu@/bin/dmenu "$@")
