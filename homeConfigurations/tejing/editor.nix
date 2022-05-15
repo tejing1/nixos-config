@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
   home.packages = builtins.attrValues {
@@ -15,7 +15,16 @@
     ;
   };
   services.emacs.enable = true;
-  home.sessionVariables.EDITOR = pkgs.emacs + "/bin/emacsclient -nw";
+
+  home.sessionVariables.EDITOR = "${config.xdg.dataHome}/myeditor";
+  xdg.dataFile."myeditor".source = pkgs.resholveScript "myeditor" {
+    interpreter = "${pkgs.bash}/bin/bash";
+    inputs = builtins.attrValues {
+      inherit (pkgs) emacs;
+    };
+    execer = [ "cannot:${pkgs.emacs}/bin/emacsclient" ];
+  } "exec emacsclient -t \"$@\"";
+
   xresources.properties = {
     "emacs.background" = "#000000";
     "emacs.foreground" = "#00FF00";
