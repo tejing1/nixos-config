@@ -52,7 +52,18 @@
       "${mod}+Shift+q" = "kill";
       "${mod}+d" = "exec --no-startup-id ${my.scripts.mydmenu_run}";
       "${mod}+l" = "exec --no-startup-id ${pkgs.systemd}/bin/loginctl lock-session";
-      "${mod}+o" = "exec --no-startup-id ${my.scripts.myclipopen}";
+      "${mod}+o" = "exec --no-startup-id ${
+        pkgs.resholveScript "myclipopen" {
+          interpreter = "${pkgs.bash}/bin/bash";
+          inputs = builtins.attrValues {
+            inherit (pkgs) xclip i3;
+            inherit (my.scriptPkgs) mybrowser;
+          };
+          execer = [ "cannot:${my.scripts.mybrowser}" ];
+        } ''
+          mybrowser -- "$(xclip -o -t UTF8_STRING -selection primary)" && i3-msg 'workspace number 12'
+        ''
+      }";
 
       "${mod}+Left" = "focus left";
       "${mod}+Down" = "focus down";

@@ -1,3 +1,0 @@
-#! @bash@/bin/bash
-
-@mybrowser@/bin/mybrowser -- "$(@xclip@/bin/xclip -o -t UTF8_STRING -selection primary)" && @i3@/bin/i3-msg 'workspace number 12'
