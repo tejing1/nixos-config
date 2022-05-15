@@ -57,9 +57,9 @@
           interpreter = "${pkgs.bash}/bin/bash";
           inputs = builtins.attrValues {
             inherit (pkgs) xclip i3;
-            inherit (my.scriptPkgs) mybrowser;
+            mybrowser = my.browser.pkg;
           };
-          execer = [ "cannot:${my.scripts.mybrowser}" ];
+          execer = [ "cannot:${my.browser}" ];
         } ''
           mybrowser -- "$(xclip -o -t UTF8_STRING -selection primary)" && i3-msg 'workspace number 12'
         ''

@@ -8,8 +8,8 @@
   };
   xsession.windowManager.i3.config.startup = [
     { command = "${my.scripts.mylaunchterm} app weechat ${pkgs.weechat}/bin/weechat"; always = false; notification = false; }
-    { command = "${my.scripts.mybrowser} --app=https://discord.com/app";always = false; notification = false; }
-    { command = "${my.scripts.mybrowser} --app=https://app.element.io";always = false; notification = false; }
+    { command = "${my.pwarun} https://discord.com/app";always = false; notification = false; }
+    { command = "${my.pwarun} https://app.element.io";always = false; notification = false; }
   ];
   xsession.windowManager.i3.config.window.commands = [{ criteria = { class = "^URxvt$"; instance = "^weechat$"; }; command = "layout tabbed"; }];
   xsession.windowManager.i3.config.assigns."11" = [
