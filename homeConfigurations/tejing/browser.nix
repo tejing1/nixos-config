@@ -1,4 +1,4 @@
-{ my, pkgs, ... }:
+{ config, my, pkgs, ... }:
 
 {
   home.packages = builtins.attrValues {
@@ -6,6 +6,10 @@
       mybrowser
     ;
   };
+
+  xdg.dataFile."mybrowser".source = my.scripts.mybrowser;
+  home.sessionVariables.BROWSER = "${config.xdg.dataHome}/mybrowser";
+
   xsession.windowManager.i3.config.assigns."12" = [{ class = "^Brave-browser$"; instance = "^brave-browser$"; }];
   xsession.windowManager.i3.config.startup = [{ command = my.scripts.mybrowser; always = false; notification = false; }];
 
