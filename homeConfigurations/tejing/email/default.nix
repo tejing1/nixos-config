@@ -36,14 +36,14 @@ in
     address = "tejing@tejing.com";
     aliases = [ "tejing@fastmail.com" ];
     userName = "tejing@fastmail.com";
-    passwordCommand = "${my.scripts.mygetpass} fastmail.com/app";
+    passwordCommand = "${my.getpass} fastmail.com/app";
   };
   accounts.email.accounts.yahoo = lib.recursiveUpdate (accountTemplate "yahoo") {
     address = "tejing2001@yahoo.com";
     imap.host = "imap.mail.yahoo.com";
     smtp.host = "smtp.mail.yahoo.com";
     userName = "tejing2001@yahoo.com";
-    passwordCommand = "${my.scripts.mygetpass} yahoo.com/app";
+    passwordCommand = "${my.getpass} yahoo.com/app";
     mbsync.groups.yahoo.channels = builtins.mapAttrs (_: v:{extraConfig={Create="both";Remove="both";Expunge="both";SyncState="*";};}//v) {
       drafts = { nearPattern = "Drafts"; farPattern = "Draft";     };
       spam   = { nearPattern = "Spam";   farPattern = "Bulk Mail"; };
@@ -54,7 +54,7 @@ in
   accounts.email.accounts.gmail = lib.recursiveUpdate (accountTemplate "gmail") {
     address = "ttejing@gmail.com";
     userName = "ttejing@gmail.com";
-    passwordCommand = "${my.scripts.mygetpass} google.com/app";
+    passwordCommand = "${my.getpass} google.com/app";
     mbsync.groups.gmail.channels = builtins.mapAttrs (_: v:{extraConfig={Create="both";Remove="both";Expunge="both";SyncState="*";};}//v) {
       inbox = { patterns = [ "INBOX" ]; };
       sent  = { nearPattern = "Sent"; farPattern = "[Gmail]/Sent Mail"; };

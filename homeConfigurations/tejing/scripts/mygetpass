@@ -1,3 +1,0 @@
-#! @bash@/bin/bash
-
-@pass@/bin/pass show -- "${@}" | @coreutils@/bin/head -n 1
