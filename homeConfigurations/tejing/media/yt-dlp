@@ -14,7 +14,7 @@ if [ $(stat -c '%Y' "$cachedir/version" 2>/dev/null || echo 0) -lt $((EPOCHSECON
 {version, sha256}:
 let
   inherit (builtins) getFlake split filter concatStringsSep fromJSON;
-  pkgs = (getFlake("pkgs")).legacyPackages.x86_64-linux;
+  pkgs = (getFlake("nixpkgs-unstable")).legacyPackages.x86_64-linux;
   lib = pkgs.lib;
   fixedversion = concatStringsSep "." (map (n: if fromJSON n < 10 then "0" + n else n) (filter (x: x!=[]) (split "\\." version)));
 in
