@@ -40,7 +40,7 @@ in
           inputs = [ my.browser.pkg ];
           execer = [ "cannot:${my.browser}" ];
     } ''
-      mybrowser --app="$1"
+      exec mybrowser --app="$1"
     '';
     my.pwarun.outPath = "${my.pwarun.pkg}/bin/mypwarun";
 
