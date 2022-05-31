@@ -1,5 +1,6 @@
 { config, lib, my, pkgs, ... }:
 let
+  inherit (builtins) attrValues;
   inherit (lib) mkForce;
 
   accountTemplate = name: {
@@ -89,16 +90,10 @@ in
       BindsTo = [ "passphrases.service" ];
     };
     Install.WantedBy = mkForce [ "passphrases.service" ];
-    Service.ExecStart = "${pkgs.resholveScript "mailwatch.sh" {
-      interpreter = "${pkgs.bash}/bin/bash";
-      inputs = builtins.attrValues {
-        inherit (pkgs) coreutils dunst isync findutils gnused inotify-tools;
-      };
-      execer = [
-        "cannot:${pkgs.isync}/bin/mbsync"
-        "cannot:${pkgs.dunst}/bin/dunstify"
-      ];
-    } (builtins.readFile ./mailwatch.sh)}";
+    Service.ExecStart = "${my.lib.mkShellScript "mailwatch.sh" {
+      inputs = attrValues { inherit (pkgs) coreutils dunst isync findutils gnused inotify-tools; };
+      execer = [ "cannot:${pkgs.isync}/bin/mbsync" "cannot:${pkgs.dunst}/bin/dunstify" ];
+    } ./mailwatch.sh}";
   };
   programs.mbsync.enable = true;
   programs.msmtp.enable = true;

@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, my, pkgs, ... }:
 
 {
   home.packages = builtins.attrValues {
@@ -17,11 +17,8 @@
   services.emacs.enable = true;
 
   home.sessionVariables.EDITOR = "${config.xdg.dataHome}/myeditor";
-  xdg.dataFile."myeditor".source = pkgs.resholveScript "myeditor" {
-    interpreter = "${pkgs.bash}/bin/bash";
-    inputs = builtins.attrValues {
-      inherit (pkgs) emacs;
-    };
+  xdg.dataFile."myeditor".source = my.lib.mkShellScript "myeditor" {
+    inputs = [ pkgs.emacs ];
     execer = [ "cannot:${pkgs.emacs}/bin/emacsclient" ];
   } "exec emacsclient -t \"$@\"";
 
