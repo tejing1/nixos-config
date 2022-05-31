@@ -97,7 +97,7 @@ in
       PASSWORD_STORE_SIGNING_KEY = "963D3AFB8AA4D693153C150046E96F6FF44F3D74";
       PASSWORD_STORE_X_SELECTION = "primary";
     };
-    my.getpass = pkgs.resholveScript "mygetpass" {
+    my.getpass = pkgs.resholve.writeScript "mygetpass" {
       interpreter = "${pkgs.bash}/bin/bash";
       inputs = builtins.attrValues {
         inherit (pkgs) coreutils pass;

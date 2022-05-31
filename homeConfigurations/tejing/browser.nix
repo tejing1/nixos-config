@@ -18,7 +18,7 @@ in
   };
 
   config = {
-    my.browser.pkg = pkgs.resholveScriptBin "mybrowser" {
+    my.browser.pkg = pkgs.resholve.writeScriptBin "mybrowser" {
       interpreter = "${pkgs.bash}/bin/bash";
       inputs = [ my.scriptPkgs.mylaunch ];
       execer = [ "cannot:${my.scripts.mylaunch}" ]; # false. working around it with antiquoting
@@ -35,7 +35,7 @@ in
     my.browser.link = "${config.xdg.dataHome}/mybrowser";
     home.sessionVariables.BROWSER = my.browser.link;
 
-    my.pwarun.pkg = pkgs.resholveScriptBin "mypwarun" {
+    my.pwarun.pkg = pkgs.resholve.writeScriptBin "mypwarun" {
           interpreter = "${pkgs.bash}/bin/bash";
           inputs = [ my.browser.pkg ];
           execer = [ "cannot:${my.browser}" ];
