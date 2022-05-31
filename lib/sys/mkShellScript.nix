@@ -1,7 +1,7 @@
 { lib, pkgs, ... }:
 let
   inherit (builtins) isList isAttrs isString isPath readFile;
-  inherit (pkgs) resholveScriptBin;
+  inherit (pkgs) resholve;
 
   mkShellScript = name: arg: content:
     assert isList arg || isAttrs arg;
@@ -13,7 +13,7 @@ let
       } // (if isAttrs arg then arg else {});
       finalContent = if isPath content then readFile content else content;
     in  rec {
-      pkg = resholveScriptBin name finalArg finalContent;
+      pkg = resholve.writeScriptBin name finalArg finalContent;
       outPath = "${pkg}/bin/${name}";
     };
 in mkShellScript

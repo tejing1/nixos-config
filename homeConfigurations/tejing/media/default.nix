@@ -9,7 +9,7 @@
       mkvtoolnix
       ffmpeg
     ;
-    yt-dlp = pkgs.resholveScriptBin "yt-dlp" {
+    yt-dlp = pkgs.resholve.writeScriptBin "yt-dlp" {
       interpreter = "${pkgs.bash}/bin/bash";
       inputs = builtins.attrValues {
         inherit (pkgs) coreutils curl sfeed jq nix;

@@ -39,8 +39,7 @@ genAttrs defaultSystems
             symlinkJoin
             writeReferencesToFile
             writeDirectReferencesToFile
-            resholveScript
-            resholveScriptBin
+            resholve
             bash
           ;
         };

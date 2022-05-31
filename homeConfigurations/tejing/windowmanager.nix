@@ -20,7 +20,7 @@
     # since dpms is set to engage at 600 seconds, I have it set to notify at 530 seconds and lock at 530+60=590 seconds
     Service.ExecStartPre = "-${pkgs.xorg.xset}/bin/xset s 530 60";
     Service.ExecStart = "${pkgs.xss-lock}/bin/xss-lock -n ${
-      pkgs.resholveScript "mylocknotify" {
+      pkgs.resholve.writeScript "mylocknotify" {
         interpreter = "${pkgs.bash}/bin/bash";
         inputs = builtins.attrValues {
           inherit (pkgs) feh;
@@ -30,7 +30,7 @@
         exec feh -F /mnt/persist/tejing/wallpapers/lockscreen.png
       ''
     } -s \${XDG_SESSION_ID} -- ${
-      pkgs.resholveScript "mylockcmd" {
+      pkgs.resholve.writeScript "mylockcmd" {
         interpreter = "${pkgs.bash}/bin/bash";
         inputs = builtins.attrValues {
           inherit (pkgs) dbus dunst systemd i3lock;
@@ -90,7 +90,7 @@
     keybindings = {
       "${mod}+Shift+q" = "kill";
       "${mod}+d" = "exec --no-startup-id ${
-        pkgs.resholveScript "mydmenu_run" {
+        pkgs.resholve.writeScript "mydmenu_run" {
           interpreter = "${pkgs.bash}/bin/bash";
           inputs = builtins.attrValues {
             inherit (pkgs) coreutils dmenu;
@@ -107,7 +107,7 @@
       }";
       "${mod}+l" = "exec --no-startup-id ${pkgs.systemd}/bin/loginctl lock-session";
       "${mod}+o" = "exec --no-startup-id ${
-        pkgs.resholveScript "myclipopen" {
+        pkgs.resholve.writeScript "myclipopen" {
           interpreter = "${pkgs.bash}/bin/bash";
           inputs = builtins.attrValues {
             inherit (pkgs) xclip i3;
@@ -171,7 +171,7 @@
       "${mod}+Shift+c" = "reload";
       "${mod}+Shift+r" = "restart";
       "${mod}+Shift+e" = "exec --no-startup-id ${
-        pkgs.resholveScript "myi3exit" {
+        pkgs.resholve.writeScript "myi3exit" {
           interpreter = "${pkgs.bash}/bin/bash";
           inputs = builtins.attrValues {
             inherit (pkgs) coreutils i3;
