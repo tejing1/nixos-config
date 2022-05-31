@@ -320,5 +320,5 @@
   gtk.iconTheme = { package = pkgs.arc-icon-theme; name = "Arc"; };
   gtk.theme = { package = pkgs.arc-theme; name = "Arc-Dark"; };
 
-  xsession.pointerCursor = { package = pkgs.numix-cursor-theme; name = "Numix-Cursor-Light"; size = 24; };
+  home.pointerCursor = { package = pkgs.numix-cursor-theme; name = "Numix-Cursor-Light"; size = 24; x11.enable = true; };
 }
