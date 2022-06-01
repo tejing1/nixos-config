@@ -24,4 +24,7 @@
       vaapiVdpau
     ;
   };
+
+  # workaround nixpkgs#169245
+  environment.sessionVariables.LIBVA_DRIVER_NAME = "vdpau";
 }
