@@ -116,6 +116,9 @@ in
       set folder='${config.accounts.email.maildirBasePath}/${config.accounts.email.accounts.gmail.maildir.path}'
       mailboxes +Inbox +Sent +Drafts +Spam +Trash +All
       set pgp_default_key=46E96F6FF44F3D74
+
+      # retain previous appearance
+      color normal white black
     '';
   };
   home.file.".mailcap".text = ''
