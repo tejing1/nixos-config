@@ -124,6 +124,9 @@ in
   home.file.".mailcap".text = ''
     text/html; ${pkgs.lynx}/bin/lynx %s; nametemplate=%s.html
     text/html; ${pkgs.lynx}/bin/lynx -dump -width ''${COLUMNS:-80} %s; nametemplate=%s.html; copiousoutput
+    image/png; ${pkgs.feh}/bin/feh %s; nametemplate=%s.png
+    image/jpeg; ${pkgs.feh}/bin/feh %s; nametemplate=%s.jpg
+    application/pdf; ${pkgs.zathura}/bin/zathura %s; nametemplate=%s.pdf
   '';
   xsession.windowManager.i3.config.assigns."10" = [{class = "^URxvt$";instance = "^neomutt$";}];
   xsession.windowManager.i3.config.window.commands = [{ criteria = { class = "^URxvt$"; instance = "^neomutt$"; }; command = "layout tabbed"; }];
