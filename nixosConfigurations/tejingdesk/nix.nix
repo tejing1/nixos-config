@@ -4,14 +4,9 @@
   nixpkgs.overlays = [
     # make `nix repl` handle home and end keys in urxvt properly
     my.overlays.editline-urxvt-home-end-fix
-
-    # prevent nixos-option from pointlessly pulling in stable nix
-    (_final: _prev: {nix = config.nix.package;})
   ];
 
   nix = {
-    # Use a version of nix with flake support
-    package = pkgs.nixFlakes;
     # Use the new CLI and enable flakes
     extraOptions = ''
       experimental-features = nix-command flakes
