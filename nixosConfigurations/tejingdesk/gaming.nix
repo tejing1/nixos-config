@@ -18,6 +18,6 @@ let
   };
 in
 {
-  nixpkgs.overlays = [ steam-pr-overlay ];
+  nixpkgs.overlays = [ steam-pr-overlay my.overlays.steam-fix-screensaver ];
   programs.steam.enable = true;
 }
