@@ -1,5 +1,7 @@
 { config, lib, my, pkgs, ... }:
-
+let
+  inherit (my.lib) mkShellScript;
+in
 {
   home.packages = builtins.attrValues {
     inherit (pkgs)
@@ -20,8 +22,7 @@
     # since dpms is set to engage at 600 seconds, I have it set to notify at 530 seconds and lock at 530+60=590 seconds
     Service.ExecStartPre = "-${pkgs.xorg.xset}/bin/xset s 530 60";
     Service.ExecStart = "${pkgs.xss-lock}/bin/xss-lock -n ${
-      pkgs.resholve.writeScript "mylocknotify" {
-        interpreter = "${pkgs.bash}/bin/bash";
+      mkShellScript "mylocknotify" {
         inputs = builtins.attrValues {
           inherit (pkgs) feh;
         };
@@ -30,8 +31,7 @@
         exec feh -F /mnt/persist/tejing/wallpapers/lockscreen.png
       ''
     } -s \${XDG_SESSION_ID} -- ${
-      pkgs.resholve.writeScript "mylockcmd" {
-        interpreter = "${pkgs.bash}/bin/bash";
+      mkShellScript "mylockcmd" {
         inputs = builtins.attrValues {
           inherit (pkgs) dbus dunst systemd i3lock;
           inherit (pkgs.xorg) xset;
@@ -90,8 +90,7 @@
     keybindings = {
       "${mod}+Shift+q" = "kill";
       "${mod}+d" = "exec --no-startup-id ${
-        pkgs.resholve.writeScript "mydmenu_run" {
-          interpreter = "${pkgs.bash}/bin/bash";
+        mkShellScript "mydmenu_run" {
           inputs = builtins.attrValues {
             inherit (pkgs) coreutils dmenu;
             mylaunch = my.launch.pkg;
@@ -107,8 +106,7 @@
       }";
       "${mod}+l" = "exec --no-startup-id ${pkgs.systemd}/bin/loginctl lock-session";
       "${mod}+o" = "exec --no-startup-id ${
-        pkgs.resholve.writeScript "myclipopen" {
-          interpreter = "${pkgs.bash}/bin/bash";
+        mkShellScript "myclipopen" {
           inputs = builtins.attrValues {
             inherit (pkgs) xclip i3;
             mybrowser = my.browser.pkg;
@@ -171,12 +169,7 @@
       "${mod}+Shift+c" = "reload";
       "${mod}+Shift+r" = "restart";
       "${mod}+Shift+e" = "exec --no-startup-id ${
-        pkgs.resholve.writeScript "myi3exit" {
-          interpreter = "${pkgs.bash}/bin/bash";
-          inputs = builtins.attrValues {
-            inherit (pkgs) coreutils i3;
-          };
-        } ''
+        mkShellScript "myi3exit" [ pkgs.i3 ] ''
           dir="/run/user/$(id -u)/myi3exit"
           stamp="$dir/stamp"
           tempstamp="$dir/tempstamp"

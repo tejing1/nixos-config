@@ -1,6 +1,7 @@
 { config, lib, my, pkgs, ... }:
 let
   inherit (lib) mkOption types;
+  inherit (my.lib) mkShellScript;
 in
 {
   options.my.browser = mkOption {
@@ -18,8 +19,7 @@ in
   };
 
   config = {
-    my.browser.pkg = pkgs.resholve.writeScriptBin "mybrowser" {
-      interpreter = "${pkgs.bash}/bin/bash";
+    my.browser = mkShellScript "mybrowser" {
       inputs = [ my.launch.pkg ];
       execer = [ "cannot:${my.launch}" ]; # false. working around it with antiquoting
     } ''
@@ -29,20 +29,15 @@ in
       inherit (my.browser) pkg;
     };
 
-    my.browser.outPath = "${my.browser.pkg}/bin/mybrowser";
-
     xdg.dataFile."mybrowser".source = my.browser;
-    my.browser.link = "${config.xdg.dataHome}/mybrowser";
-    home.sessionVariables.BROWSER = my.browser.link;
+    home.sessionVariables.BROWSER = "${config.xdg.dataHome}/mybrowser";
 
-    my.pwarun.pkg = pkgs.resholve.writeScriptBin "mypwarun" {
-          interpreter = "${pkgs.bash}/bin/bash";
+    my.pwarun = mkShellScript "mypwarun" {
           inputs = [ my.browser.pkg ];
           execer = [ "cannot:${my.browser}" ];
     } ''
       exec mybrowser --app="$1"
     '';
-    my.pwarun.outPath = "${my.pwarun.pkg}/bin/mypwarun";
 
     xsession.windowManager.i3.config.assigns."12" = [{ class = "^Brave-browser$"; instance = "^brave-browser$"; }];
     xsession.windowManager.i3.config.startup = [{ command = "${my.browser}"; always = false; notification = false; }];

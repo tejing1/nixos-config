@@ -1,4 +1,4 @@
-{ lib, pkgs, ... }:
+{ lib, my, pkgs, ... }:
 let
   inherit (lib) mkBefore mkAfter mkOption types;
   m = 60; h = 60*m; d = 24*h; y = 365*d;
@@ -97,8 +97,7 @@ in
       PASSWORD_STORE_SIGNING_KEY = "963D3AFB8AA4D693153C150046E96F6FF44F3D74";
       PASSWORD_STORE_X_SELECTION = "primary";
     };
-    my.getpass = pkgs.resholve.writeScript "mygetpass" {
-      interpreter = "${pkgs.bash}/bin/bash";
+    my.getpass = my.lib.mkShellScript "mygetpass" {
       inputs = builtins.attrValues {
         inherit (pkgs) coreutils pass;
       };

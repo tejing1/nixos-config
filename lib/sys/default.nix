@@ -41,6 +41,7 @@ genAttrs defaultSystems
             writeDirectReferencesToFile
             resholve
             bash
+            coreutils
           ;
         };
 
