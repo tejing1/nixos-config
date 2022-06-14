@@ -1,6 +1,7 @@
 { lib, my, pkgs, ... }:
 let
   inherit (lib) mkBefore mkAfter mkOption types;
+  inherit (my.lib) mkShellScript;
   m = 60; h = 60*m; d = 24*h; y = 365*d;
 in
 {
@@ -56,21 +57,36 @@ in
       Service = {
         Type = "oneshot";
         RemainAfterExit = true;
-        ExecStart = "${pkgs.writeShellScript "passphrases-start" ''
-          ${pkgs.gnupg}/bin/gpg-connect-agent 'keyinfo --list' /bye |
-          ${pkgs.gawk}/bin/awk '/^S / { if ($7 == 1 && $10 == "-") print $3 }' |
-          ${pkgs.coreutils}/bin/sort |
-          ${pkgs.diffutils}/bin/diff -q - ~/.pam-gnupg
+        ExecStart = "${mkShellScript "passphrases-start" {
+          inputs = builtins.attrValues {
+            inherit (pkgs) coreutils gnupg gawk diffutils;
+          };
+          execer = [
+            "cannot:${pkgs.gnupg}/bin/gpg-connect-agent"
+            "cannot:${pkgs.diffutils}/bin/diff"
+          ];
+        } ''
+          gpg-connect-agent 'keyinfo --list' /bye |
+          awk '/^S / { if ($7 == 1 && $10 == "-") print $3 }' |
+          sort |
+          diff -q - ~/.pam-gnupg
         ''}";
-        ExecStop = "${pkgs.writeShellScript "passphrases-stop" ''
+        ExecStop = "${mkShellScript "passphrases-stop" {
+          inputs = builtins.attrValues {
+            inherit (pkgs) gnupg;
+          };
+          execer = [
+            "cannot:${pkgs.gnupg}/bin/gpg-connect-agent"
+          ];
+        } ''
           exec < ~/.pam-gnupg
           while read keygrip; do
             cmd="clear_passphrase $keygrip"
-            echo -n "$cmd: ";${pkgs.gnupg}/bin/gpg-connect-agent "$cmd" /bye
+            echo -n "$cmd: ";gpg-connect-agent "$cmd" /bye
             cmd="clear_passphrase --mode=normal $keygrip"
-            echo -n "$cmd: ";${pkgs.gnupg}/bin/gpg-connect-agent "$cmd" /bye
+            echo -n "$cmd: ";gpg-connect-agent "$cmd" /bye
             cmd="clear_passphrase --mode=ssh $keygrip"
-            echo -n "$cmd: ";${pkgs.gnupg}/bin/gpg-connect-agent "$cmd" /bye
+            echo -n "$cmd: ";gpg-connect-agent "$cmd" /bye
           done
         ''}";
       };
@@ -97,7 +113,7 @@ in
       PASSWORD_STORE_SIGNING_KEY = "963D3AFB8AA4D693153C150046E96F6FF44F3D74";
       PASSWORD_STORE_X_SELECTION = "primary";
     };
-    my.getpass = my.lib.mkShellScript "mygetpass" {
+    my.getpass = mkShellScript "mygetpass" {
       inputs = builtins.attrValues {
         inherit (pkgs) coreutils pass;
       };
