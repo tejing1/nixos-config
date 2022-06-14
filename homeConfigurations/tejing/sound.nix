@@ -28,7 +28,7 @@
     "${mod}+F8" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-source-mute @DEFAULT_SOURCE@ toggle";
   };
   xsession.windowManager.i3.config.assigns."9" = [{class = "^URxvt$";instance = "^ncmpc$";}];
-  xsession.windowManager.i3.config.startup = [{ command = "${my.scripts.mylaunchterm} app ncmpc ${pkgs.ncmpc}/bin/ncmpc"; always = false; notification = false; }];
+  xsession.windowManager.i3.config.startup = [{ command = "${my.launch.term} app ncmpc ${pkgs.ncmpc}/bin/ncmpc"; always = false; notification = false; }];
 
   services.mpd.enable = true;
   services.mpd.network.startWhenNeeded = true;

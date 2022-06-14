@@ -74,7 +74,7 @@
   xsession.enable = true;
   xsession.numlock.enable = true;
   xsession.windowManager.i3.enable = true;
-  xsession.windowManager.command = lib.mkForce "${my.scripts.mylaunch} app i3 ${config.xsession.windowManager.i3.package}/bin/i3";
+  xsession.windowManager.command = lib.mkForce "${my.launch} app i3 ${config.xsession.windowManager.i3.package}/bin/i3";
   xsession.windowManager.i3.config = let mod = "Mod4"; in {
     modifier = mod;
     defaultWorkspace = "workspace number 1";
@@ -94,9 +94,9 @@
           interpreter = "${pkgs.bash}/bin/bash";
           inputs = builtins.attrValues {
             inherit (pkgs) coreutils dmenu;
-            mylaunch = my.scriptPkgs.mylaunch;
+            mylaunch = my.launch.pkg;
           };
-          execer = [ "cannot:${my.scripts.mylaunch}" ]; # false, but doesn't matter in this case
+          execer = [ "cannot:${my.launch}" ]; # false, but doesn't matter in this case
         } ''
           function docmd {
               exec mylaunch progs "$(basename $1)" "$@"

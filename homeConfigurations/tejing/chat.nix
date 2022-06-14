@@ -7,7 +7,7 @@
     ;
   };
   xsession.windowManager.i3.config.startup = [
-    { command = "${my.scripts.mylaunchterm} app weechat ${pkgs.weechat}/bin/weechat"; always = false; notification = false; }
+    { command = "${my.launch.term} app weechat ${pkgs.weechat}/bin/weechat"; always = false; notification = false; }
     { command = "${my.pwarun} https://discord.com/app";always = false; notification = false; }
     { command = "${my.pwarun} https://app.element.io";always = false; notification = false; }
   ];

@@ -20,8 +20,8 @@ in
   config = {
     my.browser.pkg = pkgs.resholve.writeScriptBin "mybrowser" {
       interpreter = "${pkgs.bash}/bin/bash";
-      inputs = [ my.scriptPkgs.mylaunch ];
-      execer = [ "cannot:${my.scripts.mylaunch}" ]; # false. working around it with antiquoting
+      inputs = [ my.launch.pkg ];
+      execer = [ "cannot:${my.launch}" ]; # false. working around it with antiquoting
     } ''
       exec mylaunch app brave ${pkgs.brave}/bin/brave --no-first-run "$@"
     '';

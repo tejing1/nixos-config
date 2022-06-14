@@ -1,8 +1,0 @@
-#! @bash@/bin/bash
-
-name="$2"
-
-env SHLVL= @rxvt-unicode@/bin/urxvtc -name "$name" -title "$name" -e @mylaunch@/bin/mylaunch "${@}"
-if [ "$?" -eq 2 ]; then
-    exec env SHLVL= @rxvt-unicode@/bin/urxvt -name "$name" -title "$name" -e @mylaunch@/bin/mylaunch "${@}"
-fi

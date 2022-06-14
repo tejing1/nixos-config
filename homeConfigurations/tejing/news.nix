@@ -8,5 +8,5 @@
     ;
   };
   xsession.windowManager.i3.config.assigns."10" = [{class = "^URxvt$";instance = "^newsboat$";}];
-  xsession.windowManager.i3.config.startup = [{ command = "${my.scripts.mylaunchterm} app newsboat ${pkgs.newsboat}/bin/newsboat"; always = false; notification = false; }];
+  xsession.windowManager.i3.config.startup = [{ command = "${my.launch.term} app newsboat ${pkgs.newsboat}/bin/newsboat"; always = false; notification = false; }];
 }

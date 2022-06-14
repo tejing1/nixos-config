@@ -21,7 +21,6 @@ in
       env = "${pkgs.coreutils}/bin/env";
       urxvtc = "${pkgs.rxvt-unicode}/bin/urxvtc";
       urxvt = "${pkgs.rxvt-unicode}/bin/urxvt";
-      mylaunch = "${my.scripts.mylaunch}";
     in pkgs.writeShellScriptBin "myterm" ''
       cd ~/data 2>/dev/null || cd ~ || cd /
       name="$(${basename} "$SHELL")"
@@ -32,18 +31,16 @@ in
       else
           cmd="$SHELL"
       fi
-      ${env} SHLVL= ${urxvtc} -name "$name" -title "$name" -e ${mylaunch} shells "$name" "$cmd"
+      ${env} SHLVL= ${urxvtc} -name "$name" -title "$name" -e ${my.launch} shells "$name" "$cmd"
       if [ "$?" -eq 2 ]; then
-          exec ${env} SHLVL= ${urxvt} -name "$name" -title "$name" -e ${mylaunch} shells "$name" "$cmd"
+          exec ${env} SHLVL= ${urxvt} -name "$name" -title "$name" -e ${my.launch} shells "$name" "$cmd"
       fi
     '';
     my.term.outPath = "${my.term.pkg}/bin/myterm";
     home.packages = attrValues {
-      inherit (my.scriptPkgs)
-        mylaunchterm
-        mylaunch
-      ;
-      inherit (my.term) pkg;
+      mylaunchterm = my.launch.term.pkg;
+      mylaunch = my.launch.pkg;
+      myterm = my.term.pkg;
     };
     programs.urxvt.enable = true;
     programs.urxvt.fonts = [ "xft:DejaVuSansMono Nerd Font Mono:pixelsize=15" ];
