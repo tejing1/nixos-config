@@ -1,4 +1,4 @@
-{ config, inputs, lib, my, ... }:
+{ config, inputs, inputSpecs, lib, my, ... }:
 let
   inherit (builtins) toFile;
   inherit (inputs) nixpkgs home-manager self;
@@ -37,7 +37,7 @@ in
   environment.etc."nix/path/config".source = "/mnt/persist/tejing/flake";
 
   # the (runtime) current version of nixos stable
-  nix.registry.nixpkgs-stable.to = { type = "github"; owner = "NixOS"; repo = "nixpkgs"; ref = "nixos-22.05"; };
+  nix.registry.nixpkgs-stable.to = inputSpecs.nixpkgs;
 
   # the (runtime) current version of nixos unstable
   nix.registry.nixpkgs-unstable.to = { type = "github"; owner = "NixOS"; repo = "nixpkgs"; ref = "nixos-unstable"; };
