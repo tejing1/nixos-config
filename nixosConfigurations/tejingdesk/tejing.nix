@@ -1,4 +1,8 @@
-{ inputs, pkgs, ... }:
+{ config, inputs, lib, my, pkgs, ... }:
+let
+  inherit (lib) mkIf;
+  inherit (my.lib) readSecret;
+in
 
 {
   users.users.tejing = {
@@ -6,7 +10,8 @@
     uid = 1000;
     extraGroups = [ "wheel" "audio" ];
     shell = pkgs.zsh;
-    hashedPassword = builtins.readFile ../../homeConfigurations/tejing/pwhash.secret;
+    password = mkIf (config.users.users.tejing.hashedPassword == null) "password"; # Fallback for locked build
+    hashedPassword = readSecret null ../../homeConfigurations/tejing/pwhash.secret;
   };
   home-manager.users.tejing.imports = [ inputs.self.homeConfigurations.tejing.configurationModule ];
 
