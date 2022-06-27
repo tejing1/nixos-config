@@ -4,6 +4,7 @@
   home.packages = builtins.attrValues {
     inherit (pkgs)
       github-cli
+      git-absorb
       coq
       # perhaps this should be left to individual development environments?
       ruby
