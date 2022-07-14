@@ -15,6 +15,7 @@
       ranger
       nix-prefetch-github
       jq jc jo gron yj yq pup # json/toml/yaml/hcl/xml/html handling
+      bc # also includes dc
     ;
     inherit (my.pkgs)
       hred
