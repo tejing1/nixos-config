@@ -8,7 +8,7 @@ in
   users.users.tejing = {
     isNormalUser = true;
     uid = 1000;
-    extraGroups = [ "wheel" "audio" ];
+    extraGroups = [ "wheel" "audio" "deluge" ];
     shell = pkgs.zsh;
     password = mkIf (config.users.users.tejing.hashedPassword == null) "password"; # Fallback for locked build
     hashedPassword = readSecret null ../../homeConfigurations/tejing/pwhash.secret;
