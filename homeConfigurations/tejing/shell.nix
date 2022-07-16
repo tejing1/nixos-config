@@ -74,6 +74,12 @@
   programs.zsh.shellAliases = config.programs.fish.shellAliases;
   programs.zsh.enableAutosuggestions = true;
   programs.zsh.defaultKeymap = "emacs";
+  programs.zsh.dirHashes = {
+    nixpkgs = "/etc/nix/path/nixpkgs";
+    home-manager = "/etc/nix/path/home-manager";
+    share = "/mnt/persist/share";
+    flake = "/mnt/persist/tejing/flake";
+  };
   programs.zsh.loginExtra = ''
     cd ~/data
   '';
