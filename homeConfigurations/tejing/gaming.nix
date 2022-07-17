@@ -1,9 +1,12 @@
-{ nixosConfig, pkgs, ... }:
+{ my, nixosConfig, pkgs, ... }:
 
 {
   home.packages = builtins.attrValues {
     inherit (pkgs)
       lutris
+    ;
+    inherit (my.pkgs)
+      starsector
     ;
   };
 
