@@ -1,4 +1,4 @@
-{ inputs, lib, my, ... }:
+{ inputs, lib, pkgs, ... }:
 let
   inherit (lib) mkOption types;
 in
@@ -9,5 +9,5 @@ in
     visible = false;
     readOnly = true;
   };
-  config.my.pkgs = inputs.self.packages."${my.system}";
+  config.my.pkgs = inputs.self.packagesFunc pkgs;
 }
