@@ -15,8 +15,8 @@
     torrentfiles_location = "/mnt/persist/torrents/torrentfiles";
     stop_seed_at_ratio = true;
     stop_seed_ratio = 2.0;
-    max_download_speed = 174541.0;
-    max_upload_speed = 5791.0;
+    max_download_speed = 21817.625;
+    max_upload_speed = 723.875;
   };
 
   # No remote connections, and it's not a high-security service... good enough.
