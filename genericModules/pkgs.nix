@@ -5,7 +5,7 @@ in
 {
   options.my.pkgs = mkOption {
     type = types.unspecified;
-    description = "Packages from self.packages";
+    description = "Packages from self";
     visible = false;
     readOnly = true;
   };
