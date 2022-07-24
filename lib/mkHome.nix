@@ -13,4 +13,5 @@ homeManagerConfiguration {
   inherit system username;
   homeDirectory = "/home/${username}";
   configuration = configurationModule;
+  extraSpecialArgs = { inherit inputs; };
 }

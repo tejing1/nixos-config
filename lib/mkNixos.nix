@@ -1,4 +1,4 @@
-{ lib, my, ... }:
+{ inputs, lib, my, ... }:
 let
   inherit (lib) nixosSystem;
   inherit (my.lib) mkDefaultNixosModule;
@@ -12,4 +12,5 @@ in
 nixosSystem {
   inherit system;
   modules = [ configurationModule ];
+  specialArgs = { inherit inputs; };
 }
