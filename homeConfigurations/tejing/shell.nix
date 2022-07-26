@@ -16,6 +16,7 @@
       nix-prefetch-github
       jq jc jo gron yj yq pup # json/toml/yaml/hcl/xml/html handling
       bc # also includes dc
+      moreutils # sponge & more
     ;
     inherit (my.pkgs)
       hred
