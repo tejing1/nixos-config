@@ -101,6 +101,9 @@
     bindkey "$(echoti kend)" end-of-line
     bindkey "$(echoti khome)" beginning-of-line
     bindkey "$(echoti kdch1)" delete-char
+    bindkey '^[Oc' forward-word
+    bindkey '^[Od' backward-word
+    bindkey '^H' backward-kill-word
     function _nix() {
         local ifs_bk="$IFS"
         local input=("''${(Q)words[@]}")
