@@ -1,10 +1,9 @@
-{ config, lib, my, pkgs, ... }:
+{ my, pkgs, ... }:
 
 {
   home.packages = builtins.attrValues {
     inherit (pkgs)
       newsboat
-      sfeed
     ;
   };
   xsession.windowManager.i3.config.assigns."10" = [{class = "^URxvt$";instance = "^newsboat$";}];
