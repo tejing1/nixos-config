@@ -17,6 +17,7 @@
       jq jc jo gron yj yq pup # json/toml/yaml/hcl/xml/html handling
       bc # also includes dc
       moreutils # sponge & more
+      man-pages # linux kernel apis and other development man pages
     ;
     inherit (my.pkgs)
       hred
