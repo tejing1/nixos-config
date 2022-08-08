@@ -31,13 +31,13 @@ let
         sha512 = "nQyp0o1/mNdbTO1PO6kHkwSrmgZ0MT/jCCpNiwbUjGoRN4dlBhqJtoQuCnEOKzgTVwg0ZWiCoQy6SxMebQVh8A==";
       };
     };
-    "acorn-8.7.1" = {
+    "acorn-8.8.0" = {
       name = "acorn";
       packageName = "acorn";
-      version = "8.7.1";
+      version = "8.8.0";
       src = fetchurl {
-        url = "https://registry.npmjs.org/acorn/-/acorn-8.7.1.tgz";
-        sha512 = "Xx54uLJQZ19lKygFXOWsscKUbsBZW0CPykPhVQdhIeIwrbPmJzqeASDInc8nKBnp/JT6igTs82qPXz069H8I/A==";
+        url = "https://registry.npmjs.org/acorn/-/acorn-8.8.0.tgz";
+        sha512 = "QOxyigPVrpZ2GXT+PFyZTl6TtOFc5egxHIP9IlQ+RbupQuX4RkT/Bee4/kQuC02Xkzg84JcT7oLYtDIQxp+v7w==";
       };
     };
     "acorn-globals-6.0.0" = {
@@ -328,22 +328,22 @@ let
         sha512 = "sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==";
       };
     };
-    "nwsapi-2.2.0" = {
+    "nwsapi-2.2.1" = {
       name = "nwsapi";
       packageName = "nwsapi";
-      version = "2.2.0";
+      version = "2.2.1";
       src = fetchurl {
-        url = "https://registry.npmjs.org/nwsapi/-/nwsapi-2.2.0.tgz";
-        sha512 = "h2AatdwYH+JHiZpv7pt/gSX1XoRGb7L/qSIeuqA6GwYoF9w1vP1cw42TO0aI2pNyshRK5893hNSl+1//vHK7hQ==";
+        url = "https://registry.npmjs.org/nwsapi/-/nwsapi-2.2.1.tgz";
+        sha512 = "JYOWTeFoS0Z93587vRJgASD5Ut11fYl5NyihP3KrYBvMe1FRRs6RN7m20SA/16GM4P6hTnZjT+UmDOt38UeXNg==";
       };
     };
-    "opsh-0.1.1" = {
+    "opsh-1.0.0" = {
       name = "opsh";
       packageName = "opsh";
-      version = "0.1.1";
+      version = "1.0.0";
       src = fetchurl {
-        url = "https://registry.npmjs.org/opsh/-/opsh-0.1.1.tgz";
-        sha512 = "QgY/o2PTLXH1tmitBnz+dmzq4jwSOi5hd1QZoPNCI/8xgYcB5OaC+Zf8Cn4Pn9qtmzQb0CKYaYqwB7Be9XgEnA==";
+        url = "https://registry.npmjs.org/opsh/-/opsh-1.0.0.tgz";
+        sha512 = "MIypaYwuwQZswS5f5pikTeA0/V/R/f9EdS73/TS0i/3sNWVuzFgGY7KgxrypWo1Ew5KchYR0SccvlJ/amoqDxg==";
       };
     };
     "optionator-0.8.3" = {
@@ -370,16 +370,16 @@ let
       version = "1.1.2";
       src = fetchurl {
         url = "https://registry.npmjs.org/prelude-ls/-/prelude-ls-1.1.2.tgz";
-        sha1 = "21932a549f5e52ffd9a827f570e04be62a97da54";
+        sha512 = "ESF23V4SKG6lVSGZgYNpbsiaAkdab6ZgOxe52p7+Kid3W3u3bxR4Vfd/o21dmN7jSt0IwgZ4v5MUd26FEtXE9w==";
       };
     };
-    "psl-1.8.0" = {
+    "psl-1.9.0" = {
       name = "psl";
       packageName = "psl";
-      version = "1.8.0";
+      version = "1.9.0";
       src = fetchurl {
-        url = "https://registry.npmjs.org/psl/-/psl-1.8.0.tgz";
-        sha512 = "RIdOzyoavK+hA18OGGWDqUTsCLhtA7IcZ/6NCs4fFJaHBDab+pDDmDIByWFRQJq2Cd7r1OoQxBGKOaztq+hjIQ==";
+        url = "https://registry.npmjs.org/psl/-/psl-1.9.0.tgz";
+        sha512 = "E/ZsdU4HLs/68gYzgGTkMicWTLPdAftJLfJFlLUAAKZGkStNU72sZjT66SnMDVOfOWY/YAoiD7Jxa9iHvngcag==";
       };
     };
     "punycode-2.1.1" = {
@@ -460,7 +460,7 @@ let
       version = "0.3.2";
       src = fetchurl {
         url = "https://registry.npmjs.org/type-check/-/type-check-0.3.2.tgz";
-        sha1 = "5884cab512cf1d355e3fb784f30804b2b520db72";
+        sha512 = "ZCmOJdvOWDBYJlzAoFkC+Q0+bUyEOS1ltgp1MGU03fqHG+dbi9tBFU2Rd9QKiDZFAYrhPh2JUf7rZRIuHRKtOg==";
       };
     };
     "universalify-0.1.2" = {
@@ -544,13 +544,13 @@ let
         sha512 = "Hz/mrNwitNRh/HUAtM/VT/5VH+ygD6DV7mYKZAtHOrbs8U7lvPS6xf7EJKMF0uW1KJCl0H701g3ZGus+muE5vQ==";
       };
     };
-    "ws-7.5.8" = {
+    "ws-7.5.9" = {
       name = "ws";
       packageName = "ws";
-      version = "7.5.8";
+      version = "7.5.9";
       src = fetchurl {
-        url = "https://registry.npmjs.org/ws/-/ws-7.5.8.tgz";
-        sha512 = "ri1Id1WinAX5Jqn9HejiGb8crfRio0Qgu8+MtL36rlTA6RLsMdWt1Az/19A2Qij6uSHUMphEFaTKa4WG+UNHNw==";
+        url = "https://registry.npmjs.org/ws/-/ws-7.5.9.tgz";
+        sha512 = "F+P9Jil7UiSKSkppIiD94dN07AwvFixvLIj1Og1Rl9GGMuNipJnV9JzjD6XuqmAeiswGvUmNLjr5cFuXwNS77Q==";
       };
     };
     "xml-name-validator-3.0.0" = {
@@ -577,15 +577,15 @@ in
   hred = nodeEnv.buildNodePackage {
     name = "hred";
     packageName = "hred";
-    version = "1.4.0";
+    version = "1.5.0";
     src = fetchurl {
-      url = "https://registry.npmjs.org/hred/-/hred-1.4.0.tgz";
-      sha512 = "jAoCwkVNXmTu1cl6ceyJJdPDDOcCodkZfzK8y8EjOtLKlJU4t/+RG66sbJi22QRnHTppeMLywz7USzMT/d1Zjg==";
+      url = "https://registry.npmjs.org/hred/-/hred-1.5.0.tgz";
+      sha512 = "j8BGzIAj4oFxPuPdWQUEoxGtdxZ/w9gmDdZ74IfYJTpHVIK8hfOk8scaYumLU8GTIDM+aVe1qiCiQlZv7TjkUg==";
     };
     dependencies = [
       sources."@tootallnate/once-1.1.2"
       sources."abab-2.0.6"
-      sources."acorn-8.7.1"
+      sources."acorn-8.8.0"
       (sources."acorn-globals-6.0.0" // {
         dependencies = [
           sources."acorn-7.4.1"
@@ -629,12 +629,12 @@ in
       sources."mime-db-1.52.0"
       sources."mime-types-2.1.35"
       sources."ms-2.1.2"
-      sources."nwsapi-2.2.0"
-      sources."opsh-0.1.1"
+      sources."nwsapi-2.2.1"
+      sources."opsh-1.0.0"
       sources."optionator-0.8.3"
       sources."parse5-6.0.1"
       sources."prelude-ls-1.1.2"
-      sources."psl-1.8.0"
+      sources."psl-1.9.0"
       sources."punycode-2.1.1"
       sources."qsx-3.3.0"
       sources."safer-buffer-2.1.2"
@@ -652,7 +652,7 @@ in
       sources."whatwg-mimetype-2.3.0"
       sources."whatwg-url-8.7.0"
       sources."word-wrap-1.2.3"
-      sources."ws-7.5.8"
+      sources."ws-7.5.9"
       sources."xml-name-validator-3.0.0"
       sources."xmlchars-2.2.0"
     ];
