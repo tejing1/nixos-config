@@ -69,7 +69,42 @@ in
 
   # A good general pattern for scraping html pages
   helper.website_parse = {
-    code = ''hred "$(<"$1")" | jq -rf "$2"'';
+    code = ''
+      # Pop first 2 arguments into local vars. Additional args go to json_parse.
+      local basesiteurl="$1" hred_source="$2"; shift 2
+
+      # Temporarily set pipefail
+      local restore_opts="$(shopt -po pipefail)";set -o pipefail
+
+      # Extract json datastructures from html
+      hred -u "$basesiteurl" -f "$hred_source" -c |
+
+      # Continue like you would for a json api
+      json_parse "$@"
+
+      # Restore pipefail setting and return exit code from pipeline
+      local retval="$?";eval "$restore_opts";return "$retval"'';
+    inputs = [ my.pkgs.hred pkgs.jq ];
+    execer = [ "cannot:${my.pkgs.hred}/bin/hred" ];
+  };
+
+  # A good general pattern for scraping json apis
+  helper.json_parse = {
+    code = ''
+      # Pop first argument into local var. Additional args go to jq.
+      local jq_source="$1"; shift 1
+
+      # Temporarily set pipefail
+      local restore_opts="$(shopt -po pipefail)";set -o pipefail
+
+      # Process json into TSV
+      jq -f "$jq_source" -r "$@" |
+
+      # Parse human-readable dates into unix epoch seconds
+      normalize_dates
+
+      # Restore pipefail setting and return exit code from pipeline
+      local retval="$?";eval "$restore_opts";return "$retval"'';
     inputs = [ my.pkgs.hred pkgs.jq ];
     execer = [ "cannot:${my.pkgs.hred}/bin/hred" ];
   };
@@ -77,17 +112,45 @@ in
   # Sources often specify dates in unhelpful formats. You can just
   # pass through their format to the tsv, then pipe it through this.
   helper.normalize_dates = {
-    code = ''awk -F'\t' -v OFS=$'\t' -f '' + toFile "sfeed_process_dates.awk" ''
+    code = ''awk -F'\t' -v OFS=$'\t' -f '' + pkgs.writeText "sfeed_process_dates.awk" ''
       BEGIN {
-        PROCINFO["date -f- +%s", "pty"] = 1
+        datecmd = "${pkgs.coreutils}/bin/date -f- +%s"
+        PROCINFO[datecmd, "pty"] = 1
       }
       {
-        print $1 |& "date -f- +%s"
-        "date -f- +%s" |& getline $1
+        if ($1 !~ /^[0-9]+$/) {
+          print $1 |& datecmd
+          datecmd |& getline $1
+        }
         print
       }
     '';
     inputs = [ pkgs.gawk ];
+  };
+
+  # Helps preserve correct sorting when many articles have identical
+  # timestamps, but the parser order is the intended order.
+  helper.force_increasing_dates = {
+    code = ''awk -F'\t' -v OFS=$'\t' -f '' + toFile "sfeed_force_decreasing_dates.awk" ''
+      BEGIN {
+        prev = 0
+      }
+      {
+        if (strtonum($1) <= prev)
+          $1 = prev + 1
+        print
+        prev = strtonum($1)
+      }
+    '';
+    inputs = [ pkgs.gawk ];
+  };
+
+  # Reversing the file before and after allows many timestamps at,
+  # say, 00:00 on the same day to all stay within that day.  It also
+  # ensures that timestamps do not change so long as backdated entries
+  # are not added before existing entries.
+  helper.force_decreasing_dates = {
+    code = ''tac | force_increasing_dates | tac'';
   };
 
   # Fetch from crunchyroll beta api. Always pair with the crunchyroll parser.
@@ -137,5 +200,60 @@ in
     code = ''
       jq '[ .episode_air_date, "S\(.season_number | tostring | (2 - length) * "0" + .)E\(.episode_number | tostring | (2 - length) * "0" + .) - \(.title)", "https://beta.crunchyroll.com/watch/\(.id)/\(.slug_title)", .description, "plain", .id, "", "", .season_id ] | @tsv' -r | normalize_dates'';
     inputs = [ pkgs.jq ];
+  };
+
+  # Fetch from mangadex api. Always pair with the mangadex parser.
+  fetch.mangadex = {
+    code = ''
+      local offset=0 limit=100
+      local total newtotal
+      id="''${2#https://mangadex.org/title/}"
+      if [ "$id" == "$2" ]; then
+        echo "Could not parse url: $2" >&2
+        return 1
+      fi
+      id="''${id%%/*}"
+      if [ "''${id/#[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]-[0-9a-f][0-9a-f][0-9a-f][0-9a-f]-[0-9a-f][0-9a-f][0-9a-f][0-9a-f]-[0-9a-f][0-9a-f][0-9a-f][0-9a-f]-[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]}" != "" ]; then
+        echo "Could not parse url: $2" >&2
+        exit 1 # not return, because we're in a subshell
+      fi
+      url="https://api.mangadex.org/manga/$id/feed?includes\[\]=scanlation_group&order\[chapter\]=desc"
+      while [ -z "$total" ] || [ "$offset" -lt "$total" ]; do
+        exec {fd}< <(curl -sSf "$url&limit=$limit&offset=$offset" | jq 'if .result == "ok" and .response == "collection" then .total, (.data | length), .data[] else -1, error("Bad response: \(.)") end' -rc)
+        read -u $fd -r newtotal
+        if ! [ "$newtotal" -ge 0 ]; then
+          echo "Bad response, aborting fetch" >&2
+          exec {fd}<&-
+          return 1
+        fi
+        [ -z "$total" ] && total="$newtotal"
+        if ! [ "$newtotal" -eq "$total" ]; then
+          echo "Reported total malformed or changed! Aborting fetch" >&2
+          exec {fd}<&-
+          return 1
+        fi
+        read -u $fd -r count
+        if ! [ "$count" -ge 0 ]; then
+          echo "Negative or malformed count; misaligned reads? Aborting fetch" >&2
+          exec {fd}<&-
+          return 1
+        fi
+        if ! [ "$count" -ne 0 ] && ! [ "$offset" -eq "$total" ]; then
+          echo "Zero count, haven't reached total, aborting fetch" >&2
+          exec {fd}<&-
+          return 1
+        fi
+        cat <&$fd
+        exec {fd}<&-
+        offset=$((offset + count))
+      done'';
+  };
+  # Parse mangadex api. Always pair with the mangadex fetcher.
+  parse.mangadex = {
+    code = ''json_parse '' + toFile "mangadex.jq" ''
+      select (.attributes.translatedLanguage == "en") |
+      .groups = ([.relationships[] | select(.type == "scanlation_group") | .attributes.name] | join(" & ")) |
+      [ .attributes.createdAt, "\(.attributes.chapter) - \(.attributes.title | if . == "" or . == null then "No Title" else . end) (\(.groups))", "https://mangadex.org/chapter/\(.id)", "", "", .id, .groups, "", "" ] | @tsv
+    '';
   };
 }
