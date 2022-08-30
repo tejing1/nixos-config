@@ -105,27 +105,7 @@
     bindkey '^[Oc' forward-word
     bindkey '^[Od' backward-word
     bindkey '^H' backward-kill-word
-    function _nix() {
-        local ifs_bk="$IFS"
-        local input=("''${(Q)words[@]}")
-        IFS=$'\n'
-        local res=($(NIX_GET_COMPLETIONS=$((CURRENT - 1)) "$input[@]"  | sed -e 's/\t$//'))
-        IFS="$ifs_bk"
-        local tpe="''${''${res[1]}%%>*}"
-        local -a suggestions
-        declare -a suggestions
-        for suggestion in ''${res:1}; do
-            # FIXME: This doesn't work properly if the suggestion word contains a `:`
-            # itself
-            suggestions+="''${suggestion//:}"
-        done
-        if [[ "$tpe" == filenames ]]; then
-            compadd -f
-        fi
-        _describe 'nix' suggestions
-    }
 
-    compdef _nix nix
     . ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
     [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
     . ${pkgs.zsh-syntax-highlighting}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
