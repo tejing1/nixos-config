@@ -1,0 +1,41 @@
+#! /usr/bin/env nix-shell
+#! nix-shell -p "python3.withPackages (ps: with ps; [ fastbencode ])"
+#! nix-shell -i python
+
+from fastbencode import bdecode, bencode
+from urllib.parse import urlparse, parse_qs
+from sys import argv
+
+if len(argv) != 4:
+   raise Exception("Bad arguments")
+
+torrent = {}
+
+# Read magnet uri from bootstrap .torrent file (first argument)
+with open(argv[1],mode='rb') as f:
+     torrent[b'magnet-uri'] = bdecode(f.read())[b'magnet-uri']
+
+# Read info from .meta file (second argument)
+with open(argv[2],mode='rb') as f:
+     torrent[b'info'] = bdecode(f.read())
+
+uri = urlparse(torrent[b'magnet-uri'])
+if uri.scheme != b'magnet':
+     raise Exception(f'Bad magnet url: {torrent[b"magnet-uri"]}')
+query = parse_qs(uri.query, encoding=None)
+trackers = query.get(b'tr')
+
+# query components include: "xt" "dn" "tr" "x.pe"
+# "xt" is preserved by the inclusion of the info block
+# nothing to be done with "dn" or "x.pe" afaik
+if trackers:
+     def singleton(e):
+          return [e]
+     torrent |= {
+          b'announce': trackers[0],
+          b'announce-list': list(map(singleton, trackers)),
+     }
+
+# Write constructed torrent file (third argument)
+with open(argv[3],mode='wb') as f:
+     f.write(bencode(torrent))

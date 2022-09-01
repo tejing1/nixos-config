@@ -1,0 +1,246 @@
+### INITIALIZATION
+
+# Capture startup time
+method.insert = system.startup_time, value|const, (system.time)
+
+# Default to UTF-8 encoding (not clear on *precisely* what this does...)
+encoding.add = utf8
+
+# Set reasonable umask
+system.umask.set = (cfg.umask)
+
+# Create configured directories
+execute.throw = (cfg.cmd.mkdir),-p, \
+  (cfg.path.session),    \
+  (cfg.path.logdir),     \
+  (cfg.path.active),     \
+  (cfg.path.completed),  \
+  (cfg.path.magnetinfo), \
+  (cfg.path.torrentfiles)
+
+# Make it easier to re-load old torrents
+system.cwd.set = (cfg.path.torrentfiles)
+
+
+### RPC SOCKET
+
+# Create xmlrpc socket with secure permissions
+system.umask.set = 0077
+network.scgi.open_local = (cfg.path.rpc_socket)
+system.umask.set = (cfg.umask)
+
+
+### LOGGING
+
+# Logging:
+#   Levels = critical error warn notice info debug
+#   Groups = connection_* dht_* peer_* rpc_* storage_* thread_* tracker_* torrent_*
+log.open_file = "log", (cat, (cfg.path.logdir), "/rtorrent-", (system.startup_time), ".log")
+log.add_output = "info", "log"
+
+execute.nothrow = (cfg.cmd.rm),-f,--,(cat, (cfg.path.logdir), "/execute.log"),(cat, (cfg.path.logdir), "/xmlrpc.log")
+log.execute = (cat, (cfg.path.logdir), "/execute.log")
+log.xmlrpc = (cat, (cfg.path.logdir), "/xmlrpc.log")
+
+
+### STORAGE
+
+session.path.set = (cfg.path.session)
+directory.default.set = (cfg.path.active)
+
+method.insert = d.active_path,    simple, "cat =        (d.directory), /, (d.name)"
+method.insert = d.completed_path, simple, "cat = (cfg.path.completed), /, (d.name)"
+
+# TODO: Set saved flag if data was found? (what if it's wrong?)
+# Load data from d.completed_path if present when torrent is loaded
+method.set_key = event.download.inserted_new, reload_completed, "branch=\"not=$d.is_meta=\",\"execute.throw=(cfg.cmd.safely),cp_if_present,(d.completed_path),(d.active_path)\""
+
+# TODO: Skip if saved flag is set
+# TODO: Set saved flag if successful
+# Save data to d.completed_path when download is finished
+method.set_key = event.download.finished,     save_completed,   "branch=\"not=$d.is_meta=\",\"execute.throw=(cfg.cmd.safely),cp,(d.active_path),(d.completed_path)\""
+
+# TODO: safely mv if saved flag is unset, rm -f if set (clobbering?)
+# Delete data when torrent is erased
+method.set_key = event.download.erased,       remove_active,    "branch=\"not=$d.is_meta=\",\"execute.throw=(cfg.cmd.safely),rm,(d.active_path),(d.completed_path)\""
+
+
+### UI
+
+view.sort_current = seeding, greater=d.ratio=
+
+
+### RESOURCE LIMITS
+
+# Limits for file handle resources, this is optimized for
+# an `ulimit` of 1024 (a common default). You MUST leave
+# a ceiling of handles reserved for rTorrent's internal needs!
+#network.http.max_open.set = 50
+#network.max_open_files.set = 600
+#network.max_open_sockets.set = 300
+
+# Memory resource usage (increase if you have a large number of items loaded,
+# and/or the available resources to spend)
+#pieces.memory.max.set = 1800M
+#network.xmlrpc.size_limit.set = 4M
+
+# Peer settings
+throttle.max_uploads.set = 100
+throttle.max_uploads.global.set = 250
+
+throttle.min_peers.normal.set = 20
+throttle.max_peers.normal.set = 60
+throttle.min_peers.seed.set = 30
+throttle.max_peers.seed.set = 80
+trackers.numwant.set = 80
+
+
+### BANDWIDTH
+
+# These are in kiloBYTES/sec
+throttle.global_up.max_rate.set_kb   = (math.div,(math.mul,(cfg.connection.up_mbps)  ,1024,(cfg.connection.up_percent))  ,(math.mul,8,100))
+throttle.global_down.max_rate.set_kb = (math.div,(math.mul,(cfg.connection.down_mbps),1024,(cfg.connection.down_percent)),(math.mul,8,100))
+
+
+### DECENTRALIZATION
+
+# Enable Distributed Hash Table (decentralized tracker)
+dht.mode.set = on
+
+# Enable Peer Exchange (find peers by asking other peers)
+protocol.pex.set = yes
+
+# Enable contacting UDP trackers (often less "official" than tcp trackers)
+trackers.use_udp.set = yes
+
+# Bootstrap the DHT after startup, just in case all our cached nodes are gone
+# TODO: consolidate into a single method call?
+# TODO: make configurable?
+# TODO: make manual? decide
+schedule2 = dht_bootstrap_1, 5, 0, "dht.add_node=router.utorrent.com:6881"
+schedule2 = dht_bootstrap_2, 5, 0, "dht.add_node=dht.transmissionbt.com:6881"
+schedule2 = dht_bootstrap_3, 5, 0, "dht.add_node=router.bitcomet.com:6881"
+schedule2 = dht_bootstrap_4, 5, 0, "dht.add_node=dht.aelitis.com:6881"
+
+
+### CONNECTIVITY
+
+# Listening port for incoming peer traffic (fixed; you can also randomize it)
+network.port_range.set = (cat,(cfg.port.tcp),"-",(cfg.port.tcp))
+
+# Listening port for incoming DHT queries
+dht.port.set = (cfg.port.udp)
+
+# Enable protocol encryption where possible (to evade packet inspection)
+protocol.encryption.set = allow_incoming,try_outgoing,enable_retry
+
+network.http.dns_cache_timeout.set = 25
+##network.http.capath.set = "/etc/ssl/certs"
+##network.http.ssl_verify_peer.set = 0
+##network.http.ssl_verify_host.set = 0
+
+# TODO: Use natpmpc here?
+# Get public IP address without the need of having dynamic DNS service, also works from behind NAT, through tunnel
+method.insert = get_public_ip_address, simple|private, "execute.capture=(cfg.cmd.bash),-c,(cat,\"eval echo -n \$(\",(cfg.cmd.dig),\" -4 TXT +short o-o.myaddr.l.google.com @ns1.google.com)\")"
+# The IP address reported to the tracker. (ip) This handles dynamic IP's as well.
+schedule2 = ip_tick, 0, 1800, "network.local_address.set=(get_public_ip_address)"
+
+# Forward ports through the NAT
+schedule2 = forward_port_tcp, 0, 1800, "execute.throw=(cfg.cmd.natpmpc),-a,(network.listen.port),(network.listen.port),tcp,1810"
+schedule2 = forward_port_udp, 0, 1800, "execute.throw=(cfg.cmd.natpmpc),-a,(dht.port),           (dht.port),           udp,1810"
+
+
+### LOADING
+
+# Where to save a copy of the torrent file for the current torrent
+method.insert = d.torrent_file, simple, "cat=(cfg.path.torrentfiles), /, (d.name), .torrent"
+
+# Location of the session file for the current torrent
+method.insert = d.session_file, simple, "cat=(session.path), (d.hash), .torrent"
+
+
+### LOADING: TORRENT FILES
+
+# TODO: save copies of loaded .torrent files, but not if we're loading from the save location!
+# ? method.set_key = event.download.inserted_new,move_tor,"execute.throw=(cfg.cmd.cp),--backup=numbered,--force,--reflink=auto,--,(d.loaded_file),(d.torrent_file)"
+
+
+### LOADING: TORRENT URLS
+
+# TODO: save copies of url torrents... extract from session dir?
+
+
+### LOADING: MAGNET LINKS
+
+method.insert = d.bootstrap_file, simple, "cat=(cfg.path.magnetinfo), /, (d.hash), .bootstrap"
+method.insert = d.meta_file,      simple, "cat=(cfg.path.magnetinfo), /, (d.hash), .meta"
+
+# Autostart the bootstrapping phase of magnet downloads (does NOT autostart the actual torrent)
+method.set_key = event.download.inserted_new, auto_start_meta, "branch=\"and={d.is_meta=,not=$d.state=}\",d.start="
+
+# Redirect .meta file downloads to (cfg.path.magnetinfo)
+method.set_key = event.download.inserted_new, redirect_meta, "branch=\"d.is_meta=\",d.directory.set=(cfg.path.magnetinfo)"
+
+# Save the bootstrap-stage torrent file from the session directory to (cfg.path.magnetinfo), clobbering existing files
+method.set_key = event.download.inserted_new, save_bootstrap, "branch=\"d.is_meta=\",\"execute.throw=(cfg.cmd.cp),--force,--,(d.session_file),(d.bootstrap_file)\""
+
+# TODO: Don't clobber? Or do? Decide.
+# Create .torrent file from bootstrap-stage torrent and .meta file, keeping "magnet-uri" field for the original magnet uri used.
+# Can't inline this because branch= doesn't accept chaining with ;
+method.insert = d.make_torrent, simple, "execute.throw=(cfg.cmd.construct_torrent),(d.bootstrap_file),(d.meta_file),(d.torrent_file) ; execute.throw=(cfg.cmd.rm),--,(d.bootstrap_file) ; d.delete_tied="
+method.set_key = event.download.inserted_new, meta_make_torrent, "branch=\"and={not=$d.is_meta=,(equal,d.tied_to_file=,d.meta_file=)}\",d.make_torrent="
+
+
+### RATIO-BASED SHUTDOWN
+
+# ratio.command will be run on seeding torrents matching the following condition, unless d.ignore_commands is set:
+# total_up is the total amount of data uploaded
+# total_down is the combined size of possessed pieces
+# "and" has higher precedence than "or"
+# total_up >= ratio.upload and total_up >= total_down * ratio.min/100 or ratio.max > 0 and total_up > total_down * ratio.max/100
+
+# Enable the default ratio group.
+group.seeding.ratio.enable=
+
+# When to trigger the command for the default group.
+group2.seeding.ratio.min.set    =  200
+group2.seeding.ratio.max.set    = 1000
+group2.seeding.ratio.upload.set =  20M
+
+# The command triggered when the ratio is reached.
+# (the default is "d.try_close= ; d.ignore_commands.set=1")
+method.set = group.seeding.ratio.command, "d.close= ; d.erase="
+
+
+### SCRAPING
+
+# TODO: Fix this. It doesn't seem to be working.
+
+# Set scrape intervals for active (~10 mins) and idle items (~12 hours)
+# TODO: Extract configuration
+method.insert = cfg.scrape_interval.active, value,   580
+method.insert = cfg.scrape_interval.idle,   value, 43180
+
+# Regularly update scrape information for all torrents (even stopped ones), it won't affect the operation of rtorrent, but nice to have these values updated.
+# This info is only updated when rtorrent starts or a torrent is added by default.
+# Try to balance calls to not fire them up at the same time (since multiscraping isn't implemented in libtorrent). Check for update every 5 minutes and distinguish between 2 groups:
+#   - transferring (uploading and/or downloading) torrents: update in every 10 minutes
+#   - non-transferring torrents: update in every 12 hours
+
+# helper method: sets current time in a custom field (tm_last_scrape) and saves session
+method.insert = d.last_scrape.set, simple|private, "d.custom.set=tm_last_scrape,$cat=$system.time=; d.save_resume="
+
+# helper method: sends the scrape request and sets the tm_last_scrape timestamp and saves session
+method.insert = d.last_scrape.send_set, simple, "d.tracker.send_scrape=0;d.last_scrape.set="
+
+# helper method: decides whether the required time interval (with the help of an argument) has passed and if so calls the above method
+method.insert = d.last_scrape.check_elapsed, simple|private, "branch={(elapsed.greater,$d.custom=tm_last_scrape,$argument.0=),d.last_scrape.send_set=}"
+
+# helper method: checks for non-existing/empty custom field to be able to test its validity later
+method.insert = d.last_scrape.check, simple|private, "branch={d.custom=tm_last_scrape,d.last_scrape.check_elapsed=$argument.0=,d.last_scrape.send_set=}"
+
+# sets custom field (tm_last_scrape) to current time only for torrents just has been added (skips setting time on purpose when rtorrent started)
+method.set_key = event.download.inserted_new, ~last_scrape_i, "d.last_scrape.set="
+
+# check for update every 5 minutes (300 sec) and update scrape info for transferring torrents in every 10 minutes (600-20=580 sec) and for non-transferring ones in every 12 hours (43200-20=43180 sec)
+schedule2 = last_scrape_t, 300, 300, "d.multicall2=default,\"branch=\\\"or={d.up.rate=,d.down.rate=}\\\",d.last_scrape.check=$cfg.scrape_interval.active=,d.last_scrape.check=$cfg.scrape_interval.idle=\""

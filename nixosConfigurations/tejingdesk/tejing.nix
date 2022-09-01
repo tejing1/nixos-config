@@ -55,4 +55,8 @@ in
 
   # Start urxvtd with user sessions
   services.urxvtd.enable = true;
+
+  # rtorrent peer & dht ports
+  networking.firewall.allowedTCPPorts = [ 62813 ];
+  networking.firewall.allowedUDPPorts = [ 62813 ];
 }

@@ -1,0 +1,101 @@
+#! /usr/bin/env bash
+
+fail() {
+    echo "fatal error: $1" >&2
+    exit 1
+}
+
+failure() {
+    echo "error: $1" >&2
+    echo 1
+}
+
+succeed() {
+    echo "final success: $1" >&2
+    exit 0
+}
+
+success() {
+    echo "success: $1" >&2
+    echo 0
+}
+
+check_identical() {
+    if [ "$1" == "$2" ]; then
+        fail "$1 and $2 are identical pathnames! Aborting!"
+    fi
+    if [ -f "$1" ] && [ -f "$2" ]; then
+        if diff -q "$1" "$2"; then
+            return $(success "files $1 and $2 are identical.")
+        else
+            return $(failure "files $1 and $2 are different.")
+        fi
+    elif [ -d "$1" ] && [ -d "$2" ]; then
+        if diff -qr "$1" "$2"; then
+            return $(success "directories $1 and $2 are identical.")
+        else
+            return $(failure "directories $1 and $2 are different.")
+        fi
+    else
+        return $(failure "$1 and $2 are not the same type of file or don't exist.")
+    fi
+}
+
+op="$1"
+shift
+case "$op" in
+    cp)
+        from="$1"
+        to="$2"
+        shift 2
+        [ -e "$from" ] || fail "$from does not exist; cannot copy."
+        if [ ! -e "$to" ]; then
+            if cp --reflink=auto -r -- "$from" "$to"; then
+                succeed "copied $from to $to successfully."
+            else
+                fail "copying $from to $to failed!"
+            fi
+        elif check_identical "$from" "$to"; then
+            succeed "$from and $to are identical; nothing to do."
+        else
+            fail "$from and $to both exist but are different! Abort!"
+        fi
+        ;;
+    cp_if_present)
+        from="$1"
+        to="$2"
+        shift 2
+        [ -e "$from" ] || succeed "$from does not exist; nothing to copy."
+        if [ ! -e "$to" ]; then
+            if cp --reflink=auto -r -- "$from" "$to"; then
+                succeed "copied $from to $to successfully."
+            else
+                fail "copying $from to $to failed!"
+            fi
+        elif check_identical "$from" "$to"; then
+            succeed "$from and $to are identical; nothing to do."
+        else
+            fail "$from and $to both exist but are different! Abort!"
+        fi
+        ;;
+    rm)
+        target="$1"
+        mustexist="$2"
+        shift 2
+        [ -e "$target" ] || succeed "$target does not exist; nothing to remove."
+        if check_identical "$target" "$mustexist"; then
+            if rm -rf -- "$target"; then
+                succeed "removed $target successfully."
+            else
+                fail "removing $target failed!"
+            fi
+        else
+            fail "$from and $to both exist but are different! Abort!"
+        fi
+        ;;
+    *)
+        fail "unknown operation: $op"
+        ;;
+esac
+
+fail "Shouldn't be able to get here!"
