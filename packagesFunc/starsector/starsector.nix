@@ -1,42 +1,42 @@
-{ buildFHSUserEnv, fetchurl, stdenv, unzip, writeShellScript }:
+{ buildFHSUserEnv, coreutils, fetchzip, gnused, stdenv, writeShellScript }:
 
 let
-  gamedir = stdenv.mkDerivation (self: {
-    pname = "starsector";
-    version = "0.95.1a-RC6";
-    sha256 = "sha256-PaiL1RmKHDWrVX/xGXPE5vokPBOTah+vGjhn14/+/ZM=";
+  version = "0.95.1a-RC6";
+  sha256 = "sha256-+0zGJHM+SMonx3sytCQNQA/QBgzdPMEfQvOjrCDSOs8=";
 
-    src = fetchurl {
-      url = "https://s3.amazonaws.com/fractalsoftworks/starsector/starsector_linux-${self.version}.zip";
-      inherit (self) sha256;
-    };
+  modify_starsector_sh = builtins.toFile "modify_starsector_sh.sed" ''
+    # Exec so we don't have a useless process lying around
+    s:./jre_linux/bin/java:exec ./jre_linux/bin/java:
 
-    nativeBuildInputs = [ unzip ];
+    # Setting -Djava.util.prefs.userRoot="$configdir" makes java store "User Prefs" in $configdir/.java instead of ~/.java
+    s:./jre_linux/bin/java:./jre_linux/bin/java -Djava.util.prefs.userRoot="$configdir":
 
-    installPhase = ''
-      mkdir -p $out
-      cp -a * $out/
-      substituteInPlace $out/starsector.sh \
-        --replace ./jre_linux/bin/java 'exec ./jre_linux/bin/java -Djava.util.prefs.userRoot="$configdir"' \
-        --replace -Dcom.fs.starfarer.settings.paths.saves=./saves             '-Dcom.fs.starfarer.settings.paths.saves="$configdir"/saves' \
-        --replace -Dcom.fs.starfarer.settings.paths.screenshots=./screenshots '-Dcom.fs.starfarer.settings.paths.screenshots="$configdir"/sceenshots' \
-        --replace -Dcom.fs.starfarer.settings.paths.logs=.                    '-Dcom.fs.starfarer.settings.paths.logs="$configdir"' \
-        --replace -Dcom.fs.starfarer.settings.paths.mods=./mods               '-Dcom.fs.starfarer.settings.paths.mods="$modsdir"'
-    '';
-  });
+    # Redirect saved game files
+    s:-Dcom.fs.starfarer.settings.paths.saves=./saves:-Dcom.fs.starfarer.settings.paths.saves="$configdir"/saves:
+
+    # Redirect screenshots
+    s:-Dcom.fs.starfarer.settings.paths.screenshots=./screenshots:-Dcom.fs.starfarer.settings.paths.screenshots="$configdir"/sceenshots:
+
+    # Redirect logs
+    s:-Dcom.fs.starfarer.settings.paths.logs=.:-Dcom.fs.starfarer.settings.paths.logs="$configdir":
+
+    # Set where to look for mods
+    s:-Dcom.fs.starfarer.settings.paths.mods=./mods:-Dcom.fs.starfarer.settings.paths.mods="$modsdir":
+  '';
 in
-
-# TODO: redirect java user prefs away from ~/.java
 
 buildFHSUserEnv {
   name = "starsector";
+
   targetPkgs = pkgs: builtins.attrValues {
+
     inherit (pkgs)
       alsa-lib
       gtk2
       libGL
       libxslt
     ;
+
     inherit (pkgs.xorg)
       libX11
       libXext
@@ -47,13 +47,28 @@ buildFHSUserEnv {
       libXxf86vm
       libXtst
     ;
+
   };
+
   runScript = writeShellScript "starsector" ''
-    cd ${gamedir}
-    configdir="''${STARSECTOR_CONFIG_DIR:-$HOME/.config/starsector}"
-    modsdir="''${STARSECTOR_MODS_DIR:-./mods}"
+    # Change dir to unzipped game dir
+    cd ${fetchzip {
+      url = "https://s3.amazonaws.com/fractalsoftworks/starsector/starsector_linux-${version}.zip";
+      inherit sha256;
+    }}
+
+    # Determine state dir and mods dir
+    configdir="''${STARSECTOR_CONFIG_DIR:-"''${XDG_CONFIG_HOME:-"$HOME"/.config}"/starsector}"
+    modsdir="''${STARSECTOR_MODS_DIR:-"$configdir"/mods}"
     unset STARSECTOR_CONFIG_DIR STARSECTOR_MODS_DIR
-    mkdir -p "$configdir"/{saves,screenshots}
-    source ./starsector.sh
+
+    # Initialize state dir
+    ${coreutils}/bin/mkdir -p "$configdir"/{saves,screenshots}
+
+    # Modify start script
+    toEval="$(${gnused}/bin/sed -f ${modify_starsector_sh} ./starsector.sh)"
+
+    # Run start script (will exec)
+    eval "$toEval"
   '';
 }
