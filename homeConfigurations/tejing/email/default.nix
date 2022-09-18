@@ -126,6 +126,7 @@ in
     text/html; ${pkgs.lynx}/bin/lynx -dump -width ''${COLUMNS:-80} %s; nametemplate=%s.html; copiousoutput
     image/png; ${pkgs.feh}/bin/feh %s; nametemplate=%s.png
     image/jpeg; ${pkgs.feh}/bin/feh %s; nametemplate=%s.jpg
+    image/heic; ${pkgs.feh}/bin/feh %s; nametemplate=%s.heic
     application/pdf; ${pkgs.zathura}/bin/zathura %s; nametemplate=%s.pdf
   '';
   xsession.windowManager.i3.config.assigns."10" = [{class = "^URxvt$";instance = "^neomutt$";}];
