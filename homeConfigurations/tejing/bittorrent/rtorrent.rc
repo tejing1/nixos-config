@@ -48,7 +48,7 @@ log.xmlrpc = (cat, (cfg.path.logdir), "/xmlrpc.log")
 session.path.set = (cfg.path.session)
 directory.default.set = (cfg.path.active)
 
-method.insert = d.active_path,    simple, "cat =        (d.directory), /, (d.name)"
+method.insert = d.active_path,    simple, "if = (d.is_multi_file), (d.directory), (cat, (d.directory), /, (d.name))"
 method.insert = d.completed_path, simple, "cat = (cfg.path.completed), /, (d.name)"
 
 # TODO: Set saved flag if data was found? (what if it's wrong?)
