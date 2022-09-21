@@ -14,6 +14,11 @@ let
   }\n${
     builtins.readFile ./construct_torrent
   }";
+  rtorrent_load = pkgs.writeScript "rtorrent_load" "#!${
+    pkgs.python3.interpreter
+  }\n${
+    builtins.readFile ./rtorrent-load
+  }";
   rtorrent_config = pkgs.writeText "rtorrent_config.rc" ''
     # Configure command paths
     method.insert = cfg.cmd.bash,                 private|const|string,  "${pkgs.bash}/bin/bash"
@@ -75,6 +80,15 @@ in
 
 {
   home.packages = [ rtorrent-attach.pkg ];
+
+  xdg.desktopEntries.rtorrent-load = {
+    name = "RTorrent rpc torrent loader";
+    comment = "Load a torrent into the running rtorrent instance.";
+    exec = "${rtorrent_load} -S ${rpc_socket} %U";
+    noDisplay = true;
+    startupNotify = false;
+    mimeType = [ "application/x-bittorrent" "x-scheme-handler/magnet" ];
+  };
 
   systemd.user.services.rtorrent = {
     Unit = {

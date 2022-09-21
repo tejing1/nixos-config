@@ -1,0 +1,61 @@
+#! /usr/bin/env nix-shell
+#! nix-shell -p python3
+#! nix-shell -i python
+
+import xmlrpc.client, socket, re, argparse
+from sys import argv
+
+parser = argparse.ArgumentParser(description='Load a torrent into a running rtorrent instance.')
+parser.add_argument('torrents', metavar='TORRENT', type=str, nargs='+', help='magnet url, torrent url, or torrent file to load')
+parser.add_argument('-S', '--socket', required=True, help='location of rtorrent rpc socket')
+parser.add_argument('-s', '--start', action='store_true', help='start torrent(s) immediately')
+args = parser.parse_args()
+
+class RTorrentRPC(object):
+    def __init__(self, socket_path, target=None, object_path=[]):
+        self.socket_path = socket_path
+        self.object_path = object_path
+        self.target = target
+
+    def __call__(self, *args):
+        # If main rpc object is called directly, change target
+        if len(self.object_path) == 0:
+            return RTorrentRPC(self.socket_path, target=(args[0] if len(args) > 0 else None), object_path=self.object_path)
+
+        # Assemble scgi request
+        method_name = '.'.join(self.object_path)
+        method_args = args if self.target == None else (self.target,) + args
+        req_body = xmlrpc.client.dumps(method_args, method_name).encode('utf-8')
+        req_headers = b'\x00'.join([
+            b'CONTENT_LENGTH', str(len(req_body)).encode('ascii'),
+            b'SCGI', b'1',
+            b'' # Get a final null
+        ])
+        req = b'%d:%s,%s' % (len(req_headers), req_headers, req_body)
+
+        # Send request & receive response
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
+            s.connect(self.socket_path)
+            s.send(req)
+            resp = b''
+            while True:
+                chunk = s.recv(4096)
+                if not chunk:
+                    break
+                resp += chunk
+
+        # Parse response
+        resp_headers, resp_body = re.split(b'^\r?\n',resp,1,re.MULTILINE)
+        return xmlrpc.client.loads(resp_body, use_builtin_types=True)[0][0]
+
+    def __getattr__(self, attr):
+        # Create subobjects when foo.bar notation is used, and remember the path
+        return RTorrentRPC(self.socket_path, target=self.target, object_path=(self.object_path + [ attr ]))
+
+
+rt = RTorrentRPC(args.socket, target='')
+for torrent in args.torrents:
+    if args.start:
+        rt.load.start(torrent)
+    else:
+        rt.load.normal(torrent)
