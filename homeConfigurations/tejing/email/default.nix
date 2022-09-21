@@ -131,5 +131,5 @@ in
   '';
   xsession.windowManager.i3.config.assigns."10" = [{class = "^URxvt$";instance = "^neomutt$";}];
   xsession.windowManager.i3.config.window.commands = [{ criteria = { class = "^URxvt$"; instance = "^neomutt$"; }; command = "layout tabbed"; }];
-  xsession.windowManager.i3.config.startup = [{ command = "${my.launch.term} app neomutt ${pkgs.neomutt}/bin/neomutt"; always = false; notification = false; }];
+  xsession.windowManager.i3.config.startup = [{ command = "${my.launch.term} app neomutt ${pkgs.writeShellScript "neomutt-cycle" "while true; do ${pkgs.neomutt}/bin/neomutt;done"}"; always = false; notification = false; }];
 }
