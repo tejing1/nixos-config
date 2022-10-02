@@ -14,7 +14,7 @@ let
   }\n${
     builtins.readFile ./construct_torrent
   }";
-  rtorrent_load = pkgs.writeScript "rtorrent_load" "#!${
+  rtorrent-load = pkgs.writeScriptBin "rtorrent-load" "#!${
     pkgs.python3.interpreter
   }\n${
     builtins.readFile ./rtorrent-load
@@ -79,12 +79,12 @@ let
 in
 
 {
-  home.packages = [ rtorrent-attach.pkg ];
+  home.packages = [ rtorrent-attach.pkg rtorrent-load ];
 
   xdg.desktopEntries.rtorrent-load = {
     name = "RTorrent rpc torrent loader";
     comment = "Load a torrent into the running rtorrent instance.";
-    exec = "${rtorrent_load} -S ${rpc_socket} %U";
+    exec = "${rtorrent-load}/bin/rtorrent-load -S ${rpc_socket} %U";
     noDisplay = true;
     startupNotify = false;
     mimeType = [ "application/x-bittorrent" "x-scheme-handler/magnet" ];
