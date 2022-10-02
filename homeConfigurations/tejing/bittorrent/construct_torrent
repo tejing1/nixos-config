@@ -22,18 +22,16 @@ with open(argv[2],mode='rb') as f:
 uri = urlparse(torrent[b'magnet-uri'])
 if uri.scheme != b'magnet':
      raise Exception(f'Bad magnet url: {torrent[b"magnet-uri"]}')
-query = parse_qs(uri.query, encoding=None)
+query = {k.encode('utf-8'): [e.encode('utf-8') for e in v] for k, v in parse_qs(uri.query.decode('utf-8')).items()}
 trackers = query.get(b'tr')
 
 # query components include: "xt" "dn" "tr" "x.pe"
 # "xt" is preserved by the inclusion of the info block
 # nothing to be done with "dn" or "x.pe" afaik
 if trackers:
-     def singleton(e):
-          return [e]
      torrent |= {
           b'announce': trackers[0],
-          b'announce-list': list(map(singleton, trackers)),
+          b'announce-list': [[t] for t in trackers],
      }
 
 # Write constructed torrent file (third argument)
