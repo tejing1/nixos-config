@@ -156,7 +156,7 @@ in
   # Fetch from crunchyroll beta api. Always pair with the crunchyroll parser.
   fetch.crunchyroll = {
     code = ''
-      local api_domain="https://beta.crunchyroll.com"
+      local api_domain="https://www.crunchyroll.com"
       local initial_auth="Y3Jfd2ViOg=="
 
       #local initialdata="$(curl -sSL "$2" | hred '^ div#preload-data > script @.innerHTML' | jq -c '[capture("window.__INITIAL_STATE__ = (?<initial_state>[^\n]+);","window.__APP_CONFIG__ = (?<app_config>[^\n]+);")] | add | .[] |= fromjson')"
@@ -175,10 +175,11 @@ in
         if lockfile-create -q --retry 0 "$file"; then
           local restore_opts="$(shopt -po pipefail)"
           set -o pipefail
-          local auth="$(curl -sSfH "Authorization: Basic $initial_auth" "$api_domain/auth/v1/token" -X POST -d grant_type=client_id | jq '"\(.token_type) \(.access_token)"' -r)" &&
-            curl -sSfH "Authorization: $auth" "$api_domain/index/v2" > "$file.part" &&
+          local auth=""
+          auth="$(curl --no-alpn -fsSLm 15 -A ${escapeShellArg innocuousUserAgent} -H "Authorization: Basic $initial_auth" "$api_domain/auth/v1/token" -X POST -d grant_type=client_id | jq '"\(.token_type) \(.access_token)"' -r)" &&
+            curl --no-alpn -fsSLm 15 -A ${escapeShellArg innocuousUserAgent} -H "Authorization: $auth" "$api_domain/index/v2" > "$file.part" &&
             mv -f "$file.part" "$file" ||
-            { local err=$?; touch "$file.fail"; return $err; }
+            { local err=$?; touch "$file.fail"; eval "$restore_opts"; return $err; }
           lockfile-remove "$file"
           eval "$restore_opts"
         else
@@ -187,12 +188,19 @@ in
         fi
       done
 
-      local bucket="$(jq '.cms_beta // .cms | .bucket' -r "$file")"
-      local params="$(jq '.cms_beta // .cms | @uri "Policy=\(.policy)&Signature=\(.signature)&Key-Pair-Id=\(.key_pair_id)"' -r "$file")"
+      local bucket=""
+      bucket="$(jq '.cms_web | .bucket' -r "$file")" || return 1
+      local params=""
+      params="$(jq '.cms_web | @uri "Policy=\(.policy)&Signature=\(.signature)&Key-Pair-Id=\(.key_pair_id)"' -r "$file")" || return 1
 
-      for season_id in $(curl -sS "$api_domain/cms/v2$bucket/seasons?series_id=$series_id" -G -d "$params" | jq '.items | map(select(.is_subbed) | .id) | join(" ")' -r); do
-          curl -sS "$api_domain/cms/v2$bucket/episodes?season_id=$season_id" -G -d "$params" | jq '.items[]' -c
-      done'';
+      local restore_opts="$(shopt -po pipefail)"
+      set -o pipefail
+      local seasons=""
+      seasons="$(curl --no-alpn -fsSLm 15 -A ${escapeShellArg innocuousUserAgent} "$api_domain/cms/v2$bucket/seasons?series_id=$series_id" -G -d "$params" | jq '.items | map(select(.is_subbed) | .id) | join(" ")' -r)" || { eval "$restore_opts"; return 1; }
+      for season_id in $seasons; do
+          curl --no-alpn -fsSLm 15 -A ${escapeShellArg innocuousUserAgent} "$api_domain/cms/v2$bucket/episodes?season_id=$season_id" -G -d "$params" | jq '.items[]' -c || { eval "$restore_opts"; return 1; }
+      done
+      eval "$restore_opts"'';
     inputs = [ pkgs.curl pkgs.jq pkgs.lockfileProgs ];
   };
   # Parse crunchyroll beta api. Always pair with the crunchyroll fetcher.
