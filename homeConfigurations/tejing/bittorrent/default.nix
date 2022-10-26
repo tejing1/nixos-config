@@ -50,7 +50,7 @@ let
 
     # Nominal upload and download rates for my connection in mbps
     method.insert = cfg.connection.up_mbps,       private|const|string,  "10"
-    method.insert = cfg.connection.down_mbps,     private|const|string,  "300"
+    method.insert = cfg.connection.down_mbps,     private|const|string,  "400"
 
     # Percentage of nominal rates to use
     method.insert = cfg.connection.up_percent,    private|const|string,  "80"
