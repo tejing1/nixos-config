@@ -11,7 +11,7 @@
   };
 
   # prevent compositing performance hit when gaming
-  services.picom.extraOptions = "unredir-if-possible = true;";
+  services.picom.settings.unredir-if-possible = true;
 
   xsession.windowManager.i3.config.assigns."8" = [{class = "^Steam$";}];
 }

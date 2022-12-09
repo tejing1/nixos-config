@@ -10,8 +10,13 @@ let
 in
 { inherit configurationModule; } //
 homeManagerConfiguration {
-  inherit system username;
-  homeDirectory = "/home/${username}";
-  configuration = configurationModule;
+  pkgs = inputs.nixpkgs.legacyPackages.${system};
+  modules = [
+    configurationModule
+    {
+      home.username = username;
+      home.homeDirectory = "/home/${username}";
+    }
+  ];
   extraSpecialArgs = { inherit inputs; };
 }

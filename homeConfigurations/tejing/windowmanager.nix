@@ -305,7 +305,7 @@ in
   services.picom.enable = true;
   services.picom.backend = "xrender";
   services.picom.vSync = true;
-  services.picom.opacityRule = [ "0:_NET_WM_STATE@:32a *= '_NET_WM_STATE_HIDDEN'" ];
+  services.picom.opacityRules = [ "0:_NET_WM_STATE@:32a *= '_NET_WM_STATE_HIDDEN'" ];
 
   gtk.enable = true;
   gtk.gtk3.bookmarks = [ "file:///home/tejing/data" ];

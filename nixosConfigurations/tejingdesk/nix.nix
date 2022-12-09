@@ -15,7 +15,7 @@
     daemonCPUSchedPolicy = "idle";
     daemonIOSchedClass = "idle";
     # Hard link identical files in the store automatically
-    autoOptimiseStore = true;
+    settings.auto-optimise-store = true;
     # automatically trigger garbage collection
     gc = {
       automatic = true;
