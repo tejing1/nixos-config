@@ -1,7 +1,13 @@
 { lib, my, pkgs, ... }:
 
 let
+  inherit (builtins) attrValues;
   inherit (my.lib) importSecret;
+
+  myfeeds = my.lib.mkShellScript "myfeeds" {
+    inputs = attrValues { inherit (pkgs) coreutils findutils inotify-tools sfeed; };
+    execer = [ "cannot:${pkgs.sfeed}/bin/sfeed_curses" ];
+  } ./myfeeds.sh;
 in
 {
   # Enable my sfeed module
@@ -21,4 +27,11 @@ in
     (importSecret {} ./rc.secret.nix)
 
   ];
+
+  home.packages = [ myfeeds.pkg ];
+
+  xsession.windowManager.i3.config.assigns."10" = [{class = "^URxvt$";instance = "^myfeeds$";}];
+  xsession.windowManager.i3.config.startup = [{ command = "${my.launch.term} app myfeeds ${
+    pkgs.writeShellScript "myfeeds-cycle" "while true; do ${myfeeds};done"
+  }"; always = false; notification = false; }];
 }
