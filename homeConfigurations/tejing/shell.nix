@@ -18,6 +18,7 @@
       bc # also includes dc
       moreutils # sponge & more
       man-pages # linux kernel apis and other development man pages
+      faketty
     ;
     inherit (my.pkgs)
       hred
