@@ -97,6 +97,7 @@
   programs.zsh.initExtra = ''
     setopt extended_glob
     setopt interactivecomments
+    setopt rmstarsilent
     unset RPS1
     bindkey "^I" complete-word
     bindkey "^[l" reset-prompt
