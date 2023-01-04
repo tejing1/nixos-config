@@ -153,60 +153,64 @@ in
     code = ''tac | force_increasing_dates | tac'';
   };
 
-  # Fetch from crunchyroll beta api. Always pair with the crunchyroll parser.
+  # Fetch from crunchyroll api. Always pair with the crunchyroll parser.
   fetch.crunchyroll = {
     code = ''
-      local api_domain="https://www.crunchyroll.com"
-      local initial_auth="Y3Jfd2ViOg=="
-
-      #local initialdata="$(curl -sSL "$2" | hred '^ div#preload-data > script @.innerHTML' | jq -c '[capture("window.__INITIAL_STATE__ = (?<initial_state>[^\n]+);","window.__APP_CONFIG__ = (?<app_config>[^\n]+);")] | add | .[] |= fromjson')"
-      #local api_domain="$(jq '.app_config.cxApiParams.apiDomain' -r <<<"$initialdata")"
-      #local initial_auth="$(jq '.app_config.cxApiParams.anonClientId | "\(.):" | @base64' -r <<<"$initialdata")"
-
-      local series_id="''${2#https://beta.crunchyroll.com/series/}"
+      local series_id="''${2#https://www.crunchyroll.com/series/}"
       local series_id="''${series_id%%/*}"
       if [ "''${#series_id}" -ne 9 ] || [ -n "''${id//[A-Z0-9]/}" ]; then
         echo "Failed to parse url \"$2\": got series_id \"$series_id\"... count is \"''${#series_id}\" and collapsed is \"''${id//[A-Z0-9]/}\"" >&2
         return 1
       fi
 
-      local file="$sfeedtmpdir/crunchyroll_policy"
-      while [ ! -f "$file" ]; do
-        if lockfile-create -q --retry 0 "$file"; then
+      local cookiefile="$sfeedtmpdir/crunchyroll_cookies"
+      local policyfile="$sfeedtmpdir/crunchyroll_policy"
+      local initialdatafile="$sfeedtmpdir/crunchyroll_initialdata"
+      local failurefil="$sfeedtmpdir/crunchyroll_failure"
+      while [ ! -f "$policyfile" ]; do
+        if lockfile-create -q --retry 0 "$policyfile"; then
           local restore_opts="$(shopt -po pipefail)"
           set -o pipefail
+
+          # We need the cookies from this request in order for auth to work
+          curl -c "$cookiefile" --no-alpn -fsSLm 15 -A ${escapeShellArg innocuousUserAgent} "https://www.crunchyroll.com" | hred '^ div#preload-data > script @.innerHTML' | jq -c '[capture("window.__INITIAL_STATE__ = (?<initial_state>[^\n]+);","window.__APP_CONFIG__ = (?<app_config>[^\n]+);")] | add | .[] |= fromjson' > "$initialdatafile"
+          local api_domain="$(jq '.app_config.cxApiParams.apiDomain' -r "$initialdatafile")"
+          local initial_auth="$(jq '.app_config.cxApiParams.anonClientId | "\(.):" | @base64' -r "$initialdatafile")"
+
           local auth=""
-          auth="$(curl --no-alpn -fsSLm 15 -A ${escapeShellArg innocuousUserAgent} -H "Authorization: Basic $initial_auth" "$api_domain/auth/v1/token" -X POST -d grant_type=client_id | jq '"\(.token_type) \(.access_token)"' -r)" &&
-            curl --no-alpn -fsSLm 15 -A ${escapeShellArg innocuousUserAgent} -H "Authorization: $auth" "$api_domain/index/v2" > "$file.part" &&
-            mv -f "$file.part" "$file" ||
-            { local err=$?; touch "$file.fail"; eval "$restore_opts"; return $err; }
-          lockfile-remove "$file"
+          auth="$(curl -b "$cookiefile" -c "$cookiefile" --no-alpn -fsSLm 15 -A ${escapeShellArg innocuousUserAgent} -H "Authorization: Basic $initial_auth" "$api_domain/auth/v1/token" -X POST -d grant_type=client_id | jq '"\(.token_type) \(.access_token)"' -r)" &&
+            curl -b "$cookiefile" -c "$cookiefile" --no-alpn -fsSLm 15 -A ${escapeShellArg innocuousUserAgent} -H "Authorization: $auth" "$api_domain/index/v2" > "$policyfile.part" &&
+            mv -f "$policyfile.part" "$policyfile" ||
+            { local err=$?; touch "$failurefile"; eval "$restore_opts"; return $err; }
+          lockfile-remove "$policyfile"
           eval "$restore_opts"
         else
           sleep 0.1
-          [ -f "$file.fail" ] && return 1
+          [ -f "$failurefile" ] && return 1
         fi
       done
 
+      local api_domain=""
+      api_domain="$(jq '.app_config.cxApiParams.apiDomain' -r "$initialdatafile")"
       local bucket=""
-      bucket="$(jq '.cms_web | .bucket' -r "$file")" || return 1
+      bucket="$(jq '.cms_web | .bucket' -r "$policyfile")" || return 1
       local params=""
-      params="$(jq '.cms_web | @uri "Policy=\(.policy)&Signature=\(.signature)&Key-Pair-Id=\(.key_pair_id)"' -r "$file")" || return 1
+      params="$(jq '.cms_web | @uri "Policy=\(.policy)&Signature=\(.signature)&Key-Pair-Id=\(.key_pair_id)"' -r "$policyfile")" || return 1
 
       local restore_opts="$(shopt -po pipefail)"
       set -o pipefail
       local seasons=""
-      seasons="$(curl --no-alpn -fsSLm 15 -A ${escapeShellArg innocuousUserAgent} "$api_domain/cms/v2$bucket/seasons?series_id=$series_id" -G -d "$params" | jq '.items | map(select(.is_subbed) | .id) | join(" ")' -r)" || { eval "$restore_opts"; return 1; }
+      seasons="$(curl -b "$cookiefile" -c "$cookiefile" --no-alpn -fsSLm 15 -A ${escapeShellArg innocuousUserAgent} "$api_domain/cms/v2$bucket/seasons?series_id=$series_id" -G -d "$params" | jq '.items | map(select(.is_subbed) | .id) | join(" ")' -r)" || { eval "$restore_opts"; return 1; }
       for season_id in $seasons; do
-          curl --no-alpn -fsSLm 15 -A ${escapeShellArg innocuousUserAgent} "$api_domain/cms/v2$bucket/episodes?season_id=$season_id" -G -d "$params" | jq '.items[]' -c || { eval "$restore_opts"; return 1; }
+          curl -b "$cookiefile" -c "$cookiefile" --no-alpn -fsSLm 15 -A ${escapeShellArg innocuousUserAgent} "$api_domain/cms/v2$bucket/episodes?season_id=$season_id" -G -d "$params" | jq '.items[]' -c || { eval "$restore_opts"; return 1; }
       done
       eval "$restore_opts"'';
     inputs = [ pkgs.curl pkgs.jq pkgs.lockfileProgs ];
   };
-  # Parse crunchyroll beta api. Always pair with the crunchyroll fetcher.
+  # Parse crunchyroll api. Always pair with the crunchyroll fetcher.
   parse.crunchyroll = {
     code = ''
-      jq '[ .episode_air_date, "S\(.season_number | tostring | (2 - length) * "0" + .)E\(.episode_number | tostring | (2 - length) * "0" + .) - \(.title)", "https://beta.crunchyroll.com/watch/\(.id)/\(.slug_title)", .description, "plain", .id, "", "", .season_id ] | @tsv' -r | normalize_dates'';
+      jq '[ .episode_air_date, "S\(.season_number | tostring | (2 - length) * "0" + .)E\(.episode_number | tostring | (2 - length) * "0" + .) - \(.title)", "https://www.crunchyroll.com/watch/\(.id)/\(.slug_title)", .description, "plain", .id, "", "", .season_id ] | @tsv' -r | normalize_dates'';
     inputs = [ pkgs.jq ];
   };
 
