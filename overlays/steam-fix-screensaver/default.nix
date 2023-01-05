@@ -6,21 +6,29 @@ let
   # These are the strings that ld-linux.so expands $PLATFORM to. It
   # can be difficult to find the correct values.  The only way I know
   # to do so is to run your ld-linux.so as a standalone executable and
-  # check the help output like so:
+  # check the help output. Here's a bit of shell code to generate the
+  # value below for your machine:
+  #
+  # echo '  platforms = {'
+  # for p in glibc.bin pkgsi686Linux.glibc.bin;do
+  #   echo -n "    $($(nix-build --no-out-link '<nixpkgs>' -A "$p")/bin/ld.so --help | grep AT_PLATFORM | egrep -o '^ *[^ ]+' | egrep -o '[^ ]+') = "
+  #   if [[ "$p" == glibc.bin ]];then
+  #     echo -n 64
+  #   else
+  #     echo -n 32
+  #   fi
+  #   echo ';'
+  # done
+  # echo '  };'
 
-  # $(ldd "$(command which ls)" | egrep -o '/nix/store/[a-z0-9]+-glibc-[^/]+/lib/ld-linux[^ ]+') --help |
-  # grep AT_PLATFORM | egrep -o '^ *[^ ]+' | egrep -o '[^ ]+'
-
-  # replace ls with a 32-bit executable to get the string for 32-bit
-  # ld-linux.so
-
-  # This would all be much simpler if $LIB expanded to different
-  # strings in 32-bit and 64-bit modes on nixos, like it does on other
-  # distros.
   platforms = {
     haswell = 64;
     i686 = 32;
   };
+
+  # This would all be much simpler if $LIB expanded to different
+  # strings in 32-bit and 64-bit modes on nixos, like it does on other
+  # distros.
 
   preloadLibFor = bits: assert bits == 64 || bits == 32;
     runCommandWith {
