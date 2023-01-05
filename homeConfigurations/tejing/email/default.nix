@@ -105,17 +105,24 @@ in
       set mail_check_stats
       set text_flowed
       set reflow_wrap=140
-      set alias_file=/mnt/persist/tejing/mail/neomutt_aliases
-      source /mnt/persist/tejing/mail/neomutt_aliases
+      set show_multipart_alternative=info
+      source ${builtins.toFile "aliases" (my.lib.readSecret "" ./aliases.secret)}
       unset wait_key
       unmailboxes *
       set folder='${config.accounts.email.maildirBasePath}/${config.accounts.email.accounts.fastmail.maildir.path}'
       mailboxes +Inbox +Sent +Drafts +Spam +Trash +Archive
       set folder='${config.accounts.email.maildirBasePath}/${config.accounts.email.accounts.yahoo.maildir.path}'
-      mailboxes +Inbox +Sent +Drafts +Spam +Archive
+      mailboxes +Inbox +Sent +Drafts +Spam +Trash +Archive
       set folder='${config.accounts.email.maildirBasePath}/${config.accounts.email.accounts.gmail.maildir.path}'
       mailboxes +Inbox +Sent +Drafts +Spam +Trash +All
       set pgp_default_key=46E96F6FF44F3D74
+
+      # multipart/alternative abusers list
+      # people who send mail with a text/plain element that says "your
+      # email client doesn't support html email"...
+      source ${builtins.toFile "alternative_abusers" (my.lib.readSecret "" ./alternative_abusers.secret)}
+      message-hook '!%f alternative_abusers' "unalternative_order *; alternative_order text/plain text/html"
+      message-hook '%f alternative_abusers' "unalternative_order *; alternative_order text/html text/plain"
 
       # retain previous appearance
       color normal white black
