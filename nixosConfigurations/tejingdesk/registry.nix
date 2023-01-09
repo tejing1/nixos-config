@@ -4,12 +4,19 @@ let
   inherit (inputs) nixpkgs home-manager self;
   inherit (lib) mkIf;
   inherit (lib.strings) escapeNixIdentifier;
-  inherit (my.lib) mkFlake;
+  inherit (my.lib) mkFlake repoLockedTestResult;
 in
 {
   # Let 'nixos-version --json' know about the Git revision
   # of this flake.
   system.configurationRevision = mkIf (self ? rev) self.rev;
+
+  # Save our single IFD derivation so we don't usually have to rebuild
+  # it
+  system.extraDependencies = [ repoLockedTestResult ];
+
+  # Indirect our NIX_PATH through /etc so that it updates without a
+  # relog
   nix.nixPath = [ "/etc/nix/path" ];
 
   # Don't talk to the internet every time I use the registry
