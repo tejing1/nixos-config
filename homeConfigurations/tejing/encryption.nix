@@ -106,7 +106,6 @@ in
     programs.password-store.package = pkgs.pass.withExtensions (exts: builtins.attrValues {
       inherit (exts)
         pass-otp
-        pass-import
       ;
     });
     programs.password-store.settings = {
