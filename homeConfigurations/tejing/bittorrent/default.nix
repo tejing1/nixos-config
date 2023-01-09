@@ -104,5 +104,5 @@ in
   };
 
   xsession.windowManager.i3.config.assigns."10" = [{class = "^URxvt$";instance = "^rtorrent$";}];
-  xsession.windowManager.i3.config.startup = [{ command = "${my.launch.term} app rtorrent ${pkgs.writeShellScript "rtorrent-cycle" "while true; do ${rtorrent-attach};done"}"; always = false; notification = false; }];
+  xsession.windowManager.i3.config.startup = [{ command = "${my.launch.term} app rtorrent ${pkgs.writeShellScript "rtorrent-cycle" "while true; do rtorrent-attach;done"}"; always = false; notification = false; }];
 }

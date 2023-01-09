@@ -32,6 +32,6 @@ in
 
   xsession.windowManager.i3.config.assigns."10" = [{class = "^URxvt$";instance = "^myfeeds$";}];
   xsession.windowManager.i3.config.startup = [{ command = "${my.launch.term} app myfeeds ${
-    pkgs.writeShellScript "myfeeds-cycle" "while true; do ${myfeeds};done"
+    pkgs.writeShellScript "myfeeds-cycle" "while true; do myfeeds;done"
   }"; always = false; notification = false; }];
 }
