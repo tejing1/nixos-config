@@ -268,4 +268,20 @@ in
       [ .attributes.createdAt, "\(.attributes.chapter) - \(.attributes.title | if . == "" or . == null then "No Title" else . end) (\(.groups))", "https://mangadex.org/chapter/\(.id)", "", "", .id, .groups, "", "" ] | @tsv
     '';
   };
+
+  # Parse nyaa.si
+  parse.nyaa = {
+    code = ''website_parse $2 ${toFile "nyaa.hred" ''
+      table.torrent-list > tbody > tr {
+        ^:scope > td:nth-child(2) > a:not(.comments) ...{
+          @.textContent => title,
+          @.href => link
+        },
+        ^:scope > td:nth-child(5) @data-timestamp => timestamp,
+        ^:scope > td:nth-child(3) > a[href^=magnet] @.href => magnet
+      }
+    ''} ${toFile "nyaa.jq" ''
+      [ .timestamp, .title, .link, "", "", .link, "", .magnet, "" ] | @tsv
+    ''}'';
+  };
 }
