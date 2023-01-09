@@ -19,7 +19,11 @@ in
   security.pam.services.login.gnupg.enable = true;
   security.pam.services.login.gnupg.noAutostart = true;
   security.pam.services.login.gnupg.storeOnly = true;
+  security.pam.services.lightdm-greeter.gnupg.enable = true;
+  security.pam.services.lightdm-greeter.gnupg.noAutostart = true;
+  security.pam.services.lightdm-greeter.gnupg.storeOnly = true;
   security.pam.services.i3lock.gnupg.enable = true;
+  security.pam.services.i3lock.gnupg.noAutostart = true;
 
   programs.fish.enable = true;
   programs.zsh.enable = true;
