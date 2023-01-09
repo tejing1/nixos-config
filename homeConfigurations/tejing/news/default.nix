@@ -7,6 +7,7 @@ let
   myfeeds = my.lib.mkShellScript "myfeeds" {
     inputs = attrValues { inherit (pkgs) coreutils findutils inotify-tools sfeed; };
     execer = [ "cannot:${pkgs.sfeed}/bin/sfeed_curses" ];
+    prologue = "${pkgs.writeText "set_sfeed_htmlconv.sh" ''export SFEED_HTMLCONV='${pkgs.lynx}/bin/lynx -stdin -dump -underline_links -image_links -display_charset="utf-8" -assume_charset="utf-8"' ''}";
   } ./myfeeds.sh;
 in
 {
