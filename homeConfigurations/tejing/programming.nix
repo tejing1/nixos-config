@@ -5,6 +5,7 @@
     inherit (pkgs)
       github-cli
       git-absorb
+      nixpkgs-review
       coq
       # perhaps this should be left to individual development environments?
       ruby
