@@ -27,6 +27,7 @@ in
       auto-key-retrieve = true;
       auto-key-import = true;
       keyserver-options = "honor-keyserver-url";
+      no-autostart = true;
     };
     services.gpg-agent = {
       enable = true;
