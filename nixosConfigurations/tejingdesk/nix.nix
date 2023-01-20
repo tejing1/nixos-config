@@ -1,4 +1,4 @@
-{ config, my, pkgs, ... }:
+{ config, lib, my, pkgs, ... }:
 
 {
   nixpkgs.overlays = [
@@ -21,9 +21,33 @@
       automatic = true;
       persistent = true;
       dates = "weekly";
-      options = "--delete-older-than 30d";
     };
   };
+
+  # Clean up system generations more intelligently than nix-collect-garbage
+  systemd.services.system-profile-cleanup = let
+    keepAtLeast = 5;
+    cutoffDate = "30 days ago";
+  in {
+    description = "system profile cleaner";
+    startAt = "daily";
+    script = ''
+      cutoff="$(date -d ${lib.escapeShellArg cutoffDate} '+%s')"
+      prev=$(date '+%s')
+      count=${toString keepAtLeast}
+      for f in $(ls -1Adt --time=birth /nix/var/nix/profiles/system-*);do
+        cur="$(stat -c '%W' "$f")"
+        if [ "$prev" -lt "$cutoff" ] && [ "$count" -lt 1 ]; then
+          part="''${f#/nix/var/nix/profiles/system-}"
+          echo "Removing generation ''${part%-link}"
+          rm -f -- "$f"
+        fi
+        prev="$cur"
+        count=$(($count - 1))
+      done
+    '';
+  };
+  systemd.timers.system-profile-cleanup.timerConfig.Persistent = true;
 
   environment.systemPackages = builtins.attrValues {
     inherit (pkgs)
