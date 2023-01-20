@@ -4,16 +4,24 @@ let
   inherit (inputs) nixpkgs home-manager self;
   inherit (lib) mkIf;
   inherit (lib.strings) escapeNixIdentifier;
-  inherit (my.lib) mkFlake repoLockedTestResult;
+  inherit (my.lib) mkFlake repoLockedTestResult flakeClosureRef;
 in
 {
   # Let 'nixos-version --json' know about the Git revision
   # of this flake.
   system.configurationRevision = mkIf (self ? rev) self.rev;
 
-  # Save our single IFD derivation so we don't usually have to rebuild
-  # it
-  system.extraDependencies = [ repoLockedTestResult ];
+  system.extraDependencies = [
+
+    # Save our single IFD derivation so we don't usually have to
+    # rebuild it
+    repoLockedTestResult
+
+    # Save the whole input closure of this flake, so we have all the
+    # nix code necessary to rebuild this system
+    (flakeClosureRef self)
+
+  ];
 
   # Indirect our NIX_PATH through /etc so that it updates without a
   # relog
