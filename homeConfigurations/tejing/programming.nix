@@ -22,4 +22,7 @@
   programs.git.extraConfig.gcrypt.publish-participants = true;
   programs.git.extraConfig.gcrypt.participants = "963D3AFB8AA4D693153C150046E96F6FF44F3D74";
   programs.git.extraConfig.gcrypt.gpg-args = "--quiet";
+
+  programs.direnv.enable = true;
+  programs.direnv.nix-direnv.enable = true;
 }
