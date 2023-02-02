@@ -46,7 +46,15 @@ in
       pavucontrol
       git
     ;
-  };
+  } ++ [
+    (pkgs.writeShellScriptBin "my-rewrite-boot-partition" ''
+      echocmd() {
+        echo "$@"
+        "$@"
+      }
+      echocmd sudo dd if=${config.mobile.outputs.u-boot.boot-partition}/mobile-nixos-boot.img of=/dev/mmcblk2p1 bs=8M oflag=direct,sync status=progress
+    '')
+  ];
 
   time.timeZone = "US/Eastern";
 
