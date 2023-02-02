@@ -1,7 +1,18 @@
-{ nixpkgs, self, ... }:
+{ self, ... }@inputs:
+hostname:
 let
-  inherit (nixpkgs.lib) fileContents;
-  inherit (self.lib) mkNixos listImportablePathsExcept;
-in
+  nixpkgs = inputs.nixpkgs;
+  system = "x86_64-linux";
 
-mkNixos (listImportablePathsExcept ./. [ "default.nix" ]) (fileContents ./system)
+  inherit (builtins) attrValues;
+  inherit (self.lib) listImportablePathsExcept;
+in
+nixpkgs.lib.nixosSystem {
+  inherit system;
+  specialArgs = { inherit inputs; };
+  modules = [{
+    networking.hostName = hostname;
+  }]
+  ++ listImportablePathsExcept ./. [ "default.nix" ]
+  ++ attrValues self.nixosModules;
+}
