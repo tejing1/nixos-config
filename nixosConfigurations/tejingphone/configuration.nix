@@ -82,6 +82,8 @@ in
     };
   };
 
+  environment.etc."nixos/flake.nix".source = "/home/tejing/nixos-config/flake.nix";
+
   #
   # Opinionated defaults
   #
