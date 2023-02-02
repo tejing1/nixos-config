@@ -30,8 +30,6 @@ in
   # Prevents graphical glitches
   mobile.quirks.supportsStage-0 = mkForce false;
 
-  networking.hostName = "tejingphone";
-
   services.openssh.enable = true;
   services.openssh.settings.PasswordAuthentication = false;
 
