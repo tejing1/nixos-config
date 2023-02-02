@@ -44,6 +44,7 @@ in
       htop
       pulsemixer
       pavucontrol
+      git
     ;
   };
 
