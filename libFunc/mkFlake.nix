@@ -6,8 +6,8 @@ let
   inherit (lib.strings) escapeNixIdentifier escapeNixString;
 
   cleanNode = flake:
-    let spec = {type="path";path=flake.sourceInfo.outPath;inherit (flake.sourceInfo) narHash;};
-    in {inputs = mapAttrs (_: cleanNode) flake.inputs;locked = spec;original = spec;};
+    let spec = {type="path";path=flake.outPath;inherit (flake) narHash;};
+    in {inputs = mapAttrs (_: cleanNode) (flake.inputs or {});locked = spec;original = spec;};
   flattenNode = prefix: node:
     let
       ids = mapAttrs (n: v: (flattenNode (prefix + "-" + n) v).name) node.inputs;
