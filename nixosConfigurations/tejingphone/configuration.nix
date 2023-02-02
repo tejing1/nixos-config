@@ -43,6 +43,7 @@ in
       pulsemixer
       pavucontrol
       git
+      git-crypt
     ;
   } ++ [
     (pkgs.writeShellScriptBin "my-rewrite-boot-partition" ''
