@@ -1,0 +1,6 @@
+[qmk_firmware]
+src.git = "https://github.com/zsa/qmk_firmware.git"
+src.branch = "firmware22"
+fetch.github = "zsa/qmk_firmware"
+git.fetchSubmodules = true
+git.leaveDotGit = true

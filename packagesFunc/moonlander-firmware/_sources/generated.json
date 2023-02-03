@@ -1,0 +1,21 @@
+{
+    "qmk_firmware": {
+        "cargoLocks": null,
+        "extract": null,
+        "name": "qmk_firmware",
+        "passthru": null,
+        "pinned": false,
+        "src": {
+            "deepClone": false,
+            "fetchSubmodules": true,
+            "leaveDotGit": true,
+            "name": null,
+            "owner": "zsa",
+            "repo": "qmk_firmware",
+            "rev": "2f50d1ed03058f69d7aeddaae34eb07673f3f9e8",
+            "sha256": "sha256-xLxJWm243CXyQ+sB0M+ridrPYibg30dFhBfRRlyWCp4=",
+            "type": "github"
+        },
+        "version": "2f50d1ed03058f69d7aeddaae34eb07673f3f9e8"
+    }
+}
