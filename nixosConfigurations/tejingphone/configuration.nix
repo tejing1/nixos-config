@@ -42,8 +42,6 @@ in
       htop
       pulsemixer
       pavucontrol
-      git
-      git-crypt
     ;
   } ++ [
     (pkgs.writeShellScriptBin "my-rewrite-boot-partition" ''
@@ -60,26 +58,7 @@ in
   zramSwap.enable = true;
   zramSwap.memoryPercent = 150;
 
-  nixpkgs.overlays = [
-    my.overlays.editline-urxvt-home-end-fix
-  ];
-
-  nix = {
-    # Use the new CLI and enable flakes
-    settings.experimental-features = "nix-command flakes";
-    # Make builds run with low priority so my system stays responsive
-    daemonCPUSchedPolicy = "idle";
-    daemonIOSchedClass = "idle";
-    # Hard link identical files in the store automatically
-    settings.auto-optimise-store = true;
-    # automatically trigger garbage collection
-    gc = {
-      automatic = true;
-      persistent = true;
-      dates = "weekly";
-      options = "--delete-older-than 30d";
-    };
-  };
+  my.customize.nix = true;
 
   environment.etc."nixos/flake.nix".source = "/home/tejing/nixos-config/flake.nix";
 
