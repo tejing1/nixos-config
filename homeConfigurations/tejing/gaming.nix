@@ -1,4 +1,4 @@
-{ my, nixosConfig, pkgs, ... }:
+{ my, pkgs, ... }:
 
 {
   home.packages = builtins.attrValues {

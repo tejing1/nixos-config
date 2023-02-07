@@ -93,22 +93,13 @@ in
 
   programs.zsh.enable = true;
 
-  users.users."tejing" = {
-    isNormalUser = true;
-    uid = 1000;
-    shell = pkgs.zsh;
-    password = mkIf (config.users.users.tejing.hashedPassword == null) "password"; # Fallback for locked build
-    hashedPassword = readSecret null ../../homeConfigurations/tejing/pwhash.secret;
-    openssh.authorizedKeys.keys = [ "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDDD59yTSccmS5YdrrbH79dtnyqqQ6Jid+i2D2DIaO5I/4UnI4s2eff7MAXF5xg80eEilzpbqR+BMykbEtCRkosNk0WYfbrbTmosihmItPe+xkoedQpKd60ADyYMjmJSfUrHbIZ4E07BacZcD+UUM5s4cYZPjxDjz9DFgychhG4BN0m8vjQOP1ds9jvPqnZw2tmcGCuim8c1lQDMAiYZXV+Vqrda31iFFb87fmsHv7ZlVXaUPJ2RJjz6a+LsD49eV2pSycatwM7Z4bM+DD7HJR+HvDQxfLwWP2bVxxBw3KSXNHGTlnH9VF/n11vWnkiNcPV4QbHpKd2Y5MKxU3eGLJ/ subkey 004FFE9C78916342 of key 46E96F6FF44F3D74 keygrip is 0B9AF8FB49262BBE699A9ED715A7177702D9E640" ];
-    extraGroups = [
-      "dialout"
-      "feedbackd"
-      "networkmanager"
-      "video"
-      #"audio"
-      "wheel"
-    ];
-  };
+  my.users.tejing = true;
+  users.users.tejing.extraGroups = [
+    "dialout"
+    "feedbackd"
+    "networkmanager"
+    "video"
+  ];
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
