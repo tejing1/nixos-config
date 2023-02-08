@@ -60,6 +60,9 @@ in
   zramSwap.memoryPercent = 150;
 
   my.customize.nix = true;
+  my.customize.shell = true;
+  my.command-not-found.stateDir = "/my/command-not-found";
+  systemd.tmpfiles.rules = [ "d /my/command-not-found 0755 root root - -" ];
 
   environment.etc."nixos/flake.nix".source = "/home/tejing/nixos-config/flake.nix";
 
@@ -91,8 +94,6 @@ in
   #
   # User configuration
   #
-
-  programs.zsh.enable = true;
 
   my.customize.users = true;
   my.users.tejing = true;

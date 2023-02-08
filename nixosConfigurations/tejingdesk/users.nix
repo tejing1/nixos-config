@@ -1,3 +1,0 @@
-{
-  my.customize.users = true;
-}

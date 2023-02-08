@@ -1,10 +1,10 @@
 { inputs, inputSpecs, lib, my, pkgs, ... }:
 let
   inherit (builtins) attrValues;
-  inherit (lib) genAttrs mkOverride;
+  inherit (lib) genAttrs mkOverride mkEnableOption mkOption mkIf;
 
-  revPath = "/mnt/cache/tejingdesk/programs.rev";
-  dbPath = "/mnt/cache/tejingdesk/programs.sqlite";
+  revPath = "${my.command-not-found.stateDir}/programs.rev";
+  dbPath = "${my.command-not-found.stateDir}/programs.sqlite";
 
   # downloads programs.sqlite from the appropriate iteration of the
   # channel corresponding to the nixpkgs branch in use, if not already
@@ -42,25 +42,30 @@ let
     echo "$rev" > ${revPath}
   '';
 in
-
 {
-  # undo default shellAliases
-  environment.shellAliases = genAttrs [ "l" "ll" "ls" ] (_: mkOverride 999 null);
+  options.my.customize.shell = mkEnableOption "shell customization";
+  options.my.command-not-found.stateDir = mkOption {
+    type = lib.types.path;
+  };
+  config = mkIf my.customize.shell {
+    # undo default shellAliases
+    environment.shellAliases = genAttrs [ "l" "ll" "ls" ] (_: mkOverride 999 null);
 
-  # suggest packages to install for commands not in PATH
-  programs.command-not-found.enable = true;
+    # suggest packages to install for commands not in PATH
+    programs.command-not-found.enable = true;
 
-  # ensure the command -> package database is correct
-  programs.command-not-found.dbPath = dbPath;
-  systemd.services.programdb = {
-    description = "Program Database Download";
-    wantedBy = [ "multi-user.target" ];
-    wants = [ "network.target" ];
-    after = [ "network.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = "${downloadDatabase} ${inputSpecs.nixpkgs.ref} ${inputs.nixpkgs.rev}";
-      RemainAfterExit = true;
+    # ensure the command -> package database is correct
+    programs.command-not-found.dbPath = dbPath;
+    systemd.services.programdb = {
+      description = "Program Database Download";
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network.target" ];
+      after = [ "network.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = "${downloadDatabase} ${inputSpecs.nixpkgs.ref} ${inputs.nixpkgs.rev}";
+        RemainAfterExit = true;
+      };
     };
   };
 }
