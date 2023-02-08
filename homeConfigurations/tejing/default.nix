@@ -15,7 +15,6 @@ let
       home.homeDirectory = mkDefault "/home/${username}";
       nixpkgs.config.allowUnfreePredicate = _: true;
     }
-    inputs.self.homeModules.my
     inputs.self.homeModules.${username}
   ] ++ (listImportablePathsExcept ./. [ "default.nix" ]);
 in
@@ -25,5 +24,5 @@ homeManagerConfiguration {
   extraSpecialArgs = {
     inherit inputs nixpkgs home-manager;
   };
-  inherit modules;
+  modules = modules ++ [ inputs.self.homeModules.my ];
 }

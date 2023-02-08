@@ -94,6 +94,7 @@ in
 
   programs.zsh.enable = true;
 
+  my.customize.users = true;
   my.users.tejing = true;
   users.users.tejing.extraGroups = [
     "dialout"
@@ -102,12 +103,10 @@ in
     "video"
   ];
   home-manager.users.tejing.imports = [
-    inputs.self.homeModules.my
     inputs.self.homeModules.tejing
   ];
   home-manager.users.tejing.my.customize.shell = true;
   home-manager.users.tejing.home.stateVersion = "22.11";
-  home-manager.extraSpecialArgs = { inherit inputs nixpkgs home-manager; };
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
