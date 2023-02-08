@@ -1,4 +1,4 @@
-{ config, inputs, lib, my, pkgs, ... }:
+{ config, home-manager, inputs, lib, my, nixpkgs, pkgs, ... }:
 let
   inherit (builtins) attrValues;
   inherit (lib) mkIf mkForce;
@@ -12,6 +12,7 @@ in
     "${inputs.mobile-nixos}/examples/phosh/phosh.nix"
     #<sxmo-nix/modules/sxmo>
     #<sxmo-nix/modules/tinydm>
+    home-manager.nixosModules.home-manager
   ];
 
   # SXMO-related
@@ -100,6 +101,13 @@ in
     "networkmanager"
     "video"
   ];
+  home-manager.users.tejing.imports = [
+    inputs.self.homeModules.my
+    inputs.self.homeModules.tejing
+  ];
+  home-manager.users.tejing.my.customize.shell = true;
+  home-manager.users.tejing.home.stateVersion = "22.11";
+  home-manager.extraSpecialArgs = { inherit inputs nixpkgs home-manager; };
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions

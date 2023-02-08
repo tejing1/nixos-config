@@ -1,4 +1,4 @@
-{ lib, my, pkgs, ... }:
+{ inputs, lib, my, pkgs, ... }:
 
 let
   inherit (builtins) attrValues;
@@ -11,6 +11,7 @@ let
   } ./myfeeds.sh;
 in
 {
+  imports = [ inputs.self.homeModules.sfeed ];
   # Enable my sfeed module
   my.sfeed.enable = true;
 

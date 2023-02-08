@@ -1,7 +1,7 @@
-{ config, inputs, inputSpecs, lib, my, ... }:
+{ config, home-manager, inputs, inputSpecs, lib, my, nixpkgs, ... }:
 let
   inherit (builtins) toFile;
-  inherit (inputs) nixpkgs home-manager self;
+  inherit (inputs) self;
   inherit (lib) mkIf;
   inherit (lib.strings) escapeNixIdentifier;
   inherit (my.lib) mkFlake repoLockedTestResult flakeClosureRef;

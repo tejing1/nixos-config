@@ -9,13 +9,15 @@ let
   inherit (home-manager.lib) homeManagerConfiguration;
   inherit (inputs.self.lib) listImportablePathsExcept;
 
-  modules = [{
-    home.username = mkDefault username;
-    home.homeDirectory = mkDefault "/home/${username}";
-    nixpkgs.config.allowUnfreePredicate = _: true;
-  }]
-  ++ (listImportablePathsExcept ./. [ "default.nix" ])
-  ++ attrValues inputs.self.homeModules;
+  modules = [
+    {
+      home.username = mkDefault username;
+      home.homeDirectory = mkDefault "/home/${username}";
+      nixpkgs.config.allowUnfreePredicate = _: true;
+    }
+    inputs.self.homeModules.my
+    inputs.self.homeModules.${username}
+  ] ++ (listImportablePathsExcept ./. [ "default.nix" ]);
 in
 { configurationModule.imports = modules; } //
 homeManagerConfiguration {
