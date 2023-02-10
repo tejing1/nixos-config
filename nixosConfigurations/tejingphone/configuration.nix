@@ -96,7 +96,7 @@ in
   #
 
   my.customize.users = true;
-  my.users.tejing = true;
+  my.users.tejing.enable = true;
   users.users.tejing.extraGroups = [
     "dialout"
     "feedbackd"
