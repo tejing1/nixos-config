@@ -104,7 +104,7 @@ in
       bindkey '^H' backward-kill-word
 
       . ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
-      [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+      source ${./p10k.zsh}
       . ${pkgs.zsh-syntax-highlighting}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
       # Display $1 in terminal title.
