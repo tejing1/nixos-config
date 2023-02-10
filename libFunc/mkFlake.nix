@@ -7,7 +7,8 @@ let
 
   cleanNode = flake:
     let spec = {type="path";path=flake.outPath;inherit (flake) narHash;};
-    in {inputs = mapAttrs (_: cleanNode) (flake.inputs or {});locked = spec;original = spec;};
+        extra = if flake ? outputs then {} else { flake = false; };
+    in {inputs = mapAttrs (_: cleanNode) (flake.inputs or {});locked = spec;original = spec;} // extra;
   flattenNode = prefix: node:
     let
       ids = mapAttrs (n: v: (flattenNode (prefix + "-" + n) v).name) node.inputs;
