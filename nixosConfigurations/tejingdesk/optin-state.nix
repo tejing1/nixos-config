@@ -10,8 +10,9 @@ lib.mkIf (! options.virtualisation ? qemu) {
   # switch-to-configuration refuses to operate without this tag
   environment.etc.NIXOS.text = "";
 
-  # set machine id for log continuity
-  environment.etc.machine-id.source = ./machine-id;
+  # set machine id
+  environment.etc.machine-id.source = ./machine-id.secret;
+  environment.etc.machine-id.mode = "0644";
 
   # keep hardware clock adjustment data
   environment.etc.adjtime.source = "/mnt/cache/tejingdesk/adjtime";
