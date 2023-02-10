@@ -8,6 +8,9 @@
     share = "/mnt/persist/share";
     flake = "/mnt/persist/tejing/flake";
   };
+  programs.fish.loginShellInit = ''
+    cd ~/data
+  '';
   programs.zsh.loginExtra = ''
     cd ~/data
   '';

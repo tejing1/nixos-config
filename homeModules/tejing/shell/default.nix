@@ -31,9 +31,6 @@ in
     programs.fish.enable = true;
     programs.dircolors.enableFishIntegration = true;
     programs.starship.enableFishIntegration = true;
-    programs.fish.loginShellInit = ''
-      cd ~/data
-    '';
     programs.fish.shellInit = ''
       set fish_greeting '''
     '';
