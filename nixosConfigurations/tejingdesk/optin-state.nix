@@ -1,6 +1,6 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, options, pkgs, ... }:
 
-{
+lib.mkIf (! options.virtualisation ? qemu) {
   # Don't bother with the lecture or the need to keep state about who's been lectured
   security.sudo.extraConfig = "Defaults lecture=\"never\"";
 
@@ -16,7 +16,6 @@
   # keep hardware clock adjustment data
   environment.etc.adjtime.source = "/mnt/cache/tejingdesk/adjtime";
 
-  # TODO: don't do this if building for a VM (use (config.fileSystems."/tmp/xchg".fsType == "9p")?)
   # just before mounting, create empty subvolume where nixos' mounting code expects it
   boot.initrd.postDeviceCommands = lib.mkAfter ''
     # wait for device to show up
@@ -56,6 +55,7 @@
     # needs to be a bind mount because the activation script reacts to symlinks
     mount -o bind $targetRoot/mnt/cache/tejingdesk/systemd/timesync $targetRoot/var/lib/systemd/timesync
   '';
+
   # clean up old root subvolumes periodically
   # leaves a minimum of 'keepAtLeast' copies
   # keeps anything whose successor is newer than 'cutoffDate'
