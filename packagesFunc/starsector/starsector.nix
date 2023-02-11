@@ -1,10 +1,11 @@
 { buildFHSUserEnv, coreutils, fetchzip, gnused, stdenv, writeShellScript }:
 
 let
-  version = "0.95.1a-RC6";
-  sha256 = "sha256-+0zGJHM+SMonx3sytCQNQA/QBgzdPMEfQvOjrCDSOs8=";
+  inherit (builtins) fromJSON readFile toFile attrValues;
 
-  modify_starsector_sh = builtins.toFile "modify_starsector_sh.sed" ''
+  inherit (fromJSON (readFile ./pin.json)) version hash;
+
+  modify_starsector_sh = toFile "modify_starsector_sh.sed" ''
     # Exec so we don't have a useless process lying around
     s:./jre_linux/bin/java:exec ./jre_linux/bin/java:
 
@@ -26,17 +27,15 @@ let
 in
 
 buildFHSUserEnv {
-  name = "starsector";
+  name = "starsector-${version}";
 
-  targetPkgs = pkgs: builtins.attrValues {
-
+  targetPkgs = pkgs: attrValues {
     inherit (pkgs)
       alsa-lib
       gtk2
       libGL
       libxslt
     ;
-
     inherit (pkgs.xorg)
       libX11
       libXext
@@ -47,14 +46,14 @@ buildFHSUserEnv {
       libXxf86vm
       libXtst
     ;
-
   };
 
   runScript = writeShellScript "starsector" ''
     # Change dir to unzipped game dir
     cd ${fetchzip {
+      name = "starsector-${version}-gamedir";
       url = "https://s3.amazonaws.com/fractalsoftworks/starsector/starsector_linux-${version}.zip";
-      inherit sha256;
+      inherit hash;
     }}
 
     # Determine state dir and mods dir
@@ -71,4 +70,6 @@ buildFHSUserEnv {
     # Run start script (will exec)
     eval "$toEval"
   '';
+
+  extraInstallCommands = "mv $out/bin/* $out/bin/starsector";
 }
