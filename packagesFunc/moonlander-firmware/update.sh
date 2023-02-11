@@ -1,19 +1,21 @@
-#! /usr/bin/env bash
+#! /usr/bin/env nix-shell
+#! nix-shell -p bash coreutils curl unzip nvfetcher
+#! nix-shell -i bash
 
 layout_id="GLExg"
 
-set -e -o pipefail
+set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
 cleanup() {
-    [ -n "$f" ] && [ -e "$f" ] && rm -f -- "$f"
+    [ -n "${f:-}" ] && [ -e "$f" ] && rm -f -- "$f"
 }
 
 trap cleanup EXIT
 f="$(mktemp --tmpdir oryx-source-XXXXXXX.zip)"
 echo Downloading latest source zip...
-curl -L "https://oryx.zsa.io/$layout_id/latest/source" >"$f"
+curl -L "https://oryx.zsa.io/$layout_id/${1:-latest}/source" >"$f"
 
 echo
 echo Testing zip integrity...
@@ -26,4 +28,4 @@ unzip -j "$f" '*_source/*' -d keymap
 
 echo
 echo Updating qmk_firmware commit...
-nix run nixpkgs#nvfetcher
+nvfetcher

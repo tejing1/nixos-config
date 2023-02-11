@@ -9,9 +9,7 @@
       repo = "qmk_firmware";
       rev = "2f50d1ed03058f69d7aeddaae34eb07673f3f9e8";
       fetchSubmodules = true;
-      deepClone = false;
-      leaveDotGit = true;
-      sha256 = "sha256-xLxJWm243CXyQ+sB0M+ridrPYibg30dFhBfRRlyWCp4=";
+      sha256 = "sha256-HzSJu2aSxgZMRVBOy0wjW/AQOiil372D3+KUD0Ya2Wc=";
     });
   };
 }

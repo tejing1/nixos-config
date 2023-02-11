@@ -18,7 +18,7 @@ in stdenv.mkDerivation {
   buildInputs = [ git qmk gcc-arm-embedded pkgsCross.avr.buildPackages.gcc8 avrdude dfu-programmer dfu-util ];
 
   configurePhase = "qmk setup -y";
-  buildPhase = "qmk compile -kb ${kb} -km ${km}";
+  buildPhase = "SKIP_GIT=1 qmk compile -kb ${kb} -km ${km}";
   installPhase = "cp --no-preserve=mode ${kb}_${km}.bin $out";
   dontFixup = true;
 }
