@@ -1,4 +1,4 @@
-{ buildFHSUserEnv, coreutils, fetchzip, gnused, stdenv, writeShellScript }:
+{ lib, buildFHSUserEnv, coreutils, fetchzip, gnused, stdenv, writeShellScript }:
 
 let
   inherit (builtins) fromJSON readFile toFile attrValues;
@@ -72,4 +72,13 @@ buildFHSUserEnv {
   '';
 
   extraInstallCommands = "mv $out/bin/* $out/bin/starsector";
+
+  meta = {
+    description = "An open-world single-player space-combat, roleplaying, exploration, and economic game";
+    longDescription = "Starsector (formerly “Starfarer”) is an in-development open-world single-player space-combat, roleplaying, exploration, and economic game. You take the role of a space captain seeking fortune and glory however you choose.";
+    homepage = "https://fractalsoftworks.com";
+    downloadPage = "https://fractalsoftworks.com/preorder";
+    license = lib.licenses.unfree;
+    platforms = [ "x86_64-linux" ];
+  };
 }
