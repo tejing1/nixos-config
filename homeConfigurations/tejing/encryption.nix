@@ -121,5 +121,28 @@ in
     } ''
       pass show -- "$@" | head -n 1
     '';
+    programs.ssh.enable = true;
+    programs.ssh.matchBlocks = {
+      "rsync.net" = {
+        hostname = "de1348.rsync.net";
+        user = "de1348";
+      };
+      tejingdroid-nix = {
+        hostname = "192.168.0.131";
+        extraOptions.HostKeyAlias = "tejingdroid-nix";
+        user = "nix-on-droid";
+        port = 49008;
+      };
+      tejingdroid-termux = {
+        hostname = "192.168.0.131";
+        extraOptions.HostKeyAlias = "tejingdroid-termux";
+        user = "u0_a323";
+        port = 8022;
+      };
+      tejingphone = {
+        hostname = "192.168.0.209";
+        extraOptions.HostKeyAlias = "tejingphone";
+      };
+    };
   };
 }
