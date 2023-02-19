@@ -20,5 +20,6 @@
   programs.mpv.config = {
     osc = false;
     hwdec = "auto-safe";
+    script-opts = "ytdl_hook-ytdl_path=/etc/profiles/per-user/tejing/bin/yt-dlp";
   };
 }
