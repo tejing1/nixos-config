@@ -1,4 +1,4 @@
-{ lib, callPackage, stdenv, git, qmk, gcc-arm-embedded, pkgsCross, avrdude, dfu-programmer, dfu-util }:
+{ lib, callPackage, stdenv, qmk, gcc-arm-embedded, pkgsCross, avrdude, dfu-programmer, dfu-util }:
 let
   inherit (builtins) readFile elemAt;
   inherit (lib.strings) match;
@@ -15,7 +15,7 @@ in stdenv.mkDerivation {
   inherit (qmk_firmware) src;
   postPatch = "cp -r ${./keymap} keyboards/${kb}/keymaps/${km}";
 
-  buildInputs = [ git qmk gcc-arm-embedded pkgsCross.avr.buildPackages.gcc8 avrdude dfu-programmer dfu-util ];
+  buildInputs = [ qmk gcc-arm-embedded pkgsCross.avr.buildPackages.gcc8 avrdude dfu-programmer dfu-util ];
 
   configurePhase = "qmk setup -y";
   buildPhase = "SKIP_GIT=1 qmk compile -kb ${kb} -km ${km}";
