@@ -1,4 +1,4 @@
-{ lib, callPackage, stdenv, qmk, gcc-arm-embedded, pkgsCross, avrdude, dfu-programmer, dfu-util }:
+{ lib, callPackage, stdenv, qmk, gcc-arm-embedded, pkgsCross, avrdude, dfu-programmer, dfu-util, writeText }:
 let
   inherit (builtins) readFile elemAt;
   inherit (lib.strings) match;
@@ -9,7 +9,7 @@ let
   kb = "moonlander";
   km = elemAt vinfo 1;
   version = elemAt vinfo 2;
-in stdenv.mkDerivation {
+in stdenv.mkDerivation (this: {
   name = "${kb}_${km}-${version}.${qmk_firmware.version}.bin";
 
   inherit (qmk_firmware) src;
@@ -21,4 +21,5 @@ in stdenv.mkDerivation {
   buildPhase = "SKIP_GIT=1 qmk compile -kb ${kb} -km ${km}";
   installPhase = "cp --no-preserve=mode ${kb}_${km}.bin $out";
   dontFixup = true;
-}
+  passthru.buildTools = writeText "moonlander-firmare-buildTools" (lib.concatStringsSep "\n" (this.buildInputs ++ [ this.src ]));
+})

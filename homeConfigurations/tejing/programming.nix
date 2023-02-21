@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ my, pkgs, ... }:
 
 {
   home.packages = builtins.attrValues {
@@ -25,4 +25,7 @@
 
   programs.direnv.enable = true;
   programs.direnv.nix-direnv.enable = true;
+
+  # Retain build deps for building my moonlander firmware
+  xdg.configFile.".moonlander-firmware-buildTools".source = my.pkgs.moonlander-firmware.buildTools;
 }
