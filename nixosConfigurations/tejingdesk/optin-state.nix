@@ -23,11 +23,11 @@ lib.mkIf (! options.virtualisation ? qemu) {
   # just before mounting, create empty subvolume where nixos' mounting code expects it
   boot.initrd.postDeviceCommands = lib.mkAfter ''
     # wait for device to show up
-    waitDevice ${config.fileSystems."/mnt/cache".device}
+    waitDevice ${config.fileSystems."/".device}
 
     # temporarily mount subvolume '/' of lvm/cache
     mkdir -p /mnt
-    mount -o subvol=/ ${config.fileSystems."/mnt/cache".device} /mnt
+    mount -o subvol=/ ${config.fileSystems."/".device} /mnt
 
     # do something sensible with leftover root subvolume, if present
     if [ -e /mnt/tejingdesk/root/new ]; then
