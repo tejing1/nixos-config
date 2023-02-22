@@ -17,6 +17,9 @@ lib.mkIf (! options.virtualisation ? qemu) {
   # keep hardware clock adjustment data
   environment.etc.adjtime.source = "/mnt/cache/tejingdesk/adjtime";
 
+  # prevent tmpfiles.d warning about /var/log not being a symlink (still gives a notice, though...)
+  systemd.tmpfiles.rules = [ "L /var/log - - - - /mnt/cache/tejingdesk/logs" ];
+
   # just before mounting, create empty subvolume where nixos' mounting code expects it
   boot.initrd.postDeviceCommands = lib.mkAfter ''
     # wait for device to show up
