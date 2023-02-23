@@ -1,6 +1,6 @@
-{ config, lib, options, pkgs, ... }:
+{ config, lib, my, pkgs, ... }:
 
-lib.mkIf (! options.virtualisation ? qemu) {
+lib.mkIf (! my.isBuildVm) {
   # Don't bother with the lecture or the need to keep state about who's been lectured
   security.sudo.extraConfig = "Defaults lecture=\"never\"";
 
