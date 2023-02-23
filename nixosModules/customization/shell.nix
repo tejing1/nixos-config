@@ -59,8 +59,8 @@ in
     systemd.services.programdb = {
       description = "Program Database Download";
       wantedBy = [ "multi-user.target" ];
-      wants = [ "network.target" ];
-      after = [ "network.target" ];
+      wants = [ "network-online.target" ];
+      after = [ "network-online.target" ];
       serviceConfig = {
         Type = "oneshot";
         ExecStart = "${downloadDatabase} ${inputSpecs.nixpkgs.ref} ${inputs.nixpkgs.rev}";
