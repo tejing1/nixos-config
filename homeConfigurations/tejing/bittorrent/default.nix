@@ -1,6 +1,7 @@
-{ config, my, pkgs, ... }:
+{ config, lib, my, pkgs, ... }:
 
 let
+  inherit (lib) mkIf;
   stateDir = "/mnt/persist/tejing/torrents";
   tmux_socket = "${stateDir}/tmux_socket";
   rpc_socket = "${stateDir}/rpc_socket";
@@ -90,7 +91,7 @@ in
     mimeType = [ "application/x-bittorrent" "x-scheme-handler/magnet" ];
   };
 
-  systemd.user.services.rtorrent = {
+  systemd.user.services.rtorrent = mkIf (!my.isBuildVm) {
     Unit = {
       Description = "RTorrent bittorrent client";
       After = [ "network.target" ];
@@ -104,5 +105,5 @@ in
   };
 
   xsession.windowManager.i3.config.assigns."10" = [{class = "^URxvt$";instance = "^rtorrent$";}];
-  xsession.windowManager.i3.config.startup = [{ command = "${my.launch.term} app rtorrent ${pkgs.writeShellScript "rtorrent-cycle" "while true; do rtorrent-attach;done"}"; always = false; notification = false; }];
+  xsession.windowManager.i3.config.startup = [{ command = "${my.launch.term} app rtorrent ${pkgs.writeShellScript "rtorrent-cycle" (if my.isBuildVm then "echo In a virtual machine, not running rtorrent;while true;do sleep 3600;done" else "while true; do rtorrent-attach;done")}"; always = false; notification = false; }];
 }
