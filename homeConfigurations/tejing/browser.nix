@@ -65,6 +65,7 @@ in
       set guitabbar=never
       set guinavbar=onupdate
       set menupage=globalasneeded
+      set windowtitle=%title
       imapclear!
       imap <A-F4> <:quitall>
       imap <C-A-n> <toNormalMode>
