@@ -63,7 +63,6 @@ lib.mkIf (! my.isBuildVm) {
   # clean up old root subvolumes periodically
   # leaves a minimum of 'keepAtLeast' copies
   # keeps anything whose successor is newer than 'cutoffDate'
-  # TODO: implement proper recursive subvolume deletion, rather than hardcoding the expected subvolumes
   systemd.services.root-subvol-cleanup = let
     keepAtLeast = 5;
     cutoffDate = "30 days ago";
@@ -72,14 +71,15 @@ lib.mkIf (! my.isBuildVm) {
       description = "old root subvolume cleaner";
       startAt = "daily";
       script = ''
+        set -euo pipefail
         cutoff="$(date -d ${lib.escapeShellArg cutoffDate} '+%s')"
         prev=$(date '+%s')
         count=${toString keepAtLeast}
         for f in $(ls -1Adt --time=birth /mnt/cache/tejingdesk/root/root-*);do
           cur="$(stat -c '%W' "$f")"
           if [ "$prev" -lt "$cutoff" ] && [ "$count" -lt 1 ]; then
-            echo Removing subvolume "$f"
-            ${pkgs.btrfs-progs}/bin/btrfs subvolume delete "$f/srv" "$f/var/lib/machines" "$f"
+            echo Removing subvolume "$f" recursively
+            ${pkgs.btrfs-progs}/bin/btrfs subvolume list --sort=-path /mnt/cache/ | ${pkgs.gnused}/bin/sed -nE 's|^ID [0-9]+ gen [0-9]+ top level [0-9]+ path (.+)$|/mnt/cache/\1|;t ok;z;s/^$/Unrecognized line in output of "btrfs subvolume list". Failing./;w /dev/stderr'$'\n'''Q 1;:ok;\|^'"$f"'|p' | ${pkgs.findutils}/bin/xargs -d $'\n' ${pkgs.btrfs-progs}/bin/btrfs subvolume delete
           fi
           prev="$cur"
           count=$(($count - 1))
