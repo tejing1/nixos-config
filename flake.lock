@@ -47,11 +47,11 @@
     "mobile-nixos": {
       "flake": false,
       "locked": {
-        "lastModified": 1674551453,
-        "narHash": "sha256-5KmuzIBY9UgPOeAO5UmIv1F60hyGceqHTs2lhCsKP8s=",
+        "lastModified": 1677792479,
+        "narHash": "sha256-eTXsriBjuPoRENv89wJTzyTmNi93i7UsUSESTjb90ws=",
         "owner": "tejing1",
         "repo": "mobile-nixos",
-        "rev": "c4822ce02c8eddd19496e15e3e2a08e6cb598d27",
+        "rev": "13676b3fb6a68352da6b5a0638d43a618463be38",
         "type": "github"
       },
       "original": {
