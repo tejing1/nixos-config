@@ -1,4 +1,4 @@
-{ config, inputs, lib, my, pkgs, ... }:
+{ config, lib, my, pkgs, ... }:
 let
   inherit (lib) mkOption types escapeShellArg;
   inherit (my.lib) mkShellScript;
@@ -23,11 +23,11 @@ in
       inputs = [ my.launch.pkg ];
       execer = [ "cannot:${my.launch}" ]; # false. working around it with antiquoting
     } ''
-      exec mylaunch app vieb ${inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.vieb}/bin/vieb "$@"
+      exec mylaunch app vieb ${my.pkgs.vieb}/bin/vieb "$@"
     '';
     home.packages = builtins.attrValues {
       inherit (pkgs) brave;
-      inherit (inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}) vieb;
+      inherit (my.pkgs) vieb;
       mybrowser = my.browser.pkg;
       mypwarun = my.pwarun.pkg;
     };
@@ -71,7 +71,7 @@ in
       imap <C-A-n> <toNormalMode>
       call <toInsertMode>
       EOF
-      exec mylaunch app "pwarun-$name" ${inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.vieb}/bin/vieb --erwic="$dir/erwic.json" --datafolder="$dir/datafolder" --config-file="$dir/viebrc"
+      exec mylaunch app "pwarun-$name" ${my.pkgs.vieb}/bin/vieb --erwic="$dir/erwic.json" --datafolder="$dir/datafolder" --config-file="$dir/viebrc"
     '';
 
     xsession.windowManager.i3.config.assigns."12" = [{ class = "^Vieb$"; instance = "^vieb$"; }];
