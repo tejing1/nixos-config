@@ -4,10 +4,31 @@ let
   inherit (builtins) attrValues;
   inherit (my.lib) importSecret;
 
+  myfeeds-plumber = my.lib.mkShellScript "myfeeds-plumber" {
+    inputs = attrValues { inherit (pkgs) mpv xdg-utils; };
+    execer = [
+      "cannot:${pkgs.xdg-utils}/bin/xdg-open"
+      "cannot:${pkgs.mpv}/bin/mpv"
+    ];
+  } ''
+    case "$1" in
+      https://www.youtube.com/watch\?*)
+        exec mpv "$1"
+        ;;
+      *)
+        xdg-open "$1" &>/dev/null & disown;exit 0
+        ;;
+    esac
+  '';
+
   myfeeds = my.lib.mkShellScript "myfeeds" {
     inputs = attrValues { inherit (pkgs) coreutils findutils inotify-tools sfeed; };
     execer = [ "cannot:${pkgs.sfeed}/bin/sfeed_curses" ];
-    prologue = "${pkgs.writeText "set_sfeed_htmlconv.sh" ''export SFEED_HTMLCONV='${pkgs.lynx}/bin/lynx -stdin -dump -underline_links -image_links -display_charset="utf-8" -assume_charset="utf-8"' ''}";
+    prologue = "${pkgs.writeText "set_sfeed_htmlconv.sh" ''
+      export SFEED_HTMLCONV='${pkgs.lynx}/bin/lynx -stdin -dump -underline_links -image_links -display_charset="utf-8" -assume_charset="utf-8"'
+      export SFEED_PLUMBER='${myfeeds-plumber}'
+      export SFEED_PLUMBER_INTERACTIVE=1
+    ''}";
   } ./myfeeds.sh;
 in
 {
