@@ -8,7 +8,7 @@ let
     optionalString optionalAttrs splitString mapAttrsToList groupBy'
     nameValuePair removeSuffix unique filterAttrs makeBinPath
     mkEnableOption mkOption mkIf;
-  inherit (lib.types) attrsOf submodule str listOf package nullOr submoduleWith;
+  inherit (lib.types) attrsOf submodule str ints listOf package nullOr submoduleWith;
   inherit (pkgs) resholve;
 
   # Changing these 2 lines will safely relocate this module's options
@@ -66,6 +66,14 @@ let
         ++ [ { patterns = "*"; commands = default; } ])}''}
     esac'';
 
+  # Code for the feed() function
+  feed_function = defineFunctions {
+    feed = ''
+      [ "$(jobs | wc -l)" -ge ${toString cfg.jobs} ] && wait -nf
+      _feed "$@" &
+    '';
+  };
+
   # Code for the feeds() function
   feeds_function = defineFunctions {
     feeds = if length (attrValues cfg.rc.feeds) == 0 then ":" else
@@ -118,12 +126,13 @@ let
     interpreter = "${pkgs.bash}/bin/bash"; # WORKAROUND: Should really be "none" for no shebang, but the resholve api can't handle that
     inputs = unique (concatMap (x: if x ? inputs then x.inputs else []) (concatMap attrValues (attrValues cfg.rc)));
     execer = unique (concatMap (x: if x ? execer then x.execer else []) (concatMap attrValues (attrValues cfg.rc)));
-    fake.function = [ "feed" ] ++ map (name: "__${name}") overrideableFuncs;
+    fake.function = [ "_feed" ] ++ map (name: "__${name}") overrideableFuncs;
   }
     (concatStringsSep "\n\n"
       (map (removeSuffix "\n")
         (filter (x: x != "") (
           [
+            feed_function
             feeds_function
             helper_functions
           ] ++ map functionOverride overrideableFuncs))));
@@ -200,6 +209,11 @@ in
       type = str;
       default = "hourly";
       description = "systemd calendar event string describing when to update feeds (see man systemd.time)";
+    };
+    jobs = mkOption {
+      type = ints.positive;
+      default = 12;
+      description = "number of simultaneous fetches to run";
     };
     rc = mkOption {
       type = rcModule;
