@@ -271,7 +271,7 @@ in
 
   # Parse nyaa.si
   parse.nyaa = {
-    code = ''website_parse $2 ${toFile "nyaa.hred" ''
+    code = ''website_parse "$3" ${toFile "nyaa.hred" ''
       table.torrent-list > tbody > tr {
         ^:scope > td:nth-child(2) > a:not(.comments) ...{
           @.textContent => title,
