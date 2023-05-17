@@ -166,16 +166,19 @@ in
       local cookiefile="$sfeedtmpdir/crunchyroll_cookies"
       local policyfile="$sfeedtmpdir/crunchyroll_policy"
       local initialdatafile="$sfeedtmpdir/crunchyroll_initialdata"
-      local failurefil="$sfeedtmpdir/crunchyroll_failure"
+      local failurefile="$sfeedtmpdir/crunchyroll_failure"
       while [ ! -f "$policyfile" ]; do
         if lockfile-create -q --retry 0 "$policyfile"; then
           local restore_opts="$(shopt -po pipefail)"
           set -o pipefail
 
           # We need the cookies from this request in order for auth to work
-          curl -c "$cookiefile" --no-alpn -fsSLm 15 -A ${escapeShellArg innocuousUserAgent} "https://www.crunchyroll.com" | hred '^ div#preload-data > script @.innerHTML' | jq -c '[capture("window.__INITIAL_STATE__ = (?<initial_state>[^\n]+);","window.__APP_CONFIG__ = (?<app_config>[^\n]+);")] | add | .[] |= fromjson' > "$initialdatafile"
-          local api_domain="$(jq '.app_config.cxApiParams.apiDomain' -r "$initialdatafile")"
-          local initial_auth="$(jq '.app_config.cxApiParams.anonClientId | "\(.):" | @base64' -r "$initialdatafile")"
+          curl -c "$cookiefile" --no-alpn -fsSLm 15 -A ${escapeShellArg innocuousUserAgent} "https://www.crunchyroll.com" | hred '^ div#preload-data > script @.innerHTML' | jq -c '[capture("window.__INITIAL_STATE__ = (?<initial_state>[^\n]+);","window.__APP_CONFIG__ = (?<app_config>[^\n]+);")] | add | .[] |= fromjson' > "$initialdatafile" ||
+            { local err=$?; touch "$failurefile"; eval "$restore_opts"; return $err; }
+          local api_domain="$(jq '.app_config.cxApiParams.apiDomain' -r "$initialdatafile")" ||
+            { local err=$?; touch "$failurefile"; eval "$restore_opts"; return $err; }
+          local initial_auth="$(jq '.app_config.cxApiParams.anonClientId | "\(.):" | @base64' -r "$initialdatafile")" ||
+            { local err=$?; touch "$failurefile"; eval "$restore_opts"; return $err; }
 
           local auth=""
           auth="$(curl -b "$cookiefile" -c "$cookiefile" --no-alpn -fsSLm 15 -A ${escapeShellArg innocuousUserAgent} -H "Authorization: Basic $initial_auth" "$api_domain/auth/v1/token" -X POST -d grant_type=client_id | jq '"\(.token_type) \(.access_token)"' -r)" &&
