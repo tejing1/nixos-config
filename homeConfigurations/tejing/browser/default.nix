@@ -1,7 +1,8 @@
 { config, lib, my, pkgs, ... }:
 let
-  inherit (lib) mkOption types escapeShellArg;
-  inherit (my.lib) mkShellScript;
+  inherit (builtins) concatStringsSep isBool;
+  inherit (lib) mkOption types escapeShellArg mapAttrsToList mapAttrs' nameValuePair;
+  inherit (my.lib) mkShellScript importSecret;
 in
 {
   options.my.browser = mkOption {
@@ -74,13 +75,38 @@ in
       exec mylaunch app "pwarun-$name" ${my.pkgs.vieb}/bin/vieb --erwic="$dir/erwic.json" --datafolder="$dir/datafolder" --config-file="$dir/viebrc"
     '';
 
+    home.file = {
+      ".vieb/viebrc".text = concatStringsSep "\n" (
+        mapAttrsToList (n: v:
+          if isBool v then
+            "set ${if v then "" else "no"}${n}"
+          else
+            "set ${n}=${v}"
+        ) {
+          adblocker = "update";
+          darkreader = true;
+          darkreaderblocklist = ''^(?!https?://([^/]+\.)?patreon\.com(/.*)?)'';
+          downloadmethod = "confirm";
+          downloadpath = "${config.home.homeDirectory}/data/";
+          follownewtabswitch = false;
+          suspendbackgroundtab = false;
+          tabcycle = false;
+          tabreopenposition = "previous";
+          dialogconfirm = "show";
+          notificationforpermissions = true;
+          useragent = "%default";
+          userscript = true;
+          vimcommand="'emacsclient -c'";
+        });
+      # install browserpass native host program for brave. the home-manager
+      # option doesn't support brave, so I just copied what they were doing
+      # for chromium from home-manager/modules/programs/browserpass.nix
+      ".config/BraveSoftware/Brave-Browser/NativeMessagingHosts/com.github.browserpass.native.json".source = "${pkgs.browserpass}/lib/browserpass/hosts/chromium/com.github.browserpass.native.json";
+      ".config/BraveSoftware/Brave-Browser/policies/managed/com.github.browserpass.native.json".source = "${pkgs.browserpass}/lib/browserpass/policies/chromium/com.github.browserpass.native.json";
+    } // mapAttrs' (n: v: nameValuePair ".vieb/userscript/${n}.js" { text = v; }) (importSecret {} ./userscripts.secret.nix);
+
     xsession.windowManager.i3.config.assigns."12" = [{ class = "^Vieb$"; instance = "^vieb$"; }];
     xsession.windowManager.i3.config.startup = [{ command = "${my.browser}"; always = false; notification = false; }];
 
-    # install browserpass native host program for brave. the home-manager
-    # option doesn't support brave, so I just copied what they were doing
-    # for chromium from home-manager/modules/programs/browserpass.nix
-    home.file.".config/BraveSoftware/Brave-Browser/NativeMessagingHosts/com.github.browserpass.native.json".source = "${pkgs.browserpass}/lib/browserpass/hosts/chromium/com.github.browserpass.native.json";
-    home.file.".config/BraveSoftware/Brave-Browser/policies/managed/com.github.browserpass.native.json".source = "${pkgs.browserpass}/lib/browserpass/policies/chromium/com.github.browserpass.native.json";
   };
 }
