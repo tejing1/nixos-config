@@ -237,7 +237,7 @@ in
       titlebar = false;
     };
     fonts = {
-      names = [ "DejaVuSansMono Nerd Font" ];
+      names = [ "DejaVuSansM Nerd Font" ];
       size = 8.0;
     };
     workspaceAutoBackAndForth = false;
@@ -258,15 +258,15 @@ in
     modules = {
       "volume master".position = 1;
       "volume master".settings = {
-        format = "墳 %volume";
-        format_muted = "婢 %volume";
+        format = "󰕾 %volume";
+        format_muted = "󰖁 %volume";
         device = "pulse";
         color_degraded = "#FF0000";
       };
       "ethernet _first_".position = 2;
       "ethernet _first_".settings = {
-        format_up = " %ip";
-        format_down = "";
+        format_up = "󰈁 %ip";
+        format_down = "󰈂";
       };
       "disk /".position = 3;
       "disk /".settings = {
@@ -309,7 +309,7 @@ in
 
   gtk.enable = true;
   gtk.gtk3.bookmarks = [ "file:///home/tejing/data" ];
-  gtk.font = { package = pkgs.nerdfonts; name = "DejaVuSansMono Nerd Font"; size = 8; };
+  gtk.font = { package = pkgs.nerdfonts; name = "DejaVuSansM Nerd Font"; size = 8; };
   gtk.iconTheme = { package = pkgs.arc-icon-theme; name = "Arc"; };
   gtk.theme = { package = pkgs.arc-theme; name = "Arc-Dark"; };
 

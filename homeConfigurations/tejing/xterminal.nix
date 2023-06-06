@@ -43,7 +43,7 @@ in
       myterm = my.term.pkg;
     };
     programs.urxvt.enable = true;
-    programs.urxvt.fonts = [ "xft:DejaVuSansMono Nerd Font Mono:pixelsize=15" ];
+    programs.urxvt.fonts = [ "xft:DejaVuSansM Nerd Font Mono:pixelsize=15" ];
     programs.urxvt.scroll.bar.enable = false;
     programs.urxvt.scroll.lines = 0;
     programs.urxvt.iso14755 = false;
