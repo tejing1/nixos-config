@@ -45,4 +45,12 @@ in
     readOnly = true;
   };
   config.my.pkgs = inputs.self.packagesFunc pkgs;
+
+  options.my.pkgsUnstable = mkOption {
+    type = types.unspecified;
+    description = "Packages from self, with dependencies from unstable";
+    visible = false;
+    readOnly = true;
+  };
+  config.my.pkgsUnstable = inputs.self.packagesFunc inputs.nixpkgs-unstable.legacyPackages.${pkgs.system};
 }

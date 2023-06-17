@@ -24,11 +24,11 @@ in
       inputs = [ my.launch.pkg ];
       execer = [ "cannot:${my.launch}" ]; # false. working around it with antiquoting
     } ''
-      exec mylaunch app vieb ${my.pkgs.vieb}/bin/vieb "$@"
+      exec mylaunch app vieb ${my.pkgsUnstable.vieb}/bin/vieb "$@"
     '';
     home.packages = builtins.attrValues {
       inherit (pkgs) brave;
-      inherit (my.pkgs) vieb;
+      inherit (my.pkgsUnstable) vieb;
       mybrowser = my.browser.pkg;
       mypwarun = my.pwarun.pkg;
     };
@@ -72,7 +72,7 @@ in
       imap <C-A-n> <toNormalMode>
       call <toInsertMode>
       EOF
-      exec mylaunch app "pwarun-$name" ${my.pkgs.vieb}/bin/vieb --erwic="$dir/erwic.json" --datafolder="$dir/datafolder" --config-file="$dir/viebrc"
+      exec mylaunch app "pwarun-$name" ${my.pkgsUnstable.vieb}/bin/vieb --erwic="$dir/erwic.json" --datafolder="$dir/datafolder" --config-file="$dir/viebrc"
     '';
 
     home.file = {
@@ -93,7 +93,7 @@ in
           tabcycle = false;
           tabreopenposition = "previous";
           dialogconfirm = "show";
-          notificationforpermissions = true;
+          notificationforpermissions = "all";
           useragent = "%default";
           userscript = true;
           vimcommand="'emacsclient -c'";
