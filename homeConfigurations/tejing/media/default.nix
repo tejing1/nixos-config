@@ -21,5 +21,8 @@
     osc = false;
     hwdec = "auto-safe";
     script-opts = "ytdl_hook-ytdl_path=/etc/profiles/per-user/tejing/bin/yt-dlp";
+    demuxer-max-bytes = "500MiB";
+    demuxer-max-back-bytes = "250MiB";
+    ytdl-format = "bv[height<=1440]+ba/best[height<=1440]/bestvideo+bestaudio/best";
   };
 }
