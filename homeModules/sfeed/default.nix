@@ -123,7 +123,7 @@ let
 
   # Generate the entire sfeedrc file
   sfeedrc = resholve.writeScript "sfeedrc" {
-    interpreter = "${pkgs.bash}/bin/bash"; # WORKAROUND: Should really be "none" for no shebang, but the resholve api can't handle that
+    interpreter = "none";
     inputs = unique (concatMap (x: if x ? inputs then x.inputs else []) (concatMap attrValues (attrValues cfg.rc)));
     execer = unique (concatMap (x: if x ? execer then x.execer else []) (concatMap attrValues (attrValues cfg.rc)));
     fake.function = [ "_feed" ] ++ map (name: "__${name}") overrideableFuncs;
