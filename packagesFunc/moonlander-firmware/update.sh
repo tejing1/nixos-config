@@ -1,5 +1,8 @@
 #! /usr/bin/env nix-shell
-#! nix-shell -p bash coreutils curl unzip nvfetcher
+#! nix-shell -I nixpkgs=flake:github:nixos/nixpkgs/nixos-unstable
+#! nix-shell -I nvfetcher=flake:github:berberman/nvfetcher
+#! nix-shell -p bash coreutils curl unzip
+#! nix-shell -p "(import <nvfetcher>).packages.${builtins.currentSystem}.default"
 #! nix-shell -i bash
 
 layout_id="GLExg"
