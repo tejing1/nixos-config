@@ -3,7 +3,7 @@
 let
   inherit (builtins) fromJSON readFile toFile attrValues;
 
-  inherit (fromJSON (readFile ./pin.json)) version hash;
+  inherit (fromJSON (readFile ./pin.json)) version url hash;
 
   modify_starsector_sh = toFile "modify_starsector_sh.sed" ''
     # Exec so we don't have a useless process lying around
@@ -52,8 +52,7 @@ buildFHSUserEnv {
     # Change dir to unzipped game dir
     cd ${fetchzip {
       name = "starsector-${version}-gamedir";
-      url = "https://s3.amazonaws.com/fractalsoftworks/starsector/starsector_linux-${version}.zip";
-      inherit hash;
+      inherit url hash;
     }}
 
     # Determine state dir and mods dir
