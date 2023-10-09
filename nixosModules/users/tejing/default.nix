@@ -29,8 +29,8 @@ in
       fonts.fonts = builtins.attrValues {
         inherit (pkgs)
           corefonts
-          nerdfonts
         ;
+        nerdfonts = pkgs.nerdfonts.override { fonts = [ "DejaVuSansMono" ]; };
       };
 
       # List packages installed in system profile. To search by name, run:
