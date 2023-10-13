@@ -21,7 +21,7 @@ in
 pkgs.yt-dlp.overrideAttrs (old: {
   name = concatStringsSep "-" (lib.init (filter (x: x!=[]) (split "-" old.name)) ++ [ fixedversion ]);
   version = fixedversion;
-  src = old.src.override {inherit version sha256;};
+  src = old.src.override {inherit version sha256; hash="";};
 })' 1>&2
         mkdir -p "$cachedir" 1>&2
         printf '%s\n' "$newversion" >"$cachedir/version"
