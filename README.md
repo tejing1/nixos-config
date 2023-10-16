@@ -11,7 +11,6 @@ File layout generally follows the flake output structure through the use of vari
 I've tried to expose components that may be useful on their own as flake outputs, accessing them through `self` in my main configuration.
 
 ## Notable structures
-- Files in `genericModules/` are exposed in outputs as both `nixosModules` and `homeModules`
 - I use `my.*` options, which are also re-supplied through the `my` module argument, in both home-manager and nixos. This hierarchy contains components from `self`, and configuration options for any locally defined modules.
   - `my.lib` contains the output of `self.libFunc`, applied to whatever nixpkgs instance is appropriate, or `self.lib` if there is no appropriate nixpkgs instance available.
   - `my.pkgs` contains the output of `self.packagesFunc`, applied to whatever nixpkgs instance is appropriate.
