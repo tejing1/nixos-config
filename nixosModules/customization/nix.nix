@@ -17,8 +17,11 @@ in
       # Make builds run with low priority so my system stays responsive
       daemonCPUSchedPolicy = "idle";
       daemonIOSchedClass = "idle";
-      # Hard link identical files in the store automatically
-      settings.auto-optimise-store = true;
+      # automatically hardlink identical files
+      optimise = {
+        automatic = true;
+        dates = [ "daily" ];
+      };
       # automatically trigger garbage collection
       gc = {
         automatic = true;
