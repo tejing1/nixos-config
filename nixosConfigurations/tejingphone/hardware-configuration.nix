@@ -23,4 +23,5 @@
   };
 
   nix.settings.max-jobs = lib.mkDefault 3;
+  nixpkgs.hostPlatform = "aarch64-linux";
 }

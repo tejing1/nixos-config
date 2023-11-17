@@ -1,4 +1,4 @@
-{ config, home-manager, inputs, inputSpecs, lib, my, nixpkgs, ... }:
+{ config, home-manager, inputs, inputSpecs, lib, my, nixpkgs, pkgs, ... }:
 let
   inherit (builtins) toFile;
   inherit (inputs) self;
@@ -47,7 +47,7 @@ in
 
     # build and register a flake to capture this config's pkgs attribute
     nix.registry.pkgs.flake = mkFlake {config = self;}
-      "{config,...}: {legacyPackages.${escapeNixIdentifier config.nixpkgs.system}=config.nixosConfigurations.${escapeNixIdentifier config.networking.hostName}.pkgs;}";
+      "{config,...}: {legacyPackages.${escapeNixIdentifier pkgs.system}=config.nixosConfigurations.${escapeNixIdentifier config.networking.hostName}.pkgs;}";
 
     # the (runtime) current version of this flake
     nix.registry.config.to = { type = "path"; path = "/mnt/persist/tejing/flake"; };
