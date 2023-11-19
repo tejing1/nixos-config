@@ -11,7 +11,7 @@
     ;
     yt-dlp = (my.lib.mkShellScript "yt-dlp" {
       inputs = builtins.attrValues {
-        inherit (pkgs) coreutils curl sfeed jq nix;
+        inherit (pkgs) coreutils curl sfeed jq nix gnugrep;
       };
       execer = [ "cannot:${pkgs.nix}/bin/nix" ];
     } (builtins.readFile ./yt-dlp)).pkg;

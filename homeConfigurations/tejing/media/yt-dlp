@@ -7,7 +7,7 @@ cachedir="$HOME/.cache/yt-dlp.latest"
 # if "$cachedir/version" is more than 60 minutes old (or doesnt exist)
 if [ $(stat -c '%Y' "$cachedir/version" 2>/dev/null || echo 0) -lt $((EPOCHSECONDS + 60*60)) ]; then
     curversion="$(cat "$cachedir/version" 2>/dev/null || true)"
-    newversion="$(curl -sSL https://pypi.org/rss/project/yt-dlp/releases.xml | sfeed | sort -rk1,1 | head -n 1 | cut -f2)"
+    newversion="$(curl -sSL https://pypi.org/rss/project/yt-dlp/releases.xml | sfeed | sort -rk1,1 | grep -v '.dev' | head -n 1 | cut -f2)"
     if [ "$newversion" != "$curversion" ]; then
         sha256="$(curl -sSL "https://pypi.org/pypi/yt-dlp/$newversion/json" | jq -r '.urls[] | select(.packagetype == "sdist") | .digests.sha256')"
         nix build --argstr version "$newversion" --argstr sha256 "$sha256" -o "$cachedir/package" --impure --expr '
