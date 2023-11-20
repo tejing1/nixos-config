@@ -17,8 +17,10 @@ lib.mkIf (! my.isBuildVm) {
   # keep hardware clock adjustment data
   environment.etc.adjtime.source = "/mnt/cache/tejingdesk/adjtime";
 
-  # prevent tmpfiles.d warning about /var/log not being a symlink (still gives a notice, though...)
-  systemd.tmpfiles.rules = [ "L /var/log - - - - /mnt/cache/tejingdesk/logs" ];
+  # prevent tmpfiles.d warning about /var/log not being a symlink
+  environment.etc."tmpfiles.d/var.conf".source = pkgs.runCommand "var.conf" { inputs = [ pkgs.gnused ]; } ''
+    sed -e 's:^[^ ]\+ /var/log .\+$:L /var/log - - - - /mnt/cache/tejingdesk/logs:' ${config.systemd.package}/example/tmpfiles.d/var.conf > $out
+  '';
 
   # just before mounting, create empty subvolume where nixos' mounting code expects it
   boot.initrd.postDeviceCommands = lib.mkAfter ''
