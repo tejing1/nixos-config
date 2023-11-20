@@ -195,6 +195,12 @@ in
         statusline = "#00ff00";
         # Text color to be used for the separator.
         separator = "#008080";
+        # Background color of the bar on the currently focused monitor output. If not used, the color will be taken from background.
+        focusedBackground = "#000000";
+        # Text color to be used for the statusline on the currently focused monitor output. If not used, the color will be taken from statusline.
+        focusedStatusline = null;
+        # Text color to be used for the separator on the currently focused monitor output. If not used, the color will be taken from separator.
+        focusedSeparator = null;
         # Border, background and text color for a workspace button when the workspace has focus.
         focusedWorkspace = {border = "#008000"; background = "#000000"; text = "#008000";};
         # Border, background and text color for a workspace button when the workspace is active (visible) on some output, but the focus is on another one.
@@ -207,16 +213,6 @@ in
         # Border, background and text color for the binding mode indicator. If not used, the colors will be taken from urgent_workspace.
         bindingMode = {border = "#000000"; background = "#000000"; text = "#00ffff";};
       };
-      extraConfig = ''
-    colors {
-      # Background   color of the bar on the currently focused monitor output. If not used, the color will be taken from background.
-      focused_background #000000
-      # Text color to      be used for the statusline on the currently focused monitor output. If not used, the color will be taken from statusline.
-      #focused_statusline
-      # Text color to be us ed for the separator on the currently focused monitor output. If not used, the color will be taken from separator.
-      #focused_separator
-    }
-  '';
     }];
     colors = {
       background      = "#000000";
