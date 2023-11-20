@@ -11,8 +11,10 @@ lib.mkIf (! my.isBuildVm) {
   environment.etc.NIXOS.text = "";
 
   # set machine id
-  environment.etc.machine-id.source = ./machine-id.secret;
-  environment.etc.machine-id.mode = "0644";
+  environment.etc.machine-id = lib.mkIf (! my.lib.isRepoLocked) {
+    source = ./machine-id.secret;
+    mode = "0644";
+  };
 
   # keep hardware clock adjustment data
   environment.etc.adjtime.source = "/mnt/cache/tejingdesk/adjtime";
