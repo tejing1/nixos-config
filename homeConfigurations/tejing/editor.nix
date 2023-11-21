@@ -13,6 +13,7 @@
       nix-mode
       haskell-mode
       ledger-mode
+      python-mode
     ;
   };
   services.emacs.enable = true;
