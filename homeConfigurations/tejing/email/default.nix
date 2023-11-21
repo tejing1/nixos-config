@@ -112,7 +112,7 @@ in
       set folder='${config.accounts.email.maildirBasePath}/${config.accounts.email.accounts.fastmail.maildir.path}'
       mailboxes +Inbox +Sent +Drafts +Spam +Trash +Archive
       set folder='${config.accounts.email.maildirBasePath}/${config.accounts.email.accounts.yahoo.maildir.path}'
-      mailboxes +Inbox +Sent +Drafts +Spam +Trash +Archive
+      mailboxes +Inbox +Sent +Spam +Trash +Archive
       set folder='${config.accounts.email.maildirBasePath}/${config.accounts.email.accounts.gmail.maildir.path}'
       mailboxes +Inbox +Sent +Drafts +Spam +Trash +All
       set pgp_default_key=46E96F6FF44F3D74
