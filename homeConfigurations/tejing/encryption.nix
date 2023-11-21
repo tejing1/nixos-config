@@ -1,4 +1,4 @@
-{ lib, my, pkgs, ... }:
+{ config, lib, my, pkgs, ... }:
 let
   inherit (lib) mkBefore mkAfter mkOption types;
   inherit (my.lib) mkShellScript;
@@ -115,12 +115,146 @@ in
     };
     my.getpass = mkShellScript "mygetpass" {
       inputs = builtins.attrValues {
-        inherit (pkgs) coreutils pass;
+        inherit (pkgs) coreutils;
+        pass = config.programs.password-store.package;
       };
-      execer = [ "cannot:${pkgs.pass}/bin/pass" ];
+      execer = [
+        "cannot:${config.programs.password-store.package}/bin/pass"
+      ];
     } ''
       pass show -- "$@" | head -n 1
     '';
+
+    xsession.windowManager.i3.config = let
+      mod = config.xsession.windowManager.i3.config.modifier;
+      pass-interact = mkShellScript "pass-interact" {
+        inputs = builtins.attrValues {
+          inherit (pkgs) coreutils findutils gnused rofi xdotool scrot zbar dunst;
+          pass = config.programs.password-store.package;
+        };
+        execer = [ # Some of these are not true globally, but fine for the features I'm using.
+          "cannot:${pkgs.xdotool}/bin/xdotool"
+          "cannot:${pkgs.rofi}/bin/rofi"
+          "cannot:${pkgs.scrot}/bin/scrot"
+          "cannot:${config.programs.password-store.package}/bin/pass"
+        ];
+      } ''
+        set -euo pipefail
+
+        storedir="''${PASSWORD_STORE_DIR:-"$HOME/.password-store"}"
+        lastused_file="$HOME/.cache/pass-interact/lastused"
+
+        mode="$1"
+
+        die() {
+            printf "pass-interact error: %s\n" "$1" >&2 || true
+            dunstify -u critical -- "pass-type error: $1" || true
+            exit 1
+        }
+
+        # Wrap rofi to preserve window focus
+        rofi_() {
+            focused_window="$(xdotool getwindowfocus)"
+            if rofi "$@"; then
+                xdotool windowfocus "$focused_window"
+            else
+                err="$?"
+                xdotool windowfocus "$focused_window"
+                [ "$err" -eq 1 ] && exit 1
+                die "rofi failed with exit code $err"
+            fi
+        }
+
+        entry_exists() {
+            [ -f "$storedir/$1.gpg" ] || [ -L "$storedir/$1.gpg" ]
+        }
+
+        type_out() {
+            # Check that we actually got some data
+            [ -n "''${1:-}" ] || die "empty argument to type_out"
+
+            # Type value into focused window
+            # Pass the command on stdin to avoid password being exposed through /proc
+            xdotool - <<<"type --delay 0 --clearmodifiers -- ''\'''${1//'/\'}'" || die "xdotool failed"
+        }
+
+        case "$mode" in
+            password|username|usertabpass)
+                entry_must_exist=1
+                ;;
+            generate)
+                ;;
+            otp)
+                entry_must_exist=1
+                ;;
+            otp-import-qrcode)
+                uri="$(scrot -izscapture -l 'mode=edge,width=1,color=#00FF00,opacity=255' - | zbarimg -Sdisable -Sqrcode.enable -qD --raw -)" || die "scrot/zbarimg failed"
+                [ "$(wc -l <<<"$uri")" -eq 1 ] && [ "''${uri:0:10}" = "otpauth://" ] || die "zbarimg result does not look like exactly one otpauth uri"
+                ;;
+            *)
+                die "bad mode: $mode"
+                ;;
+        esac
+
+        if [ -f "$lastused_file" ]; then
+            lastentry="$(< "$lastused_file")"
+        fi
+        entry="$(find "$storedir" -not -\( -name '.*' -prune -\) -not -type d -name '*.gpg' -printf '%P\0' \
+          | sed -ze 's/.gpg$//' \
+          | rofi_ -dmenu -sep '\0' -i -matching fuzzy -p "pass entry ($mode)" ''${entry_must_exist:+-no-custom} ''${lastentry:+-select} ''${lastentry:+"$lastentry"})"
+        [ -n "$entry" ] || die "empty entry name"
+        mkdir -p -- "$(dirname -- "$lastused_file")"
+        printf "%s\n" "$entry" > "$lastused_file"
+
+        case "$mode" in
+            password)
+                result="$(pass show -- "$entry" | sed -ne '1p')" || die "pass show / sed failed"
+                type_out "$result"
+                ;;
+            username)
+                result="$(pass show -- "$entry" | sed -ne 's/^username: //;Te;p;:e')" || die "pass show / sed failed"
+                type_out "$result"
+                ;;
+            usertabpass)
+                result="$(pass show -- "$entry" | sed -ne '1h;s/^username: //;Te;G;s/\n/\t/;p;:e')" || die "pass show / sed failed"
+                type_out "$result"
+                ;;
+            generate)
+                if entry_exists "$entry"; then
+                    pass generate -i -- "$entry" || die "pass generate failed"
+                    dunstify -- "Successfully re-generated password for $entry"
+                else
+                    pass generate -- "$entry" <<<"$uri" || die "pass generate failed"
+                    dunstify -- "Successfully added $entry with newly generated password"
+                fi
+                ;;
+            otp)
+                result="$(pass otp code -- "$entry")"
+                type_out "$result"
+                ;;
+            otp-import-qrcode)
+                if entry_exists "$entry"; then
+                    pass otp append -f -- "$entry" <<<"$uri" || die "pass otp append failed"
+                    dunstify -- "Successfully appended otpauth uri to $entry"
+                else
+                    pass otp insert -- "$entry" <<<"$uri" || die "pass otp insert failed"
+                    dunstify -- "Successfully inserted $entry with otpauth uri"
+                fi
+                ;;
+        esac
+      '';
+    in {
+      keybindings."${mod}+p" = "mode pass-interact";
+
+      modes."pass-interact".Escape        = "mode default";
+      modes."pass-interact".u             = "mode default; exec --no-startup-id ${pass-interact} username";
+      modes."pass-interact".p             = "mode default; exec --no-startup-id ${pass-interact} password";
+      modes."pass-interact".l             = "mode default; exec --no-startup-id ${pass-interact} usertabpass";
+      modes."pass-interact".g             = "mode default; exec --no-startup-id ${pass-interact} generate";
+      modes."pass-interact".o             = "mode default; exec --no-startup-id ${pass-interact} otp";
+      modes."pass-interact"."--release q" = "mode default; exec --no-startup-id ${pass-interact} otp-import-qrcode";
+    };
+
     programs.ssh.enable = true;
     programs.ssh.matchBlocks = {
       "rsync.net" = {
