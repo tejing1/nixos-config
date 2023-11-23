@@ -309,5 +309,9 @@ in
   gtk.iconTheme = { package = pkgs.arc-icon-theme; name = "Arc"; };
   gtk.theme = { package = pkgs.arc-theme; name = "Arc-Dark"; };
 
+  # xdg-desktop-portal-gtk reads this, and electron then reads from the portal
+  dconf.settings."org/gnome/desktop/interface".color-scheme = "prefer-dark";
+
+
   home.pointerCursor = { package = pkgs.numix-cursor-theme; name = "Numix-Cursor-Light"; size = 24; x11.enable = true; };
 }
