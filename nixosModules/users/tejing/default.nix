@@ -27,9 +27,6 @@ in
 
       # Set available fonts
       fonts.fonts = builtins.attrValues {
-        inherit (pkgs)
-          corefonts
-        ;
         nerdfonts = pkgs.nerdfonts.override { fonts = [ "DejaVuSansMono" ]; };
       };
 
