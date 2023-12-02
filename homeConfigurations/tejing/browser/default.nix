@@ -67,6 +67,7 @@ in
       set guinavbar=onupdate
       set menupage=globalasneeded
       set windowtitle=%title
+      set nativetheme=dark
       imapclear!
       imap <A-F4> <:quitall>
       imap <C-A-n> <toNormalMode>
@@ -94,6 +95,7 @@ in
           tabcycle = false;
           tabreopenposition = "previous";
           dialogconfirm = "show";
+          nativetheme = "dark";
           notificationforpermissions = "all";
           useragent = "%default";
           userscript = true;
