@@ -5,4 +5,5 @@
   boot.consoleLogLevel = 3;
 
   boot.plymouth.enable = true;
+  boot.plymouth.theme = "spinner";
 }
