@@ -100,6 +100,13 @@ in
           useragent = "%default";
           userscript = true;
           vimcommand="'emacsclient -c'";
+        } ++ map (x: "unmap ${x}") [
+          "m<Any>"
+        ] ++ mapAttrsToList (n: v:
+          "nmap ${n} ${v}"
+        ) {
+          "," = "<scrollPageUpHalf>";
+          "m" = "<scrollPageDownHalf>";
         });
       # install browserpass native host program for brave. the home-manager
       # option doesn't support brave, so I just copied what they were doing
