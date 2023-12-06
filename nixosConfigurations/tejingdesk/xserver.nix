@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
   services.xserver.enable = true;
@@ -13,6 +13,7 @@
   # Enable experimental nvidia_drm framebuffer console
   hardware.nvidia.modesetting.enable = true;
   boot.kernelParams = [ "nvidia-drm.fbdev=1" ];
+  boot.initrd.availableKernelModules = [ "nvidia" "nvidia_modeset" "nvidia_drm" "nvidia_uvm" ];
 
   # Hardware-accelerated video decoding
   hardware.opengl.extraPackages = builtins.attrValues {
