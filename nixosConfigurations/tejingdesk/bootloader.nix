@@ -5,10 +5,6 @@
   boot.loader.grub.efiInstallAsRemovable = true;
   boot.loader.efi.efiSysMountPoint = "/boot/efi";
   boot.loader.timeout = 1;
-  boot.kernelParams = [ "quiet" ];
-
-  # Quiet ACPI errors I always see
-  boot.consoleLogLevel = 3;
 
   boot.loader.grub.gfxmodeEfi = "3840x2160,1280x1024,auto";
 }
