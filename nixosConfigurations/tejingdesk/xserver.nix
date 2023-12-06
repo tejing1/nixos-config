@@ -15,21 +15,14 @@
   boot.kernelParams = [ "nvidia-drm.fbdev=1" ];
   boot.initrd.availableKernelModules = [ "nvidia" "nvidia_modeset" "nvidia_drm" "nvidia_uvm" ];
 
-  # Hardware-accelerated video decoding
-  hardware.opengl.extraPackages = builtins.attrValues {
-    inherit (pkgs)
-      vaapiVdpau
-    ;
-  };
-
   # 32-bit graphics libraries
   hardware.opengl.driSupport32Bit = true;
-  hardware.opengl.extraPackages32 = builtins.attrValues {
-    inherit (pkgs.pkgsi686Linux)
-      vaapiVdpau
-    ;
-  };
 
-  # workaround nixpkgs#169245
-  environment.sessionVariables.LIBVA_DRIVER_NAME = "vdpau";
+  environment.sessionVariables = {
+    # I don't know why VA-API can't find the driver without this...
+    LIBVA_DRIVER_NAME = "nvidia";
+
+    # Seems to be necessary for the vaapi implementation to function due to an nvidia bug
+    NVD_BACKEND = "direct";
+  };
 }
