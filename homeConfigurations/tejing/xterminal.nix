@@ -54,6 +54,9 @@ in
       internalBorder = 0;
       perl-ext-common = "default,-readline,-searchable-scrollback";
       pointerBlank = true;
+      # Presetting this gets the prompt to normally appear at the top of the screen for a new terminal.
+      # Use `stty size` to check value (Note: columnsxrows)
+      geometry = "426x118";
     };
     xsession.windowManager.i3.config.keybindings = let
       mod = config.xsession.windowManager.i3.config.modifier;
