@@ -26,7 +26,7 @@ in
       nixpkgs.config.allowUnfree = true;
 
       # Set available fonts
-      fonts.fonts = builtins.attrValues {
+      fonts.packages = builtins.attrValues {
         nerdfonts = pkgs.nerdfonts.override { fonts = [ "DejaVuSansMono" ]; };
       };
 
