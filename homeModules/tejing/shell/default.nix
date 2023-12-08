@@ -27,6 +27,19 @@ in
       inherit (my.pkgs)
         hred
       ;
+      nom = pkgs.nix-output-monitor.overrideAttrs (old: { postPatch = old.postPatch or "" + ''
+        sed -ie ${lib.escapeShellArg ''
+          s/↓/\\xf072e/
+          s/↑/\\xf0737/
+          s/⏱/\\xf520/
+          s/⏵/\\xf04b/
+          s/✔/\\xf00c/
+          s/⏸/\\xf04d/
+          s/⚠/\\xf071/
+          s/∅/\\xf1da/
+          s/∑/\\xf04a0/
+          ''} lib/NOM/Print.hs
+      ''; });
     };
     programs.fish.enable = true;
     programs.dircolors.enableFishIntegration = true;
