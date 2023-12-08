@@ -1567,7 +1567,7 @@
   # typeset -g POWERLEVEL9K_EXAMPLE_VISUAL_IDENTIFIER_EXPANSION='⭐'
 
   function prompt_my_shlvl() {
-    [[ "$SHLVL" -gt 1 ]] && p10k segment -f 208 -i 'ﰬ' -t "$SHLVL"
+    [[ "$SHLVL" -gt 1 ]] && p10k segment -f 208 -i '󰜮' -t "$SHLVL"
   }
   typeset -g POWERLEVEL9K_MY_SHLVL_FOREGROUND=0
   typeset -g POWERLEVEL9K_MY_SHLVL_BACKGROUND=1
