@@ -99,7 +99,7 @@ in
           notificationforpermissions = "all";
           useragent = "%default";
           userscript = true;
-          vimcommand="'emacsclient -c'";
+          vimcommand = ''"emacsclient -c"'';
         } ++ map (x: "unmap ${x}") [
         ] ++ mapAttrsToList (n: v:
           "nmap ${n} ${v}"
