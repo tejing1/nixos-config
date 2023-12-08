@@ -69,6 +69,7 @@ in
 
       # Start urxvtd with user sessions
       services.urxvtd.enable = true;
+      services.urxvtd.package = pkgs.rxvt-unicode-emoji;
     })
     (mkIf my.users.tejing.network {
       # rtorrent peer & dht ports

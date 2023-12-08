@@ -29,8 +29,8 @@ in
     my.launch.outPath = "${my.launch.pkg}/bin/mylaunch";
     my.launch.term.pkg = let
       env = "${pkgs.coreutils}/bin/env";
-      urxvtc = "${pkgs.rxvt-unicode}/bin/urxvtc";
-      urxvt = "${pkgs.rxvt-unicode}/bin/urxvt";
+      urxvtc = "${pkgs.rxvt-unicode-emoji}/bin/urxvtc";
+      urxvt = "${pkgs.rxvt-unicode-emoji}/bin/urxvt";
     in pkgs.writeShellScriptBin "mylaunchterm" ''
       name="$2"
 

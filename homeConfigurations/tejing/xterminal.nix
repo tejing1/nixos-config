@@ -19,8 +19,8 @@ in
       readlink = "${pkgs.coreutils}/bin/readlink";
       which = "${pkgs.which}/bin/which";
       env = "${pkgs.coreutils}/bin/env";
-      urxvtc = "${pkgs.rxvt-unicode}/bin/urxvtc";
-      urxvt = "${pkgs.rxvt-unicode}/bin/urxvt";
+      urxvtc = "${pkgs.rxvt-unicode-emoji}/bin/urxvtc";
+      urxvt = "${pkgs.rxvt-unicode-emoji}/bin/urxvt";
     in pkgs.writeShellScriptBin "myterm" ''
       cd ~/data 2>/dev/null || cd ~ || cd /
       name="$(${basename} "$SHELL")"
@@ -43,7 +43,10 @@ in
       myterm = my.term.pkg;
     };
     programs.urxvt.enable = true;
-    programs.urxvt.fonts = [ "xft:DejaVuSansM Nerd Font Mono:pixelsize=15" ];
+    programs.urxvt.fonts = [
+      "xft:DejaVuSansM Nerd Font Mono:pixelsize=15"
+      "xft:Unifont:pixelsize=15"
+    ];
     programs.urxvt.scroll.bar.enable = false;
     programs.urxvt.scroll.lines = 0;
     programs.urxvt.iso14755 = false;
