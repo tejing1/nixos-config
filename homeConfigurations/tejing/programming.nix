@@ -12,17 +12,25 @@
       ghc
     ;
   };
-  programs.git.enable = true;
-  programs.git.userName = "Jeff Huffman";
-  programs.git.userEmail = "tejing@tejing.com";
-  programs.git.ignores = [ "*~" ".#*" "\\#*#" ];
-  programs.git.signing.key = "963D3AFB8AA4D693153C150046E96F6FF44F3D74";
-  programs.git.signing.signByDefault = true;
-  programs.git.extraConfig.tag.gpgSign = true;
-  programs.git.extraConfig.gcrypt.publish-participants = true;
-  programs.git.extraConfig.gcrypt.participants = "963D3AFB8AA4D693153C150046E96F6FF44F3D74";
-  programs.git.extraConfig.gcrypt.gpg-args = "--quiet";
-  programs.git.extraConfig.init.defaultBranch = "master";
+
+  programs.git = {
+    enable = true;
+    userName = "Jeff Huffman";
+    userEmail = "tejing@tejing.com";
+    ignores = [ "*~" ".#*" "\\#*#" ];
+    signing.key = "963D3AFB8AA4D693153C150046E96F6FF44F3D74";
+    signing.signByDefault = true;
+    extraConfig = {
+      tag.gpgSign = true;
+      gcrypt.publish-participants = true;
+      gcrypt.participants = "963D3AFB8AA4D693153C150046E96F6FF44F3D74";
+      gcrypt.gpg-args = "--quiet";
+      init.defaultBranch = "master";
+      push.default = "current";
+      push.autosetupremote = true;
+      branch.autosetupmerge = "simple";
+    };
+  };
 
   programs.direnv.enable = true;
   programs.direnv.nix-direnv.enable = true;
