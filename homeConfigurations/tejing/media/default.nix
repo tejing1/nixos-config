@@ -24,5 +24,6 @@
     demuxer-max-bytes = "500MiB";
     demuxer-max-back-bytes = "250MiB";
     ytdl-format = "bv[height<=1440]+ba/best[height<=1440]/bestvideo+bestaudio/best";
+    subs-fallback = "default";
   };
 }
