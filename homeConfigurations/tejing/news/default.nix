@@ -1,14 +1,17 @@
-{ inputs, lib, my, pkgs, ... }:
+{ config, inputs, lib, my, pkgs, ... }:
 
 let
   inherit (builtins) attrValues;
   inherit (my.lib) importSecret;
 
   myfeeds-plumber = my.lib.mkShellScript "myfeeds-plumber" {
-    inputs = attrValues { inherit (pkgs) mpv xdg-utils; };
+    inputs = attrValues {
+      inherit (pkgs) xdg-utils;
+      mpv = config.programs.mpv.package;
+    };
     execer = [
       "cannot:${pkgs.xdg-utils}/bin/xdg-open"
-      "cannot:${pkgs.mpv}/bin/mpv"
+      "cannot:${config.programs.mpv.package}/bin/mpv"
     ];
   } ''
     case "$1" in
