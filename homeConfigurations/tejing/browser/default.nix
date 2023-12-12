@@ -86,8 +86,6 @@ in
             "set ${n}=${v}"
         ) {
           adblocker = "update";
-          darkreader = true;
-          darkreaderblocklist = ''^(?!https?://([^/]+\.)?patreon\.com(/.*)?)'';
           downloadmethod = "confirm";
           downloadpath = "${config.home.homeDirectory}/data/";
           follownewtabswitch = false;
