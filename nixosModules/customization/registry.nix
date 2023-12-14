@@ -1,6 +1,6 @@
 { config, home-manager, inputs, inputSpecs, lib, my, nixpkgs, pkgs, ... }:
 let
-  inherit (builtins) toFile;
+  inherit (builtins) toFile parseFlakeRef;
   inherit (inputs) self;
   inherit (lib) mkEnableOption mkIf;
   inherit (lib.strings) escapeNixIdentifier;
@@ -57,6 +57,6 @@ in
     nix.registry.nixpkgs-stable.to = inputSpecs.nixpkgs;
 
     # the (runtime) current version of nixos unstable
-    nix.registry.nixpkgs-unstable.to = { type = "github"; owner = "NixOS"; repo = "nixpkgs"; ref = "nixos-unstable"; };
+    nix.registry.nixpkgs-unstable.to = parseFlakeRef "github:NixOS/nixpkgs/nixos-unstable";
   };
 }
