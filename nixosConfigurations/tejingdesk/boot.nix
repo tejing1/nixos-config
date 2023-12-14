@@ -1,5 +1,6 @@
 {
   boot.kernelParams = [ "quiet" ];
+  boot.initrd.verbose = false;
 
   # Quiet ACPI errors I always see
   boot.consoleLogLevel = 3;
