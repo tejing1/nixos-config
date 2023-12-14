@@ -1,14 +1,17 @@
 inputs: hostname:
 let
-  nixpkgs = inputs.nixpkgs-unstable;
-  home-manager = inputs.home-manager-unstable;
+  nixpkgsInput = "nixpkgs-unstable";
+  home-managerInput = "home-manager-unstable";
+
+  nixpkgs = inputs.${nixpkgsInput};
+  home-manager = inputs.${home-managerInput};
 
   inherit (builtins) attrValues;
   inherit (inputs.self.lib) listImportablePathsExcept;
 in
 nixpkgs.lib.nixosSystem {
   specialArgs = {
-    inherit inputs nixpkgs home-manager;
+    inherit inputs nixpkgs home-manager nixpkgsInput home-managerInput;
   };
   modules = [{
     networking.hostName = hostname;

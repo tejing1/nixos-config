@@ -1,4 +1,4 @@
-{ inputs, inputSpecs, lib, my, pkgs, ... }:
+{ nixpkgs, inputSpecs, nixpkgsInput, lib, my, pkgs, ... }:
 let
   inherit (builtins) attrValues;
   inherit (lib) genAttrs mkOverride mkEnableOption mkOption mkIf;
@@ -63,7 +63,7 @@ in
       after = [ "network-online.target" ];
       serviceConfig = {
         Type = "oneshot";
-        ExecStart = "${downloadDatabase} ${inputSpecs.nixpkgs.ref} ${inputs.nixpkgs.rev}";
+        ExecStart = "${downloadDatabase} ${inputSpecs.${nixpkgsInput}.ref} ${nixpkgs.rev}";
         RemainAfterExit = true;
       };
     };
