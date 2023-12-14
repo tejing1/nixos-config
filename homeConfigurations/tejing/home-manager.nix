@@ -6,7 +6,7 @@
 
   systemd.user.services.clean_hm_profile = {
     Unit.Description = "home-manager profile cleaner";
-    Service.ExecStart = "${pkgs.nix}/bin/nix profile wipe-history --profile /nix/var/nix/profiles/per-user/${config.home.username}/home-manager";
+    Service.ExecStart = "${config.nix.package}/bin/nix profile wipe-history --profile ${config.home.homeDirectory}/.local/state/nix/profiles/home-manager";
   };
   systemd.user.timers.clean_hm_profile = {
     Unit.Description = "home-manager profile cleaner timer";
