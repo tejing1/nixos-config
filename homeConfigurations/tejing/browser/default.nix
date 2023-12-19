@@ -47,6 +47,7 @@ in
       ];
     };
     xdg.mimeApps.enable = true;
+    xdg.configFile."mimeapps.list".force = true;
     xdg.mimeApps.defaultApplications = {
       "text/html" = "mybrowser.desktop";
       "x-scheme-handler/http" = "mybrowser.desktop";
