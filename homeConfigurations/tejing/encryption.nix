@@ -175,7 +175,7 @@ in
 
             # Type value into focused window
             # Pass the command on stdin to avoid password being exposed through /proc
-            xdotool - <<<"type --delay 0 --clearmodifiers -- ''\'''${1//'/\'}'" || die "xdotool failed"
+            xdotool - <<<"type --delay 0 --clearmodifiers -- ''\'''${1//\'/\'\"\'\"\'}'" || die "xdotool failed"
         }
 
         case "$mode" in
