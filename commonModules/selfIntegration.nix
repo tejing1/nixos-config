@@ -10,6 +10,8 @@ in
 {
   config._module.args.inputSpecs = mapAttrs (_: canonicalizeInputSpec) flakeNixInputs;
 
+  config._module.args.pkgsUnstable = import inputs.nixpkgs-unstable { inherit (pkgs) system config overlays; };
+
   config._module.args.my = config.my;
 
   options.my.lib = mkOption {
