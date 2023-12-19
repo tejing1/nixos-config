@@ -1,23 +1,9 @@
-{ my, pkgs, ...}:
+{ my, pkgs, pkgsUnstable, ...}:
 
 {
   programs.steam.enable = true;
 
-  programs.steam.package = ((my.overlays.steam-fix-screensaver pkgs pkgs).steam.override {
-    buildFHSEnv = args: pkgs.buildFHSEnv (args // {
-      extraBwrapArgs = (args.extraBwrapArgs or []) ++ [
-        "--tmpfs /tmp" # bar steam from /tmp because of steam-for-linux#9121
-        "\"\${x11_args[@]}\"" # the steam packaging already does this, but then we rebound /tmp afterward, so we have to redo it.
-        "--bind-try /tmp/dumps /tmp/dumps"
-      ];
-    });
-    extraPkgs = p: [
-      p.glibc.bin # stops steam complaining about missing /sbin/ldconfig on startup
-    ];
-    extraEnv = {
-      GIO_EXTRA_MODULES = ""; # prevents errors trying to link dconf stuff
-    };
-  }).overrideAttrs (old: {
+  programs.steam.package = (my.overlays.steam-fix-screensaver pkgsUnstable pkgsUnstable).steam.overrideAttrs (old: {
     buildCommand = let
       sedscript = builtins.toFile "steam.sed" ''
       # loop start label
