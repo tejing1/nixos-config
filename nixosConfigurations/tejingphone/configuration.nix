@@ -59,6 +59,14 @@ in
   zramSwap.enable = true;
   zramSwap.memoryPercent = 150;
 
+  # Make the nix daemon only use the performance cores
+  # 0-3 are efficiency cores, 4-5 are performance cores
+  systemd.services.nix-daemon.serviceConfig.CPUAffinity = "4,5";
+  nix.settings.cores = 2;
+
+  # Keep memory use low. Build one thing at a time...
+  nix.settings.max-jobs = 1;
+
   my.customize.nix = true;
   my.customize.registry = true;
   my.customize.shell = true;
