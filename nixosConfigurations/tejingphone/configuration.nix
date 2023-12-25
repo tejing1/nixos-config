@@ -50,7 +50,7 @@ in
         echo "$@"
         "$@"
       }
-      echocmd sudo dd if=${config.mobile.outputs.u-boot.boot-partition}/mobile-nixos-boot.img of=/dev/mmcblk2p1 bs=8M oflag=direct,sync status=progress
+      echocmd sudo dd if=${config.mobile.outputs.u-boot.boot-partition} of=/dev/mmcblk2p1 bs=8M oflag=direct,sync status=progress
     '')
   ];
 
