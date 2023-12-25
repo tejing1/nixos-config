@@ -10,6 +10,7 @@ let
   inherit (inputs.self.lib) listImportablePathsExcept;
 in
 nixpkgs.lib.nixosSystem {
+  system = "aarch64-linux"; # mobile-nixos still needs this set. It can't work from nixpkgs.hostPlatorm
   specialArgs = {
     inherit inputs nixpkgs home-manager nixpkgsInput home-managerInput;
   };
