@@ -30,6 +30,7 @@
       push.autosetupremote = true;
       branch.autosetupmerge = "simple";
       advice.detachedHead = false;
+      checkout.guess = false;
     };
   };
 
