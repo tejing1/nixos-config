@@ -112,7 +112,21 @@ in
       # for chromium from home-manager/modules/programs/browserpass.nix
       ".config/BraveSoftware/Brave-Browser/NativeMessagingHosts/com.github.browserpass.native.json".source = "${pkgs.browserpass}/lib/browserpass/hosts/chromium/com.github.browserpass.native.json";
       ".config/BraveSoftware/Brave-Browser/policies/managed/com.github.browserpass.native.json".source = "${pkgs.browserpass}/lib/browserpass/policies/chromium/com.github.browserpass.native.json";
-    } // mapAttrs' (n: v: nameValuePair ".vieb/userscript/${n}.js" { text = v; }) (importSecret {} ./userscripts.secret.nix);
+    } // mapAttrs' (n: v: nameValuePair ".vieb/userscript/${n}.js" { text = v; })
+      (importSecret {} ./userscripts.secret.nix
+       // {
+         global = ''
+           // workaround for vieb injecting css into local html files
+           if (/^file:/.exec(window.location.href)) {
+               setTimeout(() =>
+                   document.querySelectorAll("html > head > style#default-styling").forEach((x) => x.outerHTML = "")
+                   , 10);
+           }
+           // mark common patterns for previous and next buttons so vieb notices them
+           document.querySelectorAll("a.btn-prev").forEach((x) => x.setAttribute("rel", "prev"))
+           document.querySelectorAll("a.btn-next").forEach((x) => x.setAttribute("rel", "next"))
+         '';
+       });
 
     xsession.windowManager.i3.config.assigns."12" = [{ class = "^Vieb$"; instance = "^vieb$"; }];
     xsession.windowManager.i3.config.startup = [{ command = "${my.browser}"; always = false; notification = false; }];
