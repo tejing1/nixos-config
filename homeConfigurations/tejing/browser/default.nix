@@ -98,6 +98,7 @@ in
           notificationforpermissions = "all";
           useragent = "%default";
           userscript = true;
+          userscriptscope = ''["page","file"]'';
           vimcommand = ''"emacsclient -c"'';
         } ++ map (x: "unmap ${x}") [
         ] ++ mapAttrsToList (n: v:
