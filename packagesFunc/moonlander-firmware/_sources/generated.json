@@ -1,6 +1,7 @@
 {
     "qmk_firmware": {
         "cargoLocks": null,
+        "date": "2023-12-21",
         "extract": null,
         "name": "qmk_firmware",
         "passthru": null,
@@ -12,10 +13,10 @@
             "name": null,
             "owner": "zsa",
             "repo": "qmk_firmware",
-            "rev": "2f50d1ed03058f69d7aeddaae34eb07673f3f9e8",
-            "sha256": "sha256-HzSJu2aSxgZMRVBOy0wjW/AQOiil372D3+KUD0Ya2Wc=",
+            "rev": "c2008634f8996340c7eb8e95d640a20e37228089",
+            "sha256": "sha256-ZuyxzUy6ePg/1zMQi1IxU9xpF8EdAEnCQfI7OqIOQxA=",
             "type": "github"
         },
-        "version": "2f50d1ed03058f69d7aeddaae34eb07673f3f9e8"
+        "version": "c2008634f8996340c7eb8e95d640a20e37228089"
     }
 }
