@@ -28,5 +28,11 @@
     "emacs.background" = "#000000";
     "emacs.foreground" = "#00FF00";
     "emacs.toolBar" = "off";
+    "emacsOrgAgenda.background" = "#000000";
+    "emacsOrgAgenda.foreground" = "#00FF00";
+    "emacsOrgAgenda.toolBar" = "off";
   };
+
+  xsession.windowManager.i3.config.assigns."10" = [{class = "^Emacs$";instance = "^emacsOrgAgenda$";}];
+  xsession.windowManager.i3.config.startup = [{ command = "${my.launch} app emacs-org-agenda ${pkgs.writeShellScript "emacs-org-agenda-cycle" ''while true; do emacsclient -cF '((name . "emacsOrgAgenda"))' --eval '(org-agenda "" "n")';done''}"; always = false; notification = false; }];
 }
