@@ -1,10 +1,11 @@
 { config, lib, my, pkgs, ... }:
 
 let
-  inherit (lib) mkIf;
+  inherit (lib) mkIf escapeShellArg;
   stateDir = "/mnt/persist/tejing/torrents";
   tmux_socket = "${stateDir}/tmux_socket";
   rpc_socket = "${stateDir}/rpc_socket";
+  session_lock = "${stateDir}/session/rtorrent.lock";
 
   safely = my.lib.mkShellScript "safely" {
     inputs = [ pkgs.coreutils pkgs.diffutils ];
@@ -57,26 +58,58 @@ let
     method.insert = cfg.connection.up_percent,    private|const|string,  "80"
     method.insert = cfg.connection.down_percent,  private|const|string,  "80"
   '';
-  start_rtorrent = "${pkgs.rtorrent}/bin/rtorrent -I -n -o import=${rtorrent_config} -o import=${./rtorrent.rc}";
-
-  width = "426";
-  height = "118";
-  tmux_config = builtins.toFile "rtorrent_tmux.conf" "";
-  tmux_cmd = "${pkgs.tmux}/bin/tmux -S ${tmux_socket} -f ${tmux_config}";
-  start_tmux = "${tmux_cmd} new-session -d -s rtorrent -n rtorrent -x ${width} -y ${height} ${start_rtorrent}";
-  tmux_wait_for_exit = my.lib.mkShellScript "tmux_wait_for_exit" {
-    keep = [ "${pkgs.tmux}/bin/tmux" ];
+  start_rtorrent = my.lib.mkShellScript "start-rtorrent" {
+    inputs = [ pkgs.rtorrent ];
+    execer = [ "cannot:${pkgs.rtorrent}/bin/rtorrent" ];
   } ''
+    exec rtorrent -I -n -o import=${rtorrent_config} -o import=${./rtorrent.rc}
+  '';
+
+  clear_stale_lock = my.lib.mkShellScript "clear-stale-rtorrent-lock" {
+    inputs = [ pkgs.coreutils pkgs.nettools ];
+  } ''
+    [[ -f ${escapeShellArg session_lock} ]] || exit 0
+    [[ "$(< ${escapeShellArg session_lock})" =~ ([^:]+):\+([0-9]+) ]] || exit 0
+    [[ "''${BASH_REMATCH[1]}" == "$(hostname)" ]] || exit 0
+    [[ -d "/proc/''${BASH_REMATCH[2]}" ]] && [[ "$(basename "$(readlink "/proc/''${BASH_REMATCH[2]}/exe")")" == rtorrent ]] && exit 0
+    rm -f -- ${escapeShellArg session_lock}
+  '';
+
+  tmux_config = builtins.toFile "rtorrent_tmux.conf" ''
+  '';
+  tmux_cmd = "tmux -S ${escapeShellArg tmux_socket} -f ${tmux_config}";
+
+  start_daemon = my.lib.mkShellScript "start-rtorrent-daemon" {
+    inputs = [ pkgs.tmux ];
+    execer = [ "cannot:${pkgs.tmux}/bin/tmux" ]; # False, but I'm getting around it with explicit absolute paths
+  } ''
+    ${tmux_cmd} new-session -d -s rtorrent -n rtorrent -x 426 -y 118 ${start_rtorrent}
+    ${tmux_cmd} display-message -p '#{pid}' > "$XDG_RUNTIME_DIR/rtorrent_tmux.pid"
+  '';
+  stop_daemon = my.lib.mkShellScript "stop-rtorrent-daemon" {
+    inputs = [ pkgs.coreutils pkgs.tmux ];
+    execer = [ "cannot:${pkgs.tmux}/bin/tmux" ]; # False, but doesn't matter here
+  } ''
+    ${tmux_cmd} send-keys -t rtorrent:rtorrent C-q
     while ${tmux_cmd} -N has-session; do
       sleep 0.5
     done
   '';
-  stop_tmux = "${tmux_cmd} send-keys -t rtorrent:rtorrent C-q ; ${tmux_wait_for_exit}";
 
   rtorrent-attach = my.lib.mkShellScript "rtorrent-attach" {
-    inputs = [ pkgs.tmux ];
-    execer = [ "cannot:${pkgs.tmux}/bin/tmux" ]; # False, but doesn't matter here
-  } "exec tmux -S ${tmux_socket} -f ${tmux_config} attach-session";
+    inputs = [ pkgs.tmux pkgs.systemd ];
+    execer = [
+      "cannot:${pkgs.systemd}/bin/systemctl"
+      "cannot:${pkgs.tmux}/bin/tmux" # False, but doesn't matter here
+    ];
+  } ''
+    if [ "$(systemctl --user show --property=ActiveState rtorrent.service)" == "ActiveState=active" ]; then
+      exec ${tmux_cmd} attach-session
+    else
+      echo "rtorrent.service not active" >&2
+      exit 1
+    fi
+  '';
 in
 
 {
@@ -85,7 +118,7 @@ in
   xdg.desktopEntries.rtorrent-load = {
     name = "RTorrent rpc torrent loader";
     comment = "Load a torrent into the running rtorrent instance.";
-    exec = "${rtorrent-load}/bin/rtorrent-load -S ${rpc_socket} %U";
+    exec = "${pkgs.writeShellScript "rtorrent-load-desktop-script" ''exec ${rtorrent-load}/bin/rtorrent-load -S ${escapeShellArg rpc_socket} "$@"''} %U";
     noDisplay = true;
     startupNotify = false;
     mimeType = [ "application/x-bittorrent" "x-scheme-handler/magnet" ];
@@ -99,11 +132,13 @@ in
     Install.WantedBy = [ "default.target" ];
     Service = {
       Type = "forking";
-      ExecStart = "${start_tmux}";
-      ExecStop = "${stop_tmux}";
+      PIDFile = "rtorrent_tmux.pid";
+      ExecStartPre = "-${clear_stale_lock}";
+      ExecStart = "${start_daemon}";
+      ExecStop = "${stop_daemon}";
     };
   };
 
   xsession.windowManager.i3.config.assigns."10" = [{class = "^URxvt$";instance = "^rtorrent$";}];
-  xsession.windowManager.i3.config.startup = [{ command = "${my.launch.term} app rtorrent ${pkgs.writeShellScript "rtorrent-cycle" (if my.isBuildVm then "echo In a virtual machine, not running rtorrent;while true;do sleep 3600;done" else "while true; do rtorrent-attach;done")}"; always = false; notification = false; }];
+  xsession.windowManager.i3.config.startup = [{ command = "${my.launch.term} app rtorrent ${pkgs.writeShellScript "rtorrent-cycle" (if my.isBuildVm then "echo In a virtual machine, not running rtorrent;while true;do sleep 3600;done" else "while true; do rtorrent-attach; sleep 1;done")}"; always = false; notification = false; }];
 }
