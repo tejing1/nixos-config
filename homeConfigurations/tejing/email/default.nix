@@ -110,7 +110,7 @@ in
       unset wait_key
       unmailboxes *
       set folder='${config.accounts.email.maildirBasePath}/${config.accounts.email.accounts.fastmail.maildir.path}'
-      mailboxes +Inbox +Sent +Drafts +Spam +Trash +Archive
+      mailboxes +Inbox +Sent +Drafts +Spam +Trash +Archive '+Learn as Ham' '+Learn as Spam'
       set folder='${config.accounts.email.maildirBasePath}/${config.accounts.email.accounts.yahoo.maildir.path}'
       mailboxes +Inbox +Sent +Spam +Trash +Archive
       set folder='${config.accounts.email.maildirBasePath}/${config.accounts.email.accounts.gmail.maildir.path}'
