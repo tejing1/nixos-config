@@ -47,8 +47,8 @@ in
     passwordCommand = "${my.getpass} yahoo.com/app";
     mbsync.groups.yahoo.channels = builtins.mapAttrs (_: v:{extraConfig={Create="both";Remove="both";Expunge="both";SyncState="*";};}//v) {
       drafts = { nearPattern = "Drafts"; farPattern = "Draft";     };
-      spam   = { nearPattern = "Spam";   farPattern = "Bulk Mail"; };
-      other.patterns = [ "*" "!Draft" "!Drafts" "\"!Bulk Mail\"" "!Spam" ];
+      spam   = { nearPattern = "Spam";   farPattern = "Bulk"; };
+      other.patterns = [ "*" "!Draft" "!Drafts" "!Bulk" "!Spam" ];
     };
     mbsync.extraConfig.account.PipelineDepth = 1; # yahoo's imap servers are horrible
   };

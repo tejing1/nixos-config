@@ -59,6 +59,8 @@ sync_changed () {
         [fastmail/Sent]=fastmail:Sent
         [fastmail/Spam]=fastmail:Spam
         [fastmail/Trash]=fastmail:Trash
+        [fastmail/'Learn as Ham']=fastmail:'Learn as Ham'
+        [fastmail/'Learn as Spam']=fastmail:'Learn as Spam'
         [yahoo/Sent]=yahoo-other:Sent
         [yahoo/Trash]=yahoo-other:Trash
         [yahoo/Archive]=yahoo-other:Archive
