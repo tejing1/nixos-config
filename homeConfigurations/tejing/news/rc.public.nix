@@ -9,7 +9,7 @@ in
 {
   # Basic, normal rss feeds.
   feeds."XKCD".url = https://xkcd.com/rss.xml;
-  feeds."PINE64".url = https://www.pine64.org/feed/;
+  feeds."PINE64".url = https://pine64.org/blog/index.xml;
 
   # For when you want multiple feeds to download from the same url,
   # but not actually download repeatedly
