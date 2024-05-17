@@ -16,7 +16,7 @@ let
   } ''
     case "$1" in
       https://www.youtube.com/watch\?*)
-        mpv "$1" || { exitcode="$?"; read -rsN1 -p 'mpv failed, press enter to continue...'; echo; exit "$exitcode"; }
+        mpv --force-window=immediate "$1" || { exitcode="$?"; read -rsN1 -p 'mpv failed, press enter to continue...'; echo; exit "$exitcode"; }
         ;;
       *)
         xdg-open "$1" &>/dev/null & disown;exit 0
