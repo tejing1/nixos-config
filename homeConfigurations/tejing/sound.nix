@@ -1,4 +1,4 @@
-{ config, my, pkgs, ... }:
+{ config, lib, my, pkgs, ... }:
 
 {
   home.packages = builtins.attrValues {
@@ -29,6 +29,27 @@
   };
   xsession.windowManager.i3.config.assigns."9" = [{class = "^URxvt$";instance = "^ncmpc$";}];
   xsession.windowManager.i3.config.startup = [{ command = "${my.launch.term} app ncmpc ${pkgs.ncmpc}/bin/ncmpc"; always = false; notification = false; }];
+
+  # pactl commands in keybinds accumulate slight drift when used. Reset that drift regularly.
+  systemd.user.services.normalize_pa_volume = {
+    Unit.Description = "pulseaudio volume normalizer";
+    Service.Environment = [ "PATH=${lib.makeBinPath [
+      pkgs.coreutils
+      pkgs.gnugrep
+      pkgs.pulseaudio
+    ]}" ];
+    Service.ExecStart = "${pkgs.writeShellScript "normalize_pa_volume" ''
+      set -euo pipefail
+      curvolume="$(pactl get-sink-volume @DEFAULT_SINK@ | egrep -o '[0-9]?[0-9]?[0-9]%' | head -n1 | egrep -o '[0-9]*')"
+      newvolume=$(((curvolume+2)/5*5))
+      pactl set-sink-volume @DEFAULT_SINK@ "$newvolume%"
+    ''}";
+  };
+  systemd.user.timers.normalize_pa_volume = {
+    Unit.Description = "pulseaudio volume normalization timer";
+    Install.WantedBy = [ "timers.target" ];
+    Timer.OnCalendar = "daily";
+  };
 
   services.mpd.enable = true;
   services.mpd.network.startWhenNeeded = true;
