@@ -5,7 +5,6 @@
     inherit (pkgs)
       zathura
       feh
-      youtube-dl
       mkvtoolnix
       ffmpeg
     ;
@@ -17,7 +16,6 @@
     } (builtins.readFile ./yt-dlp)).pkg;
   };
   programs.mpv.enable = true;
-  programs.mpv.package = pkgs.wrapMpv (pkgs.mpv-unwrapped.override { nv-codec-headers = pkgs.nv-codec-headers-11; }) {};
   programs.mpv.config = {
     osc = false;
     hwdec = "auto-safe";

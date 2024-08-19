@@ -60,8 +60,8 @@ in
 
       # Enable touchpad support.
       # I actually just need this for the mouse acceleration settings that I'm used to.
-      services.xserver.libinput.enable = true;
-      services.xserver.libinput.mouse.accelSpeed = "0.6";
+      services.libinput.enable = true;
+      services.libinput.mouse.accelSpeed = "0.6";
 
       programs.dconf.enable = true;
 

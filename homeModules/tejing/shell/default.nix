@@ -89,7 +89,7 @@ in
     programs.dircolors.enableZshIntegration = true;
     programs.starship.enableZshIntegration = false;
     programs.zsh.shellAliases = config.programs.fish.shellAliases;
-    programs.zsh.enableAutosuggestions = true;
+    programs.zsh.autosuggestion.enable = true;
     programs.zsh.defaultKeymap = "emacs";
     programs.zsh.initExtraFirst = ''
       # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.

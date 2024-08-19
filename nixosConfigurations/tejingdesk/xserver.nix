@@ -4,7 +4,7 @@
   services.xserver.enable = true;
 
   # Disable Caps Lock
-  services.xserver.xkbOptions = "caps:none";
+  services.xserver.xkb.options = "caps:none";
 
   # Use proprietary nvidia graphics driver
   nixpkgs.config.allowUnfree = true;
