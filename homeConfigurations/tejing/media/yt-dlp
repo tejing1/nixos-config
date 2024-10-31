@@ -10,6 +10,7 @@ if [ $(stat -c '%Y' "$cachedir/version" 2>/dev/null || echo 0) -lt $((EPOCHSECON
     newversion="$(curl -sSL https://pypi.org/rss/project/yt-dlp/releases.xml | sfeed | sort -rk1,1 | grep -v '.dev' | head -n 1 | cut -f2)"
     if [ "$newversion" != "$curversion" ]; then
         sha256="$(curl -sSL "https://pypi.org/pypi/yt-dlp/$newversion/json" | jq -r '.urls[] | select(.packagetype == "sdist") | .digests.sha256')"
+        mkdir -p "$cachedir" 1>&2
         nix build --argstr version "$newversion" --argstr sha256 "$sha256" -o "$cachedir/package" --impure --expr '
 {version, sha256}:
 let
@@ -22,9 +23,7 @@ pkgs.yt-dlp.overrideAttrs (old: {
   name = concatStringsSep "-" (lib.init (filter (x: x!=[]) (split "-" old.name)) ++ [ fixedversion ]);
   version = fixedversion;
   src = old.src.override {inherit version sha256; hash="";};
-})' 1>&2
-        mkdir -p "$cachedir" 1>&2
-        printf '%s\n' "$newversion" >"$cachedir/version"
+})' 1>&2 && printf '%s\n' "$newversion" >"$cachedir/version"
     fi
 fi
 
