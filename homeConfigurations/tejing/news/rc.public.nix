@@ -56,15 +56,14 @@ in
   };
 
   # Gets around cloudflare's bot detection, last time I checked
-  fetch.imitate_browser = {
+  helper.curl_cf = {
     code = ''
-      curl --no-alpn -fsSLm 15 -A ${escapeShellArg innocuousUserAgent} "$2"'';
+      curl --no-alpn -fsSL -A ${escapeShellArg innocuousUserAgent} "$@"'';
     inputs = [ pkgs.curl ];
   };
-  fetch.imitate_browser_post = {
+  fetch.imitate_browser = {
     code = ''
-      curl --no-alpn -fsSLm 15 -A ${escapeShellArg innocuousUserAgent} -X POST "$2"'';
-    inputs = [ pkgs.curl ];
+      curl_cf -m 15 "$2"'';
   };
 
   # A good general pattern for scraping html pages
@@ -114,7 +113,7 @@ in
   helper.normalize_dates = {
     code = ''awk -F'\t' -v OFS=$'\t' -f '' + pkgs.writeText "sfeed_process_dates.awk" ''
       BEGIN {
-        datecmd = "${pkgs.coreutils}/bin/date -f- +%s"
+        datecmd = "${pkgs.coreutils}/bin/date -uf- +%s"
         PROCINFO[datecmd, "pty"] = 1
       }
       {

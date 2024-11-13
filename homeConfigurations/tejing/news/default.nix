@@ -39,9 +39,6 @@ in
   # Enable my sfeed module
   my.sfeed.enable = true;
 
-  # Update every hour, at a non-round time
-  my.sfeed.update = "*:45:35";
-
   # Pass useful args through to submodule config
   my.sfeed.rc._module.args = { inherit pkgs my; };
   my.sfeed.rc.imports = [
