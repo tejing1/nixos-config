@@ -17,6 +17,8 @@ let
       enable = true;
       boxes = [ "Inbox" ];
       onNotify = "${pkgs.coreutils}/bin/touch -c -- ${config.accounts.email.maildirBasePath}/${name}/Inbox/new";
+      # goimapnotify doesn't seem to be perfect at telling the difference between new mail and deleted mail. Just fire on both.
+      extraConfig.onDeletedMail = "${pkgs.coreutils}/bin/touch -c -- ${config.accounts.email.maildirBasePath}/${name}/Inbox/new";
     };
     mbsync = {
       enable = true;
