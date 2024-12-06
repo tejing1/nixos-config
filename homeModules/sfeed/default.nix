@@ -7,7 +7,7 @@ let
   inherit (lib) concatMapStringsSep escapeShellArgs escapeShellArg
     optionalString optionalAttrs splitString mapAttrsToList groupBy'
     nameValuePair removeSuffix unique filterAttrs makeBinPath
-    mkEnableOption mkOption mkIf;
+    mkEnableOption mkPackageOption mkOption mkIf;
   inherit (lib.types) attrsOf submodule str ints float listOf package nullOr submoduleWith;
   inherit (pkgs) resholve;
 
@@ -335,6 +335,7 @@ in
 {
   options = putopt {
     enable = mkEnableOption "sfeed";
+    package = mkPackageOption pkgs "sfeed" {};
     update.averagedelay = mkOption {
       type = ints.positive;
       default = 600;
@@ -362,26 +363,22 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = builtins.attrValues {
-      inherit (pkgs)
-        sfeed
-      ;
-    };
+    home.packages = [ cfg.package ];
 
     home.file.".sfeed/sfeedrc".source = sfeedrc;
 
     systemd.user.services.sfeed_update = {
       Unit.Description = "news feed updater";
       Service.Environment = [ "PATH=${makeBinPath (attrValues {
+        sfeed = cfg.package;
         inherit (pkgs)
-          sfeed
           curl
           glibc # for iconv
           findutils # for xargs
           coreutils
         ;
       })}" ];
-      Service.ExecStart = "${pkgs.sfeed}/bin/sfeed_update";
+      Service.ExecStart = "${cfg.package}/bin/sfeed_update";
     };
     systemd.user.timers.sfeed_update = {
       Unit.Description = "news feed update timer";
