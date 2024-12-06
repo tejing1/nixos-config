@@ -73,7 +73,7 @@ function recip_slope() {
     drt = irt - prt;
     ef = exp_no_warn(drt);
     divisor = r*((1 - ef)*(sxy + sy) + (ef*irt - prt)*sy);
-    if (divisor == 0) return strtonum("+inf");
+    if (divisor == 0) return awk::strtonum("+inf");
     return (ef*(ef - drt^2 - 2) + 1)/divisor;
 }
 

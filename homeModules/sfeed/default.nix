@@ -120,7 +120,7 @@ let
       # Temporarily set pipefail
       local restore_opts="$(shopt -po pipefail)";set -o pipefail
 
-      if sort -k1,1n "$file" | awk -F'\t' -v recentdiv="$1" -v recentmin="$2" -v regressiondiv="$3" -v regressionmin="$4" -v maxdelay="$5" -v firststeplength="$6" -v weightdoublingtime="$7" -v backofffactor="$8" -v deferprobablility="$9" -v lastchecked="$lastchecked" -v lastfailed="$lastfailed" -f ${./regressions.awk}; then
+      if [ -e "$file" ] && sort -k1,1n "$file" | awk -F'\t' -v recentdiv="$1" -v recentmin="$2" -v regressiondiv="$3" -v regressionmin="$4" -v maxdelay="$5" -v firststeplength="$6" -v weightdoublingtime="$7" -v backofffactor="$8" -v deferprobablility="$9" -v lastchecked="$lastchecked" -v lastfailed="$lastfailed" -f ${./regressions.awk}; then
         # Restore pipefail setting
         eval "$restore_opts"
       else
