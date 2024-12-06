@@ -286,4 +286,33 @@ in
       [ .timestamp, .title, .link, "", "", .link, "", .magnet, "" ] | @tsv
     ''}'';
   };
+
+  # Fetch from Patreon api. Always pair with patreon parser
+  fetch.patreon = {
+    code = ''
+      local campaign="$(curl -sSLf "$2" | hred '^ script#__NEXT_DATA__ @.textContent' -r | jq '.props.pageProps.bootstrapEnvelope.pageBootstrap.campaign.data.id' -r)"
+      local cursor=""
+      local done=""
+      while [ -z "$done" ];do
+        exec {fd}< <(
+          curl -sSf "https://www.patreon.com/api/posts" --url-query "filter[campaign_id]=$campaign" --url-query "sort=-published_at" ''${cursor:+--url-query "page[cursor]=$cursor"} |
+          jq 'if .meta.pagination.cursors.next == null then "" else .meta.pagination.cursors.next end,.' -rc
+        )
+        read -u $fd -r cursor
+        if [ -z "$cursor" ]; then
+          done=1
+        fi
+        cat <&$fd
+        exec {fd}<&-
+      done
+    '';
+  };
+  # Parse Patreon api. Always pair with the patreon fetcher.
+  parse.patreon = {
+    code = ''json_parse '' + toFile "patreon.jq" ''
+      . as $all |
+      .data[] |
+      [ .attributes.published_at, .attributes.title, .attributes.url, .attributes.teaser_text, "html", .id, null, null, ([.relationships.user_defined_tags.data[] | select(.type == "post_tag") | .id as $id | $all.included[] | select(.type == "post_tag" and .id == $id) | .attributes.value] | join("|")) ] | @tsv
+    '';
+  };
 }

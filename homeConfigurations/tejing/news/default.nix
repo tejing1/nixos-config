@@ -39,6 +39,9 @@ in
   # Enable my sfeed module
   my.sfeed.enable = true;
 
+  # Fix a bug related to IFS in sfeed_update
+  my.sfeed.package = pkgs.sfeed.overrideAttrs (old: { patches = (old.patches or []) ++ [ ./fix_IFS.patch ]; });
+
   # Pass useful args through to submodule config
   my.sfeed.rc._module.args = { inherit pkgs my; };
   my.sfeed.rc.imports = [
