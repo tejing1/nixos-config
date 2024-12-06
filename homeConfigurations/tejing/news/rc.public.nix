@@ -54,6 +54,15 @@ in
     '';
     inputs = [ pkgs.gawk ];
   };
+  helper.title_doesnt_start_with = {
+    code = ''awk -F'\t' -v titlestart="$1" -f '' + toFile "sfeed_title_doesnt_start_with.awk" ''
+      {
+        if (index($2,titlestart) != 1)
+          print
+      }
+    '';
+    inputs = [ pkgs.gawk ];
+  };
 
   # Gets around cloudflare's bot detection, last time I checked
   helper.curl_cf = {
