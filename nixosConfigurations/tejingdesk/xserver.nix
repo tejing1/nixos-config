@@ -10,13 +10,16 @@
   nixpkgs.config.allowUnfree = true;
   services.xserver.videoDrivers = [ "nvidia" ];
 
+  # GeForce GTX 970 is too old for the open drivers
+  hardware.nvidia.open = false;
+
   # Enable experimental nvidia_drm framebuffer console
   hardware.nvidia.modesetting.enable = true;
   boot.kernelParams = [ "nvidia-drm.fbdev=1" ];
   boot.initrd.availableKernelModules = [ "nvidia" "nvidia_modeset" "nvidia_drm" "nvidia_uvm" ];
 
   # 32-bit graphics libraries
-  hardware.opengl.driSupport32Bit = true;
+  hardware.graphics.enable32Bit = true;
 
   environment.sessionVariables = {
     # I don't know why VA-API can't find the driver without this...

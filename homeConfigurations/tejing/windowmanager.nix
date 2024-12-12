@@ -299,9 +299,15 @@ in
   };
 
   services.picom.enable = true;
-  services.picom.backend = "xrender";
-  services.picom.vSync = true;
-  services.picom.opacityRules = [ "0:_NET_WM_STATE@:32a *= '_NET_WM_STATE_HIDDEN'" ];
+  xdg.configFile."picom/picom.conf".text = lib.mkForce ''
+    backend = "xrender";
+    unredir-if-possible = true;
+    vsync = true;
+    rules=(
+      { match =   "_NET_WM_STATE@[*] = '_NET_WM_STATE_HIDDEN'"; opacity = 0; },
+      { match = "! _NET_WM_STATE@[*] = '_NET_WM_STATE_HIDDEN'"; opacity = 1; },
+    )
+  '';
 
   gtk.enable = true;
   gtk.gtk3.bookmarks = [ "file:///home/tejing/data" ];
