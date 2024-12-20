@@ -10,6 +10,7 @@
       # perhaps this should be left to individual development environments?
       ruby
       ghc
+      calc
     ;
   };
 
