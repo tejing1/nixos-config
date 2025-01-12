@@ -8,6 +8,7 @@ in
   options.my.users.tejing.pam = mkEnableOption "pam settings for user \"tejing\"";
   options.my.users.tejing.desktop = mkEnableOption "desktop-specific settings for user \"tejing\"";
   options.my.users.tejing.network = mkEnableOption "networking settings for user \"tejing\"";
+  options.my.users.tejing.adb = mkEnableOption "adb usage by user \"tejing\"";
   config = mkIf my.users.tejing.enable (mkMerge [
     {
       users.users.tejing = {
@@ -75,6 +76,10 @@ in
       # rtorrent peer & dht ports
       networking.firewall.allowedTCPPorts = [ 62813 ];
       networking.firewall.allowedUDPPorts = [ 62813 ];
+    })
+    (mkIf my.users.tejing.adb {
+      programs.adb.enable = true;
+      users.users.tejing.extraGroups = [ "adbusers" ];
     })
   ]);
 }

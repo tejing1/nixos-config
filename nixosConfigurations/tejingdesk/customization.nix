@@ -9,4 +9,5 @@
   my.users.tejing.pam = true;
   my.users.tejing.desktop = true;
   my.users.tejing.network = true;
+  my.users.tejing.adb = true;
 }
