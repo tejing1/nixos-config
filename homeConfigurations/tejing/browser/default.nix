@@ -73,6 +73,7 @@ in
       imap <A-F4> <:quitall>
       imap <C-A-n> <toNormalMode>
       imap <C-A-r> <refreshTab>
+      imap <C-A-f> <startFollowNewTab>
       call <toInsertMode>
       EOF
       exec mylaunch app "pwarun-$name" ${my.pkgsUnstable.vieb}/bin/vieb --erwic="$dir/erwic.json" --datafolder="$dir/datafolder" --config-file="$dir/viebrc"
