@@ -1,4 +1,4 @@
-{ lib, buildFHSUserEnv, coreutils, fetchzip, gnused, stdenv, writeShellScript }:
+{ lib, buildFHSEnv, coreutils, fetchzip, gnused, stdenv, writeShellScript }:
 
 let
   inherit (builtins) fromJSON readFile toFile attrValues;
@@ -26,7 +26,7 @@ let
   '';
 in
 
-buildFHSUserEnv {
+buildFHSEnv {
   name = "starsector-${version}";
 
   targetPkgs = pkgs: attrValues {
