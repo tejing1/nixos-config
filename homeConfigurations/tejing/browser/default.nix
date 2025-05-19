@@ -66,6 +66,7 @@ in
       cat <<EOF >"$dir/viebrc"
       set guitabbar=never
       set guinavbar=onupdate
+      set mouse-=guiontop
       set menupage=globalasneeded
       set windowtitle=%title
       set nativetheme=dark
