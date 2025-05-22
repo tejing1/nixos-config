@@ -3,7 +3,7 @@
 {
   programs.steam.enable = true;
 
-  programs.steam.package = (my.overlays.steam-fix-screensaver pkgsUnstable pkgsUnstable).steam.overrideAttrs (old: {
+  programs.steam.package = (my.overlays.steam-fix-screensaver pkgs pkgs).steam.overrideAttrs (old: {
     buildCommand = let
       sedscript = builtins.toFile "steam.sed" ''
       # loop start label
