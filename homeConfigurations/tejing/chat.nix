@@ -14,7 +14,7 @@
     { command = "${my.pwarun} discord https://discord.com/app";always = false; notification = false; }
     { command = "${my.pwarun} element https://app.element.io";always = false; notification = false; }
     { command = "${my.pwarun} discourse https://discourse.nixos.org/latest";always = false; notification = false; }
-    { command = "${lib.getExe pkgsUnstable.signal-desktop}";always = false; notification = false; }
+    { command = "${my.launch} app signal ${lib.getExe pkgsUnstable.signal-desktop}";always = false; notification = false; }
   ];
   xsession.windowManager.i3.config.window.commands = [{ criteria = { class = "^URxvt$"; instance = "^weechat$"; }; command = "layout tabbed"; }];
   xsession.windowManager.i3.config.assigns."11" = [
