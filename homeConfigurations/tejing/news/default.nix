@@ -15,7 +15,7 @@ let
     ];
   } ''
     case "$1" in
-      https://www.youtube.com/watch\?*)
+      https://www.youtube.com/watch\?*|https://www.youtube.com/shorts/*)
         mpv --force-window=immediate --pause "$1" || { exitcode="$?"; read -rsN1 -p 'mpv failed, press enter to continue...'; echo; exit "$exitcode"; }
         ;;
       *)
