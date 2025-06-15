@@ -184,6 +184,12 @@ in
         ''
       }";
       "${mod}+r" = "mode resize";
+
+      # Disable mouse wheel up/down/left/right in the titlebars of tabbed/stacked containers
+      "button4" = "nop";
+      "button5" = "nop";
+      "button6" = "nop";
+      "button7" = "nop";
     };
     bars = [{
       statusCommand = "${pkgs.i3status}/bin/i3status";
@@ -213,6 +219,14 @@ in
         # Border, background and text color for the binding mode indicator. If not used, the colors will be taken from urgent_workspace.
         bindingMode = {border = "#000000"; background = "#000000"; text = "#00ffff";};
       };
+
+      # Disable mousewheel up/down/left/right on bar
+      extraConfig = ''
+        bindsym button4 nop
+        bindsym button5 nop
+        bindsym button6 nop
+        bindsym button7 nop
+      '';
     }];
     colors = {
       background      = "#000000";
