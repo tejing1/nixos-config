@@ -93,7 +93,6 @@ in
       # Restore pipefail setting and return exit code from pipeline
       local retval="$?";eval "$restore_opts";return "$retval"'';
     inputs = [ my.pkgs.hred pkgs.jq ];
-    execer = [ "cannot:${my.pkgs.hred}/bin/hred" ];
   };
 
   # A good general pattern for scraping json apis
@@ -114,7 +113,6 @@ in
       # Restore pipefail setting and return exit code from pipeline
       local retval="$?";eval "$restore_opts";return "$retval"'';
     inputs = [ my.pkgs.hred pkgs.jq ];
-    execer = [ "cannot:${my.pkgs.hred}/bin/hred" ];
   };
 
   # Sources often specify dates in unhelpful formats. You can just

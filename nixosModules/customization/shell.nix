@@ -14,7 +14,6 @@ let
       inherit (pkgs) coreutils curl jq xz gnutar;
       inherit (my.pkgs) hred;
     };
-    execer = [ "cannot:${my.pkgs.hred}/bin/hred" ];
   } ''
     set -e -o pipefail
 
