@@ -28,7 +28,7 @@ in
 
       # Set available fonts
       fonts.packages = builtins.attrValues {
-        nerdfonts = pkgs.nerdfonts.override { fonts = [ "DejaVuSansMono" ]; };
+        nerdfonts = pkgs.nerd-fonts.dejavu-sans-mono;
       };
 
       # List packages installed in system profile. To search by name, run:
@@ -42,6 +42,9 @@ in
           rclone # used to connect git-annex to my phone's ftp server
         ;
       };
+
+      # PAM rules for i3lock are no longer enabled by default.
+      security.pam.services.i3lock.enable = true;
     }
     (mkIf my.users.tejing.pam {
       # unlock gpg keys with my login password

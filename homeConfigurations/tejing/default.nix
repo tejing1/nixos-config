@@ -13,7 +13,6 @@ let
     {
       home.username = mkDefault username;
       home.homeDirectory = mkDefault "/home/${username}";
-      nixpkgs.config.allowUnfreePredicate = _: true;
     }
     inputs.self.homeModules.${username}
   ] ++ (listImportablePathsExcept ./. [ "default.nix" ]);

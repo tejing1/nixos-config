@@ -1,6 +1,6 @@
 { config, lib, my, pkgs, ... }:
 let
-  inherit (lib) mkEnableOption;
+  inherit (lib) mkEnableOption mkMerge mkBefore;
 in
 {
   options.my.customize.shell = mkEnableOption "shell customization";
@@ -91,64 +91,66 @@ in
     programs.zsh.shellAliases = config.programs.fish.shellAliases;
     programs.zsh.autosuggestion.enable = true;
     programs.zsh.defaultKeymap = "emacs";
-    programs.zsh.initExtraFirst = ''
-      # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-      # Initialization code that may require console input (password prompts, [y/n]
-      # confirmations, etc.) must go above this block; everything else may go below.
-      if [[ -r "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh" ]]; then
-        source "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh"
-      fi
-    '';
-    programs.zsh.initExtra = ''
-      setopt extended_glob
-      setopt interactivecomments
-      setopt rmstarsilent
-      unset RPS1
-      bindkey "^I" complete-word
-      bindkey "^[l" reset-prompt
-      bindkey "$(echoti kend)" end-of-line
-      bindkey "$(echoti khome)" beginning-of-line
-      bindkey "$(echoti kdch1)" delete-char
-      bindkey '^[Oc' forward-word
-      bindkey '^[Od' backward-word
-      bindkey '^H' backward-kill-word
-
-      . ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
-      source ${./p10k.zsh}
-      . ${pkgs.zsh-syntax-highlighting}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-
-      # Display $1 in terminal title.
-      function set-term-title() {
-        emulate -L zsh
-        if [[ -t 1 ]]; then
-          print -rn -- $'\e]0;'${"$"}{(V)1}$'\a'
-        elif [[ -w $TTY ]]; then
-          print -rn -- $'\e]0;'${"$"}{(V)1}$'\a' >$TTY
+    programs.zsh.initContent = mkMerge [
+      (mkBefore ''
+        # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+        # Initialization code that may require console input (password prompts, [y/n]
+        # confirmations, etc.) must go above this block; everything else may go below.
+        if [[ -r "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh" ]]; then
+          source "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh"
         fi
-      }
+      '')
+      ''
+        setopt extended_glob
+        setopt interactivecomments
+        setopt rmstarsilent
+        unset RPS1
+        bindkey "^I" complete-word
+        bindkey "^[l" reset-prompt
+        bindkey "$(echoti kend)" end-of-line
+        bindkey "$(echoti khome)" beginning-of-line
+        bindkey "$(echoti kdch1)" delete-char
+        bindkey '^[Oc' forward-word
+        bindkey '^[Od' backward-word
+        bindkey '^H' backward-kill-word
 
-      # When a command is running, display it in the terminal title.
-      function set-term-title-preexec() {
-        if (( P9K_SSH )); then
-          set-term-title ''${(V%):-"%n@%m: "}$1
-        else
-          set-term-title $1
-        fi
-      }
+        . ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
+        source ${./p10k.zsh}
+        . ${pkgs.zsh-syntax-highlighting}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
-      # When no command is running, display the current directory in the terminal title.
-      function set-term-title-precmd() {
-        if (( P9K_SSH )); then
-          set-term-title ''${(V%):-"%n@%m: %~"}
-        else
-          set-term-title ''${(V%):-"%~"}
-        fi
-      }
+        # Display $1 in terminal title.
+        function set-term-title() {
+          emulate -L zsh
+          if [[ -t 1 ]]; then
+            print -rn -- $'\e]0;'${"$"}{(V)1}$'\a'
+          elif [[ -w $TTY ]]; then
+            print -rn -- $'\e]0;'${"$"}{(V)1}$'\a' >$TTY
+          fi
+        }
 
-      autoload -Uz add-zsh-hook
-      add-zsh-hook preexec set-term-title-preexec
-      add-zsh-hook precmd set-term-title-precmd
-    '';
+        # When a command is running, display it in the terminal title.
+        function set-term-title-preexec() {
+          if (( P9K_SSH )); then
+            set-term-title ''${(V%):-"%n@%m: "}$1
+          else
+            set-term-title $1
+          fi
+        }
+
+        # When no command is running, display the current directory in the terminal title.
+        function set-term-title-precmd() {
+          if (( P9K_SSH )); then
+            set-term-title ''${(V%):-"%n@%m: %~"}
+          else
+            set-term-title ''${(V%):-"%~"}
+          fi
+        }
+
+        autoload -Uz add-zsh-hook
+        add-zsh-hook preexec set-term-title-preexec
+        add-zsh-hook precmd set-term-title-precmd
+      ''
+    ];
 
     programs.starship.enable = true;
     programs.starship.settings = {

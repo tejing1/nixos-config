@@ -1,7 +1,7 @@
 {
   # Enable pulseaudio
-  hardware.pulseaudio.enable = true;
-  hardware.pulseaudio.support32Bit = true;
+  services.pulseaudio.enable = true;
+  services.pulseaudio.support32Bit = true;
 
   # Disable pipewire. It's now on by default when X is configured, and I don't want to switch just yet.
   services.pipewire.enable = false;

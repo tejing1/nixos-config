@@ -325,7 +325,7 @@ in
 
   gtk.enable = true;
   gtk.gtk3.bookmarks = [ "file:///home/tejing/data" ];
-  gtk.font = { package = pkgs.nerdfonts.override { fonts = [ "DejaVuSansMono" ]; }; name = "DejaVuSansM Nerd Font"; size = 8; };
+  gtk.font = { package = pkgs.nerd-fonts.dejavu-sans-mono; name = "DejaVuSansM Nerd Font"; size = 8; };
   gtk.iconTheme = { package = pkgs.arc-icon-theme; name = "Arc"; };
   gtk.theme = { package = pkgs.arc-theme; name = "Arc-Dark"; };
 

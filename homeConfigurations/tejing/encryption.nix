@@ -1,6 +1,6 @@
 { config, lib, my, pkgs, ... }:
 let
-  inherit (lib) mkBefore mkAfter mkOption types;
+  inherit (lib) mkMerge mkOrder mkAfter mkOption types;
   inherit (my.lib) mkShellScript;
   m = 60; h = 60*m; d = 24*h; y = 365*d;
 in
@@ -94,14 +94,16 @@ in
     };
 
     # make GPG_TTY initialization and p10k's instant prompt play nice
-    programs.zsh.initExtraFirst = mkBefore ''
-      current_tty="$(tty)"
-      tty() { echo "$current_tty"; }
-    '';
-    programs.zsh.initExtra = mkAfter ''
-      unfunction tty
-      unset current_tty
-    '';
+    programs.zsh.initContent = mkMerge [
+      (mkOrder 0 ''
+        current_tty="$(tty)"
+        tty() { echo "$current_tty"; }
+      '')
+      (mkAfter ''
+        unfunction tty
+        unset current_tty
+      '')
+    ];
 
     programs.password-store.enable = true;
     programs.password-store.package = pkgs.pass.withExtensions (exts: builtins.attrValues {

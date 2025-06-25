@@ -7,7 +7,6 @@
     ;
   };
   programs.emacs.enable = true;
-  programs.emacs.package = pkgs.emacs29;
   programs.emacs.extraPackages = epkgs: builtins.attrValues {
     inherit (epkgs)
       nix-mode
