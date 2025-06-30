@@ -1,2 +1,2 @@
 { self, ... }:
-self.lib.importAllExcept ./. [ "default.nix" ]
+self.lib.importAllExcept ./. [ "default" ]

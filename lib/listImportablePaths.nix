@@ -1,8 +1,14 @@
 { my, ... }:
-let
-  inherit (my.lib) listImportable;
-in
 
-dir:
-# list importable paths in the directory 'dir',
-map (n: dir + "/${n}") (listImportable dir)
+let
+  inherit (builtins)
+    attrValues
+  ;
+  inherit (my.lib)
+    getImportable
+  ;
+
+  listImportablePaths = dir:
+    attrValues (getImportable dir);
+
+in listImportablePaths

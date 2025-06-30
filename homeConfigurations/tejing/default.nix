@@ -15,7 +15,7 @@ let
       home.homeDirectory = mkDefault "/home/${username}";
     }
     inputs.self.homeModules.${username}
-  ] ++ (listImportablePathsExcept ./. [ "default.nix" ]);
+  ] ++ (listImportablePathsExcept ./. [ "default" ]);
 in
 { configurationModule.imports = modules; } //
 homeManagerConfiguration {

@@ -1,9 +1,14 @@
 { my, ... }:
-let
-  inherit (my.lib) listImportableExcept;
-in
 
-dir: except:
-# list importable paths in the directory 'dir', except the files named
-# in the list of strings 'except'.
-map (n: dir + "/${n}") (listImportableExcept dir except)
+let
+  inherit (builtins)
+    attrValues
+  ;
+  inherit (my.lib)
+    getImportableExcept
+  ;
+
+  listImportablePathsExcept = dir: except:
+    attrValues (getImportableExcept dir except);
+
+in listImportablePathsExcept

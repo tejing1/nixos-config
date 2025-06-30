@@ -5,7 +5,7 @@ let
 
   result = self.lib //
     # import everything in this directory
-    importAllExceptWithArg ./. [ "default.nix" ] (
+    importAllExceptWithArg ./. [ "default" ] (
       inputs //
       {
         inherit pkgs;

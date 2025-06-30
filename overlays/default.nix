@@ -1,2 +1,2 @@
 inputs@{ self, ... }:
-self.lib.importAllExceptWithScope ./. [ "default.nix" ] { inherit inputs; }
+self.lib.importAllExceptWithScope ./. [ "default" ] { inherit inputs; }

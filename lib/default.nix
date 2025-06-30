@@ -1,26 +1,24 @@
 inputs@{ nixpkgs, ... }:
+
 let
-  inherit (builtins) listToAttrs;
-  inherit (nixpkgs.lib) nameValuePair;
+  inherit (nixpkgs.lib)
+    genAttrs
+  ;
 
   # functions needed to construct 'lib' itself
   bootstrapFunctions = [
     "importAllExceptWithArg"
-    "listImportableExcept"
-    "listImportable"
-    "getAttrWithDefault"
+    "getImportableExcept"
+    "getImportable"
   ];
 
-  # arguments to files in this directory during bootstrap
-  initialArgs = inputs // { inherit inputs; inherit (nixpkgs) lib; my.lib = initialLib; };
+  # arguments to files in this directory, except for 'my.lib'
+  commonArgs = inputs // { inherit inputs; inherit (nixpkgs) lib; };
 
   # bootstrap lib containing only 'bootstrapFunctions'
-  initialLib = listToAttrs (map (n: nameValuePair n (import (./. + "/${n}.nix") initialArgs)) bootstrapFunctions);
-
-  # arguments to files for externally visible 'lib'
-  finalArgs = initialArgs // { my.lib = finalLib; };
+  initialLib = genAttrs bootstrapFunctions (n: import (./. + "/${n}.nix") (commonArgs // { my.lib = initialLib; }));
 
   # externally visible 'lib'
-  finalLib = initialLib.importAllExceptWithArg ./. [ "default.nix" ] finalArgs;
+  finalLib = initialLib.importAllExceptWithArg ./. [ "default" ] (commonArgs // { my.lib = finalLib; });
 
 in finalLib

@@ -17,6 +17,6 @@ nixpkgs.lib.nixosSystem {
   modules = [{
     networking.hostName = hostname;
   }]
-  ++ listImportablePathsExcept ./. [ "default.nix" ]
+  ++ listImportablePathsExcept ./. [ "default" ]
   ++ attrValues inputs.self.nixosModules;
 }

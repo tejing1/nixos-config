@@ -12,5 +12,5 @@
     mobile-nixos.flake = false;
   };
 
-  outputs = inputs: (import ./lib inputs).importAllExceptWithArg ./. [ "flake.nix" ] inputs;
+  outputs = inputs: (import ./lib inputs).importAllExceptWithArg ./. [ "flake" ] inputs;
 }
