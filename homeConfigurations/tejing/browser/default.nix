@@ -102,6 +102,7 @@ in
           userscript = true;
           userscriptscope = ''["page","file"]'';
           vimcommand = ''"emacsclient -c"'';
+          pdfbehavior = "view";
         } ++ map (x: "unmap ${x}") [
         ] ++ mapAttrsToList (n: v:
           "nmap ${n} ${v}"
