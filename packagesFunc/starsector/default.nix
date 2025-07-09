@@ -1,76 +1,102 @@
-{ lib, buildFHSEnv, coreutils, fetchzip, gnused, stdenv, writeShellScript }:
+{
+  lib,
+  fetchzip,
+  libGL,
+  makeWrapper,
+  coreutils,
+  openal,
+  openjdk,
+  stdenv,
+  xorg,
+  copyDesktopItems,
+  makeDesktopItem,
+  writeScript,
+}:
 
 let
-  inherit (builtins) fromJSON readFile toFile attrValues;
+  inherit (builtins) fromJSON readFile;
+  inherit (lib) escapeShellArg;
 
   inherit (fromJSON (readFile ./pin.json)) version url hash;
 
-  modify_starsector_sh = toFile "modify_starsector_sh.sed" ''
-    # Exec so we don't have a useless process lying around
-    s:./jre_linux/bin/java:exec ./jre_linux/bin/java:
-
-    # Setting -Djava.util.prefs.userRoot="$configdir" makes java store "User Prefs" in $configdir/.java instead of ~/.java
-    s:./jre_linux/bin/java:./jre_linux/bin/java -Djava.util.prefs.userRoot="$configdir":
-
-    # Redirect saved game files
-    s:-Dcom.fs.starfarer.settings.paths.saves=./saves:-Dcom.fs.starfarer.settings.paths.saves="$configdir"/saves:
-
-    # Redirect screenshots
-    s:-Dcom.fs.starfarer.settings.paths.screenshots=./screenshots:-Dcom.fs.starfarer.settings.paths.screenshots="$configdir"/sceenshots:
-
-    # Redirect logs
-    s:-Dcom.fs.starfarer.settings.paths.logs=.:-Dcom.fs.starfarer.settings.paths.logs="$configdir":
-
-    # Set where to look for mods
-    s:-Dcom.fs.starfarer.settings.paths.mods=./mods:-Dcom.fs.starfarer.settings.paths.mods="$modsdir":
-  '';
+  # These strings are parsed at game start time
+  configDirBash = ''"''${STARSECTOR_CONFIG_DIR:-"''${XDG_CONFIG_HOME:-"$HOME"/.config}"/starsector}"'';
+  modsDirBash = ''''${STARSECTOR_MODS_DIR:-${configDirBash}/mods}'';
 in
 
-buildFHSEnv {
-  name = "starsector-${version}";
+stdenv.mkDerivation (finalAttrs: {
+  pname = "starsector";
+  inherit version;
 
-  targetPkgs = pkgs: attrValues {
-    inherit (pkgs)
-      alsa-lib
-      gtk2
-      libGL
-      libxslt
-    ;
-    inherit (pkgs.xorg)
-      libX11
-      libXext
-      libXrandr
-      libXrender
-      libXcursor
-      libXi
-      libXxf86vm
-      libXtst
-    ;
-  };
+  src = fetchzip { inherit url hash; };
 
-  runScript = writeShellScript "starsector" ''
-    # Change dir to unzipped game dir
-    cd ${fetchzip {
-      name = "starsector-${version}-gamedir";
-      inherit url hash;
-    }}
-
-    # Determine state dir and mods dir
-    configdir="''${STARSECTOR_CONFIG_DIR:-"''${XDG_CONFIG_HOME:-"$HOME"/.config}"/starsector}"
-    modsdir="''${STARSECTOR_MODS_DIR:-"$configdir"/mods}"
-    unset STARSECTOR_CONFIG_DIR STARSECTOR_MODS_DIR
-
-    # Initialize state dir
-    ${coreutils}/bin/mkdir -p "$configdir"/{saves,screenshots}
-
-    # Modify start script
-    toEval="$(${gnused}/bin/sed -f ${modify_starsector_sh} ./starsector.sh)"
-
-    # Run start script (will exec)
-    eval "$toEval"
+  postPatch = ''
+    substituteInPlace starsector.sh \
+      --replace-fail "./jre_linux/bin/java"\
+          "exec ${openjdk}/bin/java -Djava.util.prefs.userRoot="${escapeShellArg configDirBash} \
+      --replace-fail "./native/linux" \
+          "$out/share/starsector/native/linux" \
+      --replace-fail "./compiler_directives.txt" \
+          "$out/share/starsector/compiler_directives.txt" \
+      --replace-fail -Dcom.fs.starfarer.settings.paths.saves=./saves \
+                     -Dcom.fs.starfarer.settings.paths.saves=${escapeShellArg configDirBash}/saves \
+      --replace-fail -Dcom.fs.starfarer.settings.paths.screenshots=./screenshots \
+                     -Dcom.fs.starfarer.settings.paths.screenshots=${escapeShellArg configDirBash}/screenshots \
+      --replace-fail -Dcom.fs.starfarer.settings.paths.logs=. \
+                     -Dcom.fs.starfarer.settings.paths.logs=${escapeShellArg configDirBash} \
+      --replace-fail -Dcom.fs.starfarer.settings.paths.mods=./mods \
+                     -Dcom.fs.starfarer.settings.paths.mods=${escapeShellArg modsDirBash}
   '';
 
-  extraInstallCommands = "mv $out/bin/* $out/bin/starsector";
+  nativeBuildInputs = [
+    copyDesktopItems
+    makeWrapper
+  ];
+  buildInputs = [
+    xorg.libXxf86vm
+    openal
+    libGL
+  ];
+
+  dontBuild = true;
+
+  desktopItems = [
+    (makeDesktopItem {
+      name = "starsector";
+      exec = "starsector";
+      icon = "starsector";
+      comment = finalAttrs.meta.description;
+      genericName = "starsector";
+      desktopName = "Starsector";
+      categories = [ "Game" ];
+    })
+  ];
+
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/bin $out/share/starsector
+    rm -r jre_linux # remove bundled jre7
+    rm starfarer.api.zip
+    cp -r ./* $out/share/starsector
+
+    mkdir -p $out/share/icons/hicolor/64x64/apps
+    ln -s $out/share/starsector/graphics/ui/s_icon64.png \
+      $out/share/icons/hicolor/64x64/apps/starsector.png
+
+    makeWrapper $out/share/starsector/starsector.sh $out/bin/starsector \
+      --prefix PATH : ${
+        lib.makeBinPath [
+          openjdk
+          xorg.xrandr
+        ]
+      } \
+      --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath finalAttrs.buildInputs} \
+      --run '${coreutils}/bin/mkdir -p '${escapeShellArg configDirBash}'/{saves,screenshots}' \
+      --chdir "$out/share/starsector"
+
+    runHook postInstall
+  '';
 
   meta = {
     description = "An open-world single-player space-combat, roleplaying, exploration, and economic game";
@@ -80,4 +106,4 @@ buildFHSEnv {
     license = lib.licenses.unfree;
     platforms = [ "x86_64-linux" ];
   };
-}
+})

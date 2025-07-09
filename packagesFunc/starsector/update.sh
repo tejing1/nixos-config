@@ -24,7 +24,7 @@ fi
 
 echo "Prefetching zip... (from $url)"
 sha256="$(nix-prefetch-url --unpack "$url")"
-hash="sha256-$(nix-hash --type sha256 --to-base16 "$sha256" | tr '[:lower:]' '[:upper:]' | basenc --base16 -d | base64)"
+hash="$(nix-hash --type sha256 --to-sri "$sha256")"
 
 echo "Writing pin.json..."
 jo -p version="$version" url="$url" hash="$hash" > pin.json
