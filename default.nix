@@ -7,7 +7,6 @@ let
   inherit (builtins) attrNames;
 
   legacyOutputs = {
-    homeConfigurations = import ./homeConfigurations inputs;
     homeModules = import ./homeModules inputs;
     nixosModules = import ./nixosModules inputs;
   };
