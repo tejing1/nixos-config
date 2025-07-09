@@ -12,8 +12,10 @@ let
     removeSuffix
     filterAttrs
   ;
+in
 
-  getImportable = dir:
+{
+  my.lib.getImportable = dir:
     mapAttrs' (n: v:
       nameValuePair (removeSuffix ".nix" n) (dir + "/${n}")
     ) (
@@ -27,5 +29,4 @@ let
       )
     )
   ;
-
-in getImportable
+}

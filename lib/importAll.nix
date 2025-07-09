@@ -7,8 +7,9 @@ let
   inherit (my.lib)
     getImportable
   ;
+in
 
-  importAll = dir:
+{
+  my.lib.importAll = dir:
     mapAttrs (n: v: import v) (getImportable dir);
-
-in importAll
+}

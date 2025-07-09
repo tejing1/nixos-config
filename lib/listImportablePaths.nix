@@ -7,8 +7,9 @@ let
   inherit (my.lib)
     getImportable
   ;
+in
 
-  listImportablePaths = dir:
+{
+  my.lib.listImportablePaths = dir:
     attrValues (getImportable dir);
-
-in listImportablePaths
+}

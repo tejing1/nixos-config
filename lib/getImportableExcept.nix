@@ -10,10 +10,11 @@ let
   inherit (my.lib)
     getImportable
   ;
+in
 
-  getImportableExcept = dir: except:
+{
+  my.lib.getImportableExcept = dir: except:
     filterAttrs (n: v: !elem n except) (
       getImportable dir
     );
-
-in getImportableExcept
+}

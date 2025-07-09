@@ -7,8 +7,9 @@ let
   inherit (my.lib)
     getImportableExcept
   ;
+in
 
-  importAllExceptWithArg = dir: except: arg:
+{
+  my.lib.importAllExceptWithArg = dir: except: arg:
     mapAttrs (n: v: import v arg) (getImportableExcept dir except);
-
-in importAllExceptWithArg
+}

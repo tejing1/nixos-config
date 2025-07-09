@@ -7,8 +7,9 @@ let
   inherit (my.lib)
     getImportableExcept
   ;
+in
 
-  listImportablePathsExcept = dir: except:
+{
+  my.lib.listImportablePathsExcept = dir: except:
     attrValues (getImportableExcept dir except);
-
-in listImportablePathsExcept
+}

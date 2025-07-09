@@ -1,24 +1,68 @@
-inputs@{ nixpkgs, ... }:
+{ config, lib, my, ...}@args:
+
+# In order for mylib bootstrapping to work, all modules under this
+# directory must do the following:
+
+# - If they set 'my.lib', its value can rely only on the argument
+#   'inputs' and the part of 'my.lib' set by modules under this
+#   directory.
+
+# - If they calculate imports, they may only use
+#   'mylib.listImportablePathsExcept'
+
+# It does not matter what other options they set, or what they rely on
+# to do so.
 
 let
-  inherit (nixpkgs.lib)
-    genAttrs
+  inherit (lib)
+    evalModules
+    mkOption
+    types
+    optional
+  ;
+  inherit (types)
+    lazyAttrsOf
+    unspecified
   ;
 
-  # functions needed to construct 'lib' itself
-  bootstrapFunctions = [
-    "importAllExceptWithArg"
-    "getImportableExcept"
-    "getImportable"
-  ];
+  # What module files are we importing at this stage of (pre-)eval?
+  modules =
+    if args ? mylib
+    then args.mylib.listImportablePathsExcept ./. [ "default" ]
+    else [
+      # Dependency closure of 'listImportablePathsExcept'
+      ./listImportablePathsExcept.nix
+      ./getImportableExcept.nix
+      ./getImportable.nix
+    ];
 
-  # arguments to files in this directory, except for 'my.lib'
-  commonArgs = inputs // { inherit inputs; inherit (nixpkgs) lib; };
+  # Are we in one of the pre-evaluation stages?
+  pre-eval = ! args ? flake-parts-lib;
 
-  # bootstrap lib containing only 'bootstrapFunctions'
-  initialLib = genAttrs bootstrapFunctions (n: import (./. + "/${n}.nix") (commonArgs // { my.lib = initialLib; }));
+  # Imported during pre-evaluation to compensate for missing modules
+  crutchmodule = { config, ... }: {
+    # Gives module system errors better location information
+    _file = __curPos.file + " (crutchmodule)";
 
-  # externally visible 'lib'
-  finalLib = initialLib.importAllExceptWithArg ./. [ "default" ] (commonArgs // { my.lib = finalLib; });
+    # Allows undeclared options to be set, as long as you don't try to
+    # evaluate them
+    freeformType = unspecified;
 
-in finalLib
+    # Normally set elsewhere, but needed during pre-eval
+    _module.args.my = config.my;
+  };
+in
+
+{
+  imports = modules ++ optional pre-eval crutchmodule;
+
+  options = {
+    my.lib = mkOption {
+      type = lazyAttrsOf unspecified;
+    };
+  };
+
+  config = {
+    flake.lib = my.lib;
+  };
+}
