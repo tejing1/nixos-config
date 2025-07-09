@@ -1,1 +1,7 @@
-inputs: inputs
+{ inputs, ... }:
+
+{
+  flake = {
+    inherit inputs;
+  };
+}
