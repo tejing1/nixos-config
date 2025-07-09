@@ -1,18 +1,23 @@
-inputs@{ self, ... }:
-pkgs:
+{ inputs, lib, my, ...}:
+
 let
-  inherit (self.lib) importAllExceptWithArg;
+  inherit (my.lib) importAllExceptWithArg;
+in
 
-  result = self.lib //
-    # import everything in this directory
-    importAllExceptWithArg ./. [ "default" ] (
-      inputs //
-      {
-        inherit pkgs;
-        inherit (pkgs) lib;
+{
+  flake.libFunc = pkgs: let
+    result = my.lib //
+             # import everything in this directory
+             importAllExceptWithArg ./. [ "default" ] (
+               inputs //
+               {
+                 inherit pkgs lib;
 
-        # pass the final (merged) structure as my.lib
-        my.lib = result;
-      }
-    );
-in result
+                 # pass the final (merged) structure as my.lib
+                 my.lib = result;
+               }
+             );
+  in
+    result
+  ;
+}
