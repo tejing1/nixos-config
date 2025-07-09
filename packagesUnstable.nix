@@ -1,7 +1,22 @@
-inputs@{ nixpkgs-unstable, self, ... }:
+{ flake-parts-lib, lib, self, ... }:
+
 let
-  inherit (nixpkgs-unstable.lib) genAttrs;
+  inherit (flake-parts-lib) mkTransposedPerSystemModule;
+  inherit (lib) mkOption types;
 in
-genAttrs [ "x86_64-linux" "aarch64-linux" ] (system:
-  self.packagesFunc nixpkgs-unstable.legacyPackages."${system}"
-)
+
+{
+  imports = [
+    (mkTransposedPerSystemModule {
+      name = "packagesUnstable";
+      option = mkOption {
+        type = types.lazyAttrsOf types.package;
+        default = { };
+      };
+      file = ./packagesUnstable.nix;
+    })
+  ];
+  perSystem = { inputs', ... }: {
+    packagesUnstable = self.packagesFunc inputs'.nixpkgs-unstable.legacyPackages;
+  };
+}
