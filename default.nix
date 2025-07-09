@@ -8,7 +8,6 @@ let
 
   legacyOutputs = {
     homeModules = import ./homeModules inputs;
-    nixosModules = import ./nixosModules inputs;
   };
 in
 

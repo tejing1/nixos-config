@@ -1,2 +1,5 @@
-{ self, ... }:
-self.lib.importAllExcept ./. [ "default" ]
+{ my, ... }:
+
+{
+  flake.nixosModules = my.lib.getImportableExcept ./. [ "default" ];
+}
