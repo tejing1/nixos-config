@@ -1,10 +1,15 @@
-inputs@{ nixpkgs, self, ... }:
-pkgs:
+{ lib, my, ... }:
+
 let
   inherit (builtins) elem mapAttrs;
-  inherit (pkgs.lib) filterAttrs;
-  inherit (self.lib) importAllExcept;
+  inherit (lib) filterAttrs;
+  inherit (my.lib) getImportableExcept;
 in
-filterAttrs (n: p: ! p ? meta || ! p.meta ? platforms || elem pkgs.system p.meta.platforms) (
-  mapAttrs (n: v: pkgs.callPackage v {}) (importAllExcept ./. [ "default" ])
-)
+
+{
+  flake.packagesFunc = pkgs:
+    filterAttrs (n: p: ! p ? meta || ! p.meta ? platforms || elem pkgs.system p.meta.platforms) (
+      mapAttrs (n: v: pkgs.callPackage v {}) (getImportableExcept ./. [ "default" ])
+    )
+  ;
+}

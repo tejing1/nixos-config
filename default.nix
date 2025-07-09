@@ -12,7 +12,6 @@ let
     libFunc = import ./libFunc inputs;
     nixosConfigurations = import ./nixosConfigurations inputs;
     nixosModules = import ./nixosModules inputs;
-    packagesFunc = import ./packagesFunc inputs;
   };
 in
 
