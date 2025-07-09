@@ -9,7 +9,6 @@ let
   legacyOutputs = {
     homeConfigurations = import ./homeConfigurations inputs;
     homeModules = import ./homeModules inputs;
-    nixosConfigurations = import ./nixosConfigurations inputs;
     nixosModules = import ./nixosModules inputs;
   };
 in

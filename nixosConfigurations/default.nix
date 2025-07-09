@@ -1,2 +1,5 @@
-inputs@{ self, ... }:
-self.lib.importAllNamedExceptWithArg ./. [ "default" ] inputs
+{ inputs, my, ... }:
+
+{
+  flake.nixosConfigurations = my.lib.importAllNamedExceptWithArg ./. [ "default" ] inputs;
+}
