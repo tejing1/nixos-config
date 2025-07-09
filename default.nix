@@ -12,7 +12,6 @@ let
     libFunc = import ./libFunc inputs;
     nixosConfigurations = import ./nixosConfigurations inputs;
     nixosModules = import ./nixosModules inputs;
-    overlays = import ./overlays inputs;
     packages = import ./packages.nix inputs;
     packagesFunc = import ./packagesFunc inputs;
     packagesUnstable = import ./packagesUnstable.nix inputs;

@@ -1,9 +1,11 @@
-_final: prev:
 {
-  # make `nix repl` handle home and end keys in urxvt properly
-  editline = prev.editline.overrideAttrs (oldAttrs:
+  flake.overlays.editline-urxvt-home-end-fix = final: prev:
     {
-      patches = oldAttrs.patches ++ [ ./editline-urxvt-home-end-fix.patch ];
-    }
-  );
+      # make `nix repl` handle home and end keys in urxvt properly
+      editline = prev.editline.overrideAttrs (oldAttrs:
+        {
+          patches = oldAttrs.patches or [] ++ [ ./editline-urxvt-home-end-fix.patch ];
+        }
+      );
+    };
 }

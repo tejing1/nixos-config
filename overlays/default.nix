@@ -1,2 +1,5 @@
-inputs@{ self, ... }:
-self.lib.importAllExceptWithScope ./. [ "default" ] { inherit inputs; }
+{ mylib, ... }:
+
+{
+  imports = mylib.listImportablePathsExcept ./. [ "default" ];
+}
