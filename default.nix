@@ -10,7 +10,6 @@ let
     apps = import ./apps inputs;
     homeConfigurations = import ./homeConfigurations inputs;
     homeModules = import ./homeModules inputs;
-    libFor = import ./libFor.nix inputs;
     libFunc = import ./libFunc inputs;
     nixosConfigurations = import ./nixosConfigurations inputs;
     nixosModules = import ./nixosModules inputs;

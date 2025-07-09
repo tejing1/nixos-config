@@ -1,7 +1,22 @@
-inputs@{ nixpkgs, self, ... }:
+{ flake-parts-lib, lib, self, ... }:
+
 let
-  inherit (nixpkgs.lib) genAttrs;
+  inherit (flake-parts-lib) mkTransposedPerSystemModule;
+  inherit (lib) mkOption types;
 in
-genAttrs [ "x86_64-linux" ] (system:
-  self.libFunc nixpkgs.legacyPackages."${system}"
-)
+
+{
+  imports = [
+    (mkTransposedPerSystemModule {
+      name = "libFor";
+      option = mkOption {
+        type = types.lazyAttrsOf types.unspecified;
+        default = { };
+      };
+      file = ./libFor.nix;
+    })
+  ];
+  perSystem = { pkgs, ... }: {
+    libFor = self.libFunc pkgs;
+  };
+}
