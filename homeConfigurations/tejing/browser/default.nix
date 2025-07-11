@@ -1,6 +1,6 @@
 { config, lib, my, pkgs, ... }:
 let
-  inherit (builtins) concatStringsSep isBool;
+  inherit (builtins) concatStringsSep isBool isInt;
   inherit (lib) mkOption types escapeShellArg mapAttrsToList mapAttrs' nameValuePair;
   inherit (my.lib) mkShellScript importSecret;
 in
@@ -85,6 +85,8 @@ in
         mapAttrsToList (n: v:
           if isBool v then
             "set ${if v then "" else "no"}${n}"
+          else if isInt v then
+            "set ${n}=${toString v}"
           else
             "set ${n}=${v}"
         ) {
@@ -103,6 +105,7 @@ in
           userscriptscope = ''["page","file"]'';
           vimcommand = ''"emacsclient -c"'';
           pdfbehavior = "view";
+          suggesttopsites = 0;
         } ++ map (x: "unmap ${x}") [
         ] ++ mapAttrsToList (n: v:
           "nmap ${n} ${v}"
