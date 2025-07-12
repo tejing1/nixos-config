@@ -24,4 +24,9 @@
       pkgsUnstable = inputs'.nixpkgs-unstable.legacyPackages;
     };
   };
+
+  flake = {
+    # Useful for debugging
+    inherit inputs;
+  };
 }
