@@ -15,6 +15,8 @@
 
     vieb-nix.url = "github:tejing1/vieb-nix";
     vieb-nix.inputs.nixpkgs.follows = "nixpkgs";
+
+    flake-programdb.url = "github:tejing1/flake-programdb";
   };
 
   outputs = inputs:
