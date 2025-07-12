@@ -1,15 +1,17 @@
-{ lib, my, ... }:
+{ lib, my, mylib, ... }:
 
 let
-  inherit (builtins) elem mapAttrs;
-  inherit (lib) filterAttrs;
-  inherit (my.lib) getImportableExcept;
+  inherit (builtins) elem;
+  inherit (lib) mkOption types filterAttrs;
+  inherit (types) functionTo attrsOf;
 in
 
 {
-  flake.packagesFunc = pkgs:
-    filterAttrs (n: p: ! p ? meta || ! p.meta ? platforms || elem pkgs.system p.meta.platforms) (
-      mapAttrs (n: v: pkgs.callPackage v {}) (getImportableExcept ./. [ "default" ])
-    )
-  ;
+  imports = mylib.listImportablePathsExcept ./. [ "default" ];
+
+  options.my.pkgsFunc = mkOption {
+    type = functionTo (attrsOf types.package);
+  };
+
+  config.flake.packagesFunc = pkgs: filterAttrs (n: p: ! p ? meta || ! p.meta ? platforms || elem pkgs.system p.meta.platforms) (my.pkgsFunc pkgs);
 }
