@@ -12,6 +12,9 @@
     mobile-nixos.flake = false;
 
     flake-parts.url = "github:hercules-ci/flake-parts";
+
+    vieb-nix.url = "github:tejing1/vieb-nix";
+    vieb-nix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs:

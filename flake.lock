@@ -131,7 +131,28 @@
         "home-manager-unstable": "home-manager-unstable",
         "mobile-nixos": "mobile-nixos",
         "nixpkgs": "nixpkgs",
-        "nixpkgs-unstable": "nixpkgs-unstable"
+        "nixpkgs-unstable": "nixpkgs-unstable",
+        "vieb-nix": "vieb-nix"
+      }
+    },
+    "vieb-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1752305587,
+        "narHash": "sha256-+KBInPPA5ae3ST5z5JQoIn/q++BooiBRPASuri9o2Gg=",
+        "owner": "tejing1",
+        "repo": "vieb-nix",
+        "rev": "aa42a4cecefbf6ff86d7dddcd1a963dfd12e3c8c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "tejing1",
+        "repo": "vieb-nix",
+        "type": "github"
       }
     }
   },
