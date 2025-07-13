@@ -43,6 +43,12 @@ in
         ;
       };
 
+      nixpkgs.overlays = [
+        # Prevents gh from leaving garbage characters in the input
+        # buffer when urxvt is set to a transparent background
+        inputs.self.overlays.gh-urxvt-fix-termenv
+      ];
+
       # PAM rules for i3lock are no longer enabled by default.
       security.pam.services.i3lock.enable = true;
     }

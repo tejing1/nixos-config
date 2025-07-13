@@ -1,0 +1,17 @@
+Prevents termenv from leaving garbage characters in the input buffer
+when urxvt is set to a transparent background
+
+
+diff --git a/termenv_unix.go b/termenv_unix.go
+index bef49ca..7622e97 100644
+--- a/termenv_unix.go
++++ b/termenv_unix.go
+@@ -223,7 +223,7 @@ func (o *Output) readNextResponse() (response string, isOSC bool, err error) {
+ 		}
+ 
+ 		// both responses have less than 25 bytes, so if we read more, that's an error
+-		if len(response) > 25 { //nolint:mnd
++		if len(response) > 64 { //nolint:mnd
+ 			break
+ 		}
+ 	}
