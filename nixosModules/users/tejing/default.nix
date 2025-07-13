@@ -80,6 +80,12 @@ in
       # Start urxvtd with user sessions
       services.urxvtd.enable = true;
       services.urxvtd.package = pkgs.rxvt-unicode-emoji;
+
+      nixpkgs.overlays = [
+        # Fixes urxvt to prevent garbage characters in the input
+        # buffer when using tmux
+        inputs.self.overlays.urxvt-color-termination
+      ];
     })
     (mkIf my.users.tejing.network {
       # rtorrent peer & dht ports

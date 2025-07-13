@@ -1,0 +1,171 @@
+Fixes urxvt to prevent garbage characters in the input buffer when
+using tmux. This is upstream code, cherry-picked from pre-release.
+
+Index: rxvt-unicode/src/command.C
+===================================================================
+RCS file: /schmorpforge/rxvt-unicode/src/command.C,v
+retrieving revision 1.599
+retrieving revision 1.600
+diff -r1.599 -r1.600
+3024,3025c3024,3030
+<               process_xterm_seq (XTerm_title, (char *)RESNAME "-" VERSION, CHAR_ST); // char * cast verified
+<               break;
+---
+>               {
+>                 string_term st;
+>                 st.v[0] = CHAR_ST;
+>                 st.v[1] = '\0';
+>                 process_xterm_seq (XTerm_title, (char *)RESNAME "-" VERSION, st); // char * cast verified
+>                 break;
+>               }
+3220c3225
+< rxvt_term::get_to_st (unicode_t &ends_how)
+---
+> rxvt_term::get_to_st (string_term &st)
+3259c3264,3268
+<   ends_how = (ch == 0x5c ? C0_ESC : ch);
+---
+>   n = 0;
+>   if (ch == 0x5c)
+>     st.v[n++] = C0_ESC;
+>   st.v[n++] = ch;
+>   st.v[n] = '\0';
+3275,3276c3284,3285
+<   unicode_t eh;
+<   char *s = get_to_st (eh);
+---
+>   string_term st;
+>   char *s = get_to_st (st);
+3298,3299c3307,3308
+<       unicode_t eh;
+<       char *s = get_to_st (eh);
+---
+>       string_term st;
+>       char *s = get_to_st (st);
+3303c3312
+<           process_xterm_seq (arg, s, eh);
+---
+>           process_xterm_seq (arg, s, st);
+3413c3422
+< rxvt_term::process_color_seq (int report, int color, const char *str, char resp)
+---
+> rxvt_term::process_color_seq (int report, int color, const char *str, string_term &st)
+3429c3438
+<         tt_printf ("\033]%d;%d;%s%c", report, color - minCOLOR, rgba_str, resp);
+---
+>         tt_printf ("\033]%d;%d;%s%s", report, color - minCOLOR, rgba_str, st.v);
+3431c3440
+<         tt_printf ("\033]%d;%s%c", report, rgba_str, resp);
+---
+>         tt_printf ("\033]%d;%s%s", report, rgba_str, st.v);
+3441c3450
+< rxvt_term::process_xterm_seq (int op, char *str, char resp)
+---
+> rxvt_term::process_xterm_seq (int op, char *str, string_term &st)
+3486c3495
+<             tt_printf ("\033]%d;%s%c", op, option (Opt_insecure) ? str : "", resp);
+---
+>             tt_printf ("\033]%d;%s%s", op, option (Opt_insecure) ? str : "", st.v);
+3520c3529
+<             process_color_seq (op, color, name, resp);
+---
+>             process_color_seq (op, color, name, st);
+3525c3534
+<         process_color_seq (op, Color_fg, str, resp);
+---
+>         process_color_seq (op, Color_fg, str, st);
+3529c3538
+<         process_color_seq (op, Color_bg, str, resp);
+---
+>         process_color_seq (op, Color_bg, str, st);
+3533c3542
+<         process_color_seq (op, Color_cursor, str, resp);
+---
+>         process_color_seq (op, Color_cursor, str, st);
+3537c3546
+<         process_color_seq (op, Color_pointer_fg, str, resp);
+---
+>         process_color_seq (op, Color_pointer_fg, str, st);
+3540c3549
+<         process_color_seq (op, Color_pointer_bg, str, resp);
+---
+>         process_color_seq (op, Color_pointer_bg, str, st);
+3544c3553
+<         process_color_seq (op, Color_HC, str, resp);
+---
+>         process_color_seq (op, Color_HC, str, st);
+3547c3556
+<         process_color_seq (op, Color_HTC, str, resp);
+---
+>         process_color_seq (op, Color_HTC, str, st);
+3552c3561
+<         process_color_seq (op, Color_BD, str, resp);
+---
+>         process_color_seq (op, Color_BD, str, st);
+3555c3564
+<         process_color_seq (op, Color_UL, str, resp);
+---
+>         process_color_seq (op, Color_UL, str, st);
+3558c3567
+<         process_color_seq (op, Color_IT, str, resp);
+---
+>         process_color_seq (op, Color_IT, str, st);
+3562c3571
+<         process_color_seq (op, Color_border, str, resp);
+---
+>         process_color_seq (op, Color_border, str, st);
+3590c3599
+<           tt_printf ("\33]%d;%-.250s%c", saveop,
+---
+>           tt_printf ("\33]%d;%-.250s%s", saveop,
+3593c3602
+<                      resp);
+---
+>                      st.v);
+3606c3615
+<           tt_printf ("\33]%d;rxvt-unicode;%-.20s;%c;%c%c",
+---
+>           tt_printf ("\33]%d;rxvt-unicode;%-.20s;%c;%c%s",
+3609c3618
+<                      resp);
+---
+>                      st.v);
+3615c3624
+<           tt_printf ("\33]%d;%d;%d;%d%c", saveop,
+---
+>           tt_printf ("\33]%d;%d;%d;%d%s", saveop,
+3617c3626
+<                      resp);
+---
+>                      st.v);
+3622c3631
+<           tt_printf ("\33]%d;%-.250s%c", op, option (Opt_insecure) ? locale : "", resp);
+---
+>           tt_printf ("\33]%d;%-.250s%s", op, option (Opt_insecure) ? locale : "", st.v);
+3647c3656
+<         HOOK_INVOKE ((this, HOOK_OSC_SEQ_PERL, DT_STR, str, DT_STR_LEN, &resp, 1, DT_END));
+---
+>         HOOK_INVOKE ((this, HOOK_OSC_SEQ_PERL, DT_STR, str, DT_STR, st.v, DT_END));
+Index: rxvt-unicode/src/rxvt.h
+===================================================================
+RCS file: /schmorpforge/rxvt-unicode/src/rxvt.h,v
+retrieving revision 1.568
+retrieving revision 1.569
+diff -r1.568 -r1.569
+401a402,407
+> 
+> struct string_term
+> {
+>   unsigned char v[3];
+> };
+> 
+1369c1375
+<   char *get_to_st (unicode_t &ends_how);
+---
+>   char *get_to_st (string_term &st);
+1372,1373c1378,1379
+<   void process_color_seq (int report, int color, const char *str, char resp);
+<   void process_xterm_seq (int op, char *str, char resp);
+---
+>   void process_color_seq (int report, int color, const char *str, string_term &st);
+>   void process_xterm_seq (int op, char *str, string_term &st);
