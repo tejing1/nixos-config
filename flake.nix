@@ -28,13 +28,18 @@
       pre-pre-eval = inputs.nixpkgs.lib.evalModules {
         modules = [ ./lib ];
         specialArgs = {
+          pre-eval = true;
           inherit inputs;
+          flake-parts-lib = inputs.flake-parts.lib;
+          mylib = {};
         };
       };
       pre-eval = inputs.nixpkgs.lib.evalModules {
         modules = [ ./lib ];
         specialArgs = {
+          pre-eval = true;
           inherit inputs;
+          flake-parts-lib = inputs.flake-parts.lib;
           mylib = pre-pre-eval.config.my.lib;
         };
       };
@@ -42,6 +47,7 @@
       inputs.flake-parts.lib.mkFlake {
         inherit inputs;
         specialArgs = {
+          pre-eval = false;
           mylib = pre-eval.config.my.lib;
         };
       } ./.;
