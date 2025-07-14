@@ -1,7 +1,7 @@
-{ lib, pkgs, ... }:
+{ lib, ... }:
+
 let
   inherit (builtins) mapAttrs concatMap attrValues toJSON listToAttrs;
-  inherit (pkgs) runCommand;
   inherit (lib) nameValuePair concatStrings mapAttrsToList;
   inherit (lib.strings) escapeNixIdentifier escapeNixString;
 
@@ -16,27 +16,26 @@ let
     in nameValuePair prefix ([ (nameValuePair prefix (node // { inputs = ids; })) ] ++ nod);
 in
 
-flakeInputs:
-let
-  inputsCode = "{${concatStrings (
-    mapAttrsToList (n: v: "${escapeNixIdentifier n}.url=${escapeNixString "path:${v.sourceInfo.outPath}?narHash=${v.sourceInfo.narHash}"};") flakeInputs
-  )}}";
-  rootNode = {inputs = mapAttrs (_: cleanNode) flakeInputs;};
-  lockJSON = toJSON {
-    version = 7;
-    root = "self";
-    nodes = listToAttrs (flattenNode "self" rootNode).value;
+{
+  perPkgs = { pkgs, ... }: {
+    my.lib.mkFlake = flakeInputs: let
+      inputsCode = "{${concatStrings (
+        mapAttrsToList (n: v: "${escapeNixIdentifier n}.url=${escapeNixString "path:${v.sourceInfo.outPath}?narHash=${v.sourceInfo.narHash}"};") flakeInputs
+      )}}";
+      rootNode = {inputs = mapAttrs (_: cleanNode) flakeInputs;};
+      lockJSON = toJSON {
+        version = 7;
+        root = "self";
+        nodes = listToAttrs (flattenNode "self" rootNode).value;
+      };
+    in outputsCode: pkgs.runCommand "source" {} ''
+      mkdir -p $out
+      cat <<"EOF" >$out/flake.nix
+      {inputs=${inputsCode};outputs=${outputsCode};}
+      EOF
+      cat <<"EOF" >$out/flake.lock
+      ${lockJSON}
+      EOF
+    '';
   };
-in
-
-outputsCode:
-
-runCommand "source" {} ''
-mkdir -p $out
-cat <<"EOF" >$out/flake.nix
-{inputs=${inputsCode};outputs=${outputsCode};}
-EOF
-cat <<"EOF" >$out/flake.lock
-${lockJSON}
-EOF
-''
+}

@@ -1,8 +1,9 @@
-{ my, ... }:
 let
   inherit (builtins) isBool;
-  inherit (my.lib) repoLockedTestResult;
+in
 
-  isRepoLocked = import repoLockedTestResult;
-
-in assert isBool isRepoLocked; isRepoLocked
+{
+  perPkgs = { my, ... }: {
+    my.lib.isRepoLocked = (x: assert isBool x; x) (import my.lib.repoLockedTestResult);
+  };
+}

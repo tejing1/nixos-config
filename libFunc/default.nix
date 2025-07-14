@@ -1,23 +1,36 @@
-{ inputs, lib, my, ...}:
+{ config, flake-parts-lib, forPkgs, lib, my, mylib, ... }:
 
 let
+  inherit (flake-parts-lib) mkDeferredModuleOption mkPerSystemOption;
+  inherit (lib) mkOption types;
+  inherit (types) functionTo lazyAttrsOf unspecified unique;
   inherit (my.lib) importAllExceptWithArg;
 in
 
 {
-  flake.libFunc = pkgs: let
-    result = my.lib //
-             # import everything in this directory
-             importAllExceptWithArg ./. [ "default" ] (
-               inputs //
-               {
-                 inherit pkgs lib;
+  imports = mylib.listImportablePathsExcept ./. [ "default" ];
 
-                 # pass the final (merged) structure as my.lib
-                 my.lib = result;
-               }
-             );
-  in
-    result
-  ;
+  options = {
+    perPkgs = mkDeferredModuleOption {
+      options.my.lib = mkOption {
+        type = lazyAttrsOf unspecified;
+      };
+    };
+
+    perSystem = mkPerSystemOption {
+      options.my.lib = mkOption {
+        type = unique { message = "Don't set 'perSystem.my.lib'. Set 'perPkgs.my.lib' instead."; } unspecified;
+      };
+    };
+  };
+
+  config = {
+    perPkgs.my.lib = my.lib;
+
+    perSystem = { forOurPkgs, ... }: {
+      my.lib = forOurPkgs.my.lib;
+    };
+
+    flake.libFunc = pkgs: (forPkgs pkgs).my.lib;
+  };
 }
