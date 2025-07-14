@@ -1,7 +1,9 @@
 { inputs, ... }:
 
 {
-  my.pkgsFunc = pkgs: {
-    inherit (inputs.vieb-nix.packagesFunc pkgs) vieb;
+  perPkgs = { pkgs, ... }: {
+    my.pkgs = {
+      inherit (inputs.vieb-nix.packagesFunc pkgs) vieb;
+    };
   };
 }

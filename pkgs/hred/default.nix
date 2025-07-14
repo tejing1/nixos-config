@@ -1,5 +1,5 @@
 {
-  my.pkgsFunc = pkgs: {
-    hred = pkgs.callPackage ./package.nix {};
+  perPkgs = { pkgs, ... }: {
+    my.pkgs.hred = pkgs.callPackage ./package.nix {};
   };
 }

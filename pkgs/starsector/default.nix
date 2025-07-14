@@ -1,5 +1,5 @@
 {
-  my.pkgsFunc = pkgs: {
-    starsector = pkgs.callPackage ./package.nix {};
+  perPkgs = { pkgs, ... }: {
+    my.pkgs.starsector = pkgs.callPackage ./package.nix {};
   };
 }
