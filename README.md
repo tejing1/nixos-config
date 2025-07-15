@@ -2,6 +2,9 @@ This is my (tejing's) personal NixOS configuration flake.
 
 It isn't really intended for actual use by others, but examining the code may be interesting. Even so, it should build even without the keys to `git-crypt unlock` it, since I use `self.lib.readSecret`/`self.lib.importSecret` to access the encrypted files, and provide a non-secret default value for the case where they aren't unlocked.
 
+## NOTICE
+The information below is outdated. I am in the process of a major restructure of the repository using flake-parts. Once the new form and abstractions stabilize, I will update the README to document them.
+
 ## Layout
 - My nixos config is split into many profiles which can be found under `nixosConfigurations/tejingdesk/`.
 - My home-manager config is split into many profiles which can be found under `homeConfigurations/tejing/`.
