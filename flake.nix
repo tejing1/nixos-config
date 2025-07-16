@@ -20,35 +20,23 @@
     flake-programdb.url = "github:tejing1/flake-programdb";
   };
 
-  outputs = inputs:
-    let
+  outputs = inputs: inputs.flake-parts.lib.mkFlake {
+    inherit inputs;
+    specialArgs = {
+      pre-eval = false;
       # Pre-evaluate a subset of modules in order to provide values
       # needed for calculating 'imports' elsewhere. Much of the
       # bootstrapping logic lives in ./lib/default.nix
-      pre-pre-eval = inputs.nixpkgs.lib.evalModules {
-        modules = [ ./lib ];
-        specialArgs = {
-          pre-eval = true;
-          inherit inputs;
-          flake-parts-lib = inputs.flake-parts.lib;
-          mylib = {};
-        };
-      };
-      pre-eval = inputs.nixpkgs.lib.evalModules {
-        modules = [ ./lib ];
-        specialArgs = {
-          pre-eval = true;
-          inherit inputs;
-          flake-parts-lib = inputs.flake-parts.lib;
-          mylib = pre-pre-eval.config.my.lib;
-        };
-      };
-    in
-      inputs.flake-parts.lib.mkFlake {
-        inherit inputs;
-        specialArgs = {
-          pre-eval = false;
-          mylib = pre-eval.config.my.lib;
-        };
-      } ./.;
+      mylib = inputs.nixpkgs.lib.pipe {} (inputs.nixpkgs.lib.replicate 2 (mylib: (
+        inputs.nixpkgs.lib.evalModules {
+          modules = [ ./lib ];
+          specialArgs = {
+            pre-eval = true;
+            inherit inputs mylib;
+            flake-parts-lib = inputs.flake-parts.lib;
+          };
+        }
+      ).config.my.lib));
+    };
+  } ./.;
 }
