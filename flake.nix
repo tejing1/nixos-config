@@ -33,6 +33,7 @@
           specialArgs = {
             pre-eval = true;
             inherit inputs mylib;
+            inherit (inputs.nixpkgs) lib;
             flake-parts-lib = inputs.flake-parts.lib;
           };
         }

@@ -1,17 +1,12 @@
 {
   flake-parts-lib,
-  forPkgs,
   lib,
   my,
   mylib,
-  self,
   ...
 }:
 
 let
-  inherit (builtins)
-    elem
-  ;
   inherit (flake-parts-lib)
     mkTransposedPerSystemModule
     mkDeferredModuleOption
@@ -21,14 +16,14 @@ let
     mkOption
     types
     filterAttrs
-    mkMerge
+    id
   ;
   inherit (types)
     attrsOf
-    lazyAttrsOf
     package
-    unspecified
+    lazyAttrsOf
     unique
+    unspecified
   ;
 in
 
@@ -38,7 +33,7 @@ in
     (mkTransposedPerSystemModule {
       name = "packagesUnstable";
       option = mkOption {
-        type = lazyAttrsOf package;
+        type = attrsOf package;
         default = {};
       };
       file = /. + __curPos.file;
@@ -48,42 +43,32 @@ in
   options = {
     perPkgs = mkDeferredModuleOption {
       options.my.pkgs = mkOption {
-        type = attrsOf package;
+        # Give up attr deletion through priorities/conditions to allow
+        # more recursion. Otherwise the module system tries to eval each
+        # package enough to figure out it isn't a mkIf or mkDefault
+        # or whatnot, before it finalizes the set of attribute names
+        # under my.pkgs. If that much evaluation requires something from
+        # my.pkgs, we get infrec.
+        type = lazyAttrsOf package;
       };
     };
+
     perSystem = mkPerSystemOption {
       options = {
         my.pkgs = mkOption {
           type = unique { message = "Don't set 'perSystem.my.pkgs'. Set 'perPkgs.my.pkgs' instead."; } unspecified;
         };
-        my.pkgsUnstable = mkOption {
-          type = unique { message = "Don't set 'perSystem.my.pkgsUnstable'. Set 'perPkgs.my.pkgs' instead."; } unspecified;
-        };
       };
     };
   };
 
-  config = mkMerge [
-    # Provide packages for internal use
-    {
-      perSystem = { forOurPkgs, pkgsUnstable, ... }: {
-        my.pkgs = forOurPkgs.my.pkgs;
-        my.pkgsUnstable = (forPkgs pkgsUnstable).my.pkgs;
-      };
-    }
+  config = {
+    # Filter packages by supported system unless the consumer has configured nixpkgs to allow unsupported systems
+    flake.packagesFunc = pkgs: (if pkgs.config.allowUnsupportedSystem then id else filterAttrs (n: p: ! p.meta.unsupported)) (my.using pkgs).pkgs;
 
-    # Provide packages for external use
-    {
-      # Filter by meta.platforms so we don't expose non-working flake outputs
-      flake.packagesFunc = pkgs: filterAttrs (n: p: ! p ? meta || ! p.meta ? platforms || elem pkgs.system p.meta.platforms) (forPkgs pkgs).my.pkgs;
-
-      # Use self.packagesFunc here rather than forOurPkgs.my.pkgs,
-      # because we want the filtering. Also get our pkgs value
-      # directly from inputs, so we don't export local nixpkgs config
-      perSystem = { inputs', ... }: {
-        packages = self.packagesFunc inputs'.nixpkgs.legacyPackages;
-        packagesUnstable = self.packagesFunc inputs'.nixpkgs-unstable.legacyPackages;
-      };
-    }
-  ];
+    perSystem = { my, ... }: {
+      packages = filterAttrs (n: p: ! p.meta.unsupported) my.using.stable-uncustomized.pkgs;
+      packagesUnstable = filterAttrs (n: p: ! p.meta.unsupported) my.using.unstable-uncustomized.pkgs;
+    };
+  };
 }

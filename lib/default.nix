@@ -1,12 +1,9 @@
 {
-  config,
   flake-parts-lib,
-  forPkgs,
   lib,
   my,
   mylib,
   pre-eval,
-  self,
   ...
 }:
 
@@ -14,7 +11,7 @@
 # directory must do the following:
 
 # - If they set 'my.lib', its value can rely only on the arguments
-#   'inputs' and 'flake-parts-lib' and the part of 'my.lib' set by
+#   'lib', 'inputs', 'flake-parts-lib' and the part of 'my.lib' set by
 #   modules under this directory.
 
 # - If they calculate imports, they may only use
@@ -36,6 +33,7 @@ let
   ;
   inherit (types)
     lazyAttrsOf
+    attrsOf
     unspecified
     unique
   ;
@@ -61,7 +59,7 @@ in
       (mkTransposedPerSystemModule {
         name = "libFor";
         option = mkOption {
-          type = lazyAttrsOf unspecified;
+          type = attrsOf unspecified;
           default = { };
         };
         file = /. + __curPos.file;
@@ -79,11 +77,23 @@ in
 
   options = {
     my.lib = mkOption {
+      # Give up attr deletion through priorities/conditions to allow
+      # more recursion. Otherwise the module system tries to eval each
+      # lib function enough to figure out it isn't a mkIf or mkDefault
+      # or whatnot, before it finalizes the set of attribute names
+      # under my.lib. If that much evaluation requires something from
+      # my.lib, we get infrec.
       type = lazyAttrsOf unspecified;
     };
 
     perPkgs = mkDeferredModuleOption {
       options.my.lib = mkOption {
+        # Give up attr deletion through priorities/conditions to allow
+        # more recursion. Otherwise the module system tries to eval each
+        # lib function enough to figure out it isn't a mkIf or mkDefault
+        # or whatnot, before it finalizes the set of attribute names
+        # under my.lib. If that much evaluation requires something from
+        # my.lib, we get infrec.
         type = lazyAttrsOf unspecified;
       };
     };
@@ -96,17 +106,13 @@ in
   };
 
   config = {
-    perPkgs.my.lib = my.lib;
-
-    perSystem = { forOurPkgs, inputs', ... }: {
-      my.lib = forOurPkgs.my.lib;
-
-      libFor = self.libFunc inputs'.nixpkgs.legacyPackages;
+    perSystem = { my, ... }: {
+      libFor = my.using.stable-uncustomized.lib;
     };
 
     flake = {
       lib = my.lib;
-      libFunc = pkgs: (forPkgs pkgs).my.lib;
+      libFunc = pkgs: (my.using pkgs).lib;
     };
   };
 }
