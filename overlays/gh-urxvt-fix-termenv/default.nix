@@ -1,3 +1,3 @@
 {
-  flake.overlays.gh-urxvt-fix-termenv = import ./overlay.nix;
+  my.overlays.gh-urxvt-fix-termenv = import ./overlay.nix;
 }

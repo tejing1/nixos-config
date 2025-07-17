@@ -1,3 +1,3 @@
 {
-  flake.overlays.steam-fix-screensaver = import ./overlay.nix;
+  my.overlays.steam-fix-screensaver = import ./overlay.nix;
 }

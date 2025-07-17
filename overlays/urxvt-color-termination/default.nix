@@ -1,3 +1,3 @@
 {
-  flake.overlays.urxvt-color-termination = import ./overlay.nix;
+  my.overlays.urxvt-color-termination = import ./overlay.nix;
 }

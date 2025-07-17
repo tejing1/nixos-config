@@ -1,3 +1,3 @@
 {
-  flake.overlays.editline-urxvt-home-end-fix = import ./overlay.nix;
+  my.overlays.editline-urxvt-home-end-fix = import ./overlay.nix;
 }
