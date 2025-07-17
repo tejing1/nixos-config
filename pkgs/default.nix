@@ -15,8 +15,10 @@ let
   inherit (lib)
     mkOption
     types
+    makeScope
+    const
     filterAttrs
-    id
+    isDerivation
   ;
   inherit (types)
     attrsOf
@@ -41,7 +43,7 @@ in
   ] ++ mylib.listImportablePathsExcept ./. [ "default" ];
 
   options = {
-    perPkgs = mkDeferredModuleOption {
+    perPkgs = mkDeferredModuleOption ({ pkgs, ... }: {
       options.my.pkgs = mkOption {
         # Give up attr deletion through priorities/conditions to allow
         # more recursion. Otherwise the module system tries to eval each
@@ -50,8 +52,9 @@ in
         # under my.pkgs. If that much evaluation requires something from
         # my.pkgs, we get infrec.
         type = lazyAttrsOf package;
+        apply = ps: makeScope pkgs.newScope (const ps);
       };
-    };
+    });
 
     perSystem = mkPerSystemOption {
       options = {
@@ -64,11 +67,11 @@ in
 
   config = {
     # Filter packages by supported system unless the consumer has configured nixpkgs to allow unsupported systems
-    flake.packagesFunc = pkgs: (if pkgs.config.allowUnsupportedSystem then id else filterAttrs (n: p: ! p.meta.unsupported)) (my.using pkgs).pkgs;
+    flake.packagesFunc = pkgs: filterAttrs (n: p: isDerivation p && (pkgs.config.allowUnsupportedSystem || ! p.meta.unsupported)) (my.using pkgs).pkgs;
 
     perSystem = { my, ... }: {
-      packages = filterAttrs (n: p: ! p.meta.unsupported) my.using.stable-uncustomized.pkgs;
-      packagesUnstable = filterAttrs (n: p: ! p.meta.unsupported) my.using.unstable-uncustomized.pkgs;
+      packages = filterAttrs (n: p: isDerivation p && ! p.meta.unsupported) my.using.stable-uncustomized.pkgs;
+      packagesUnstable = filterAttrs (n: p: isDerivation p && ! p.meta.unsupported) my.using.unstable-uncustomized.pkgs;
     };
   };
 }

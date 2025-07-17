@@ -5,8 +5,8 @@ let
 in
 
 {
-  perPkgs = { pkgs, ... }: {
-    my.pkgs.moonlander-firmware = pkgs.callPackage ./package.nix {};
+  perPkgs = { my, ... }: {
+    my.pkgs.moonlander-firmware = my.pkgs.callPackage ./package.nix {};
   };
   perSystem = { my, pkgs, ... }: {
     apps.moonlander-push = {
