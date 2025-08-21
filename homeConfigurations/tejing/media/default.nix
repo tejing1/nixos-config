@@ -10,9 +10,12 @@
     ;
     yt-dlp = (my.lib.mkShellScript "yt-dlp" {
       inputs = builtins.attrValues {
-        inherit (pkgs) coreutils curl sfeed jq nix gnugrep;
+        inherit (pkgs) coreutils curl nix-prefetch-github jq nix;
       };
-      execer = [ "cannot:${pkgs.nix}/bin/nix" ];
+      execer = [
+        "cannot:${pkgs.nix}/bin/nix"
+        "cannot:${pkgs.nix-prefetch-github}/bin/nix-prefetch-github"
+      ];
     } (builtins.readFile ./yt-dlp)).pkg;
   };
   programs.mpv.enable = true;
