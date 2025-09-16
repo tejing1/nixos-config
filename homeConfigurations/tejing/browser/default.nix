@@ -2,7 +2,7 @@
 let
   inherit (builtins) concatStringsSep isBool isInt;
   inherit (lib) mkOption types escapeShellArg mapAttrsToList mapAttrs' nameValuePair;
-  inherit (my.lib) mkShellScript importSecret;
+  inherit (my.lib) mkShellScript importSecret readSecret;
 in
 {
   options.my.browser = mkOption {
@@ -118,6 +118,8 @@ in
       # for chromium from home-manager/modules/programs/browserpass.nix
       ".config/BraveSoftware/Brave-Browser/NativeMessagingHosts/com.github.browserpass.native.json".source = "${pkgs.browserpass}/lib/browserpass/hosts/chromium/com.github.browserpass.native.json";
       ".config/BraveSoftware/Brave-Browser/policies/managed/com.github.browserpass.native.json".source = "${pkgs.browserpass}/lib/browserpass/policies/chromium/com.github.browserpass.native.json";
+
+      ".vieb/blocklists/local.txt".text = readSecret "" ./blocklist.secret.txt;
     } // mapAttrs' (n: v: nameValuePair ".vieb/userscript/${n}.js" { text = v; })
       (importSecret {} ./userscripts.secret.nix
        // {
