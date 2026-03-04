@@ -1,0 +1,5 @@
+#! /usr/bin/env bash
+
+set -u
+
+exec nix build -f shell.nix default.generated-files -o "$1"

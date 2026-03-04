@@ -2,7 +2,6 @@
   config,
   flake-parts-lib,
   forPkgs,
-  inputs,
   lib,
   ...
 }:
@@ -14,7 +13,6 @@ let
     hasAttr
   ;
   inherit (flake-parts-lib)
-    mkTransposedPerSystemModule
     mkPerSystemOption
     mkDeferredModuleType
   ;
@@ -29,11 +27,9 @@ let
     submodule
     anything
     path
-    deferredModuleWith
     unspecified
     either
     str
-    nullOr
   ;
 in
 

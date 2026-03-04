@@ -1,43 +1,82 @@
+# This file is generated. (Yes, really.)
+# See file-generation/flake-file.nix for its definition.
+
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
-
-    home-manager.url = "github:nix-community/home-manager/release-25.05";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
-
-    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
-    home-manager-unstable.url = "github:nix-community/home-manager/master";
-    home-manager-unstable.inputs.nixpkgs.follows = "nixpkgs-unstable";
-    mobile-nixos.url = "github:tejing1/mobile-nixos/tejingphone";
-    mobile-nixos.flake = false;
-
-    flake-parts.url = "github:hercules-ci/flake-parts";
-    flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
-
-    vieb-nix.url = "github:tejing1/vieb-nix";
-    vieb-nix.inputs.nixpkgs.follows = "nixpkgs";
-
+    flake-compat = {
+      flake = false;
+      url = "github:NixOS/flake-compat";
+    };
+    flake-parts = {
+      inputs.nixpkgs-lib.follows = "nixpkgs";
+      url = "github:hercules-ci/flake-parts";
+    };
     flake-programdb.url = "github:tejing1/flake-programdb";
+    home-manager = {
+      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:nix-community/home-manager/release-25.05";
+    };
+    home-manager-unstable = {
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+      url = "github:nix-community/home-manager/master";
+    };
+    mobile-nixos = {
+      flake = false;
+      url = "github:tejing1/mobile-nixos/tejingphone";
+    };
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
+    vieb-nix = {
+      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:tejing1/vieb-nix";
+    };
   };
-
   outputs = inputs: inputs.flake-parts.lib.mkFlake {
     inherit inputs;
-    specialArgs = {
-      pre-eval = false;
-      # Pre-evaluate a subset of modules in order to provide values
-      # needed for calculating 'imports' elsewhere. Much of the
-      # bootstrapping logic lives in ./lib/default.nix
-      mylib = inputs.nixpkgs.lib.pipe {} (inputs.nixpkgs.lib.replicate 2 (mylib: (
-        inputs.nixpkgs.lib.evalModules {
-          modules = [ ./lib ];
-          specialArgs = {
-            pre-eval = true;
-            inherit inputs mylib;
-            inherit (inputs.nixpkgs) lib;
-            flake-parts-lib = inputs.flake-parts.lib;
-          };
-        }
-      ).config.my.lib));
-    };
-  } ./.;
+  } {
+    imports = builtins.filter builtins.pathExists [
+      ./file-generation
+      ./fpentry.nix
+      ./homeConfigurations
+      ./homeModules
+      ./lib
+      ./my.nix
+      ./nixosConfigurations
+      ./nixosModules
+      ./nixpkgs.nix
+      ./overlays
+      ./perPkgs.nix
+      ./pkgs
+      file-generation/flake-file.nix
+      file-generation/nix-expr.nix
+      lib/flakeClosureRef.nix
+      lib/getImportable.nix
+      lib/getImportableExcept.nix
+      lib/importAll.nix
+      lib/importAllExcept.nix
+      lib/importAllExceptWithArg.nix
+      lib/importAllExceptWithScope.nix
+      lib/importAllNamedExceptWithArg.nix
+      lib/importAllWithArg.nix
+      lib/importSecret.nix
+      lib/isRepoLocked.nix
+      lib/listImportablePaths.nix
+      lib/listImportablePathsExcept.nix
+      lib/mkFlake.nix
+      lib/mkShellScript.nix
+      lib/readSecret.nix
+      lib/repoLockedTestResult
+      overlays/editline-urxvt-home-end-fix
+      overlays/gh-urxvt-fix-termenv
+      overlays/steam-fix-screensaver
+      overlays/urxvt-color-termination
+      pkgs/hred
+      pkgs/moonlander-firmware
+      pkgs/starsector
+      pkgs/vieb.nix
+    ];
+    my.flake.modules = [
+      ./fpentry.nix
+    ];
+  };
 }

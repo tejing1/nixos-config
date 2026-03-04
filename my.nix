@@ -11,6 +11,8 @@
 let
   inherit (builtins)
     mapAttrs
+    all
+    filter
   ;
   inherit (flake-parts-lib)
     mkDeferredModuleOption
@@ -25,6 +27,18 @@ let
     attrsOf
     unspecified
   ;
+
+  # Type modifier which only allows definitions coming from the specified file
+  onlyfromfile = file: type: type // {
+    merge = loc: defs:
+      if all (def: def.file == file) defs then
+        type.merge loc defs
+      else
+        throw ''
+          The option ${lib.options.showOption loc} was set from a different file than the allowed one (${file}).
+          Offending definition values:${lib.options.showDefs (filter (def: def.file != file) defs)}
+        '';
+  };
 in
 
 {
@@ -34,20 +48,26 @@ in
         type = attrsOf unspecified;
       };
     };
-    perPkgs = mkDeferredModuleOption ({
-      options.my = {
-        using = mkOption {
-          type = attrsOf unspecified;
+    perPkgs = mkDeferredModuleOption {
+      options.my = mkOption {
+        type = types.submodule {
+          freeformType = onlyfromfile "${__curPos.file}, via option perPkgs" unspecified;
+          options.using = mkOption {
+            type = attrsOf unspecified;
+          };
         };
       };
-    });
-    perSystem = mkPerSystemOption ({
-      options.my = {
-        using = mkOption {
-          type = attrsOf unspecified;
+    };
+    perSystem = mkPerSystemOption {
+      options.my = mkOption {
+        type = types.submodule {
+          freeformType = onlyfromfile "${__curPos.file}, via option perSystem" unspecified;
+          options.using = mkOption {
+            type = attrsOf unspecified;
+          };
         };
       };
-    });
+    };
   };
 
   config = {

@@ -6,3 +6,6 @@
 
 # result symlinks from nix build invocations
 /result*
+
+# direnv cache
+/.direnv

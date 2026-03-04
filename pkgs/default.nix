@@ -2,7 +2,6 @@
   flake-parts-lib,
   lib,
   my,
-  mylib,
   ...
 }:
 
@@ -10,7 +9,6 @@ let
   inherit (flake-parts-lib)
     mkTransposedPerSystemModule
     mkDeferredModuleOption
-    mkPerSystemOption
   ;
   inherit (lib)
     mkOption
@@ -24,8 +22,9 @@ let
     attrsOf
     package
     lazyAttrsOf
-    unique
-    unspecified
+  ;
+  inherit (my.lib)
+    listImportablePathsExcept
   ;
 in
 
@@ -40,7 +39,7 @@ in
       };
       file = /. + __curPos.file;
     })
-  ] ++ mylib.listImportablePathsExcept ./. [ "default" ];
+  ];
 
   options = {
     perPkgs = mkDeferredModuleOption ({ pkgs, ... }: {
@@ -55,17 +54,16 @@ in
         apply = ps: makeScope pkgs.newScope (const ps);
       };
     });
-
-    perSystem = mkPerSystemOption {
-      options = {
-        my.pkgs = mkOption {
-          type = unique { message = "Don't set 'perSystem.my.pkgs'. Set 'perPkgs.my.pkgs' instead."; } unspecified;
-        };
-      };
-    };
   };
 
   config = {
+    my.flake.modules = listImportablePathsExcept ./. [ "default" ];
+
+    systems = [
+      "x86_64-linux"
+      "aarch64-linux"
+    ];
+
     # Filter packages by supported system unless the consumer has configured nixpkgs to allow unsupported systems
     flake.packagesFunc = pkgs: filterAttrs (n: p: isDerivation p && (pkgs.config.allowUnsupportedSystem || ! p.meta.unsupported)) (my.using pkgs).pkgs;
 
