@@ -10,7 +10,7 @@ in
 {
   config._module.args.inputSpecs = mapAttrs (_: canonicalizeInputSpec) flakeNixInputs;
 
-  config._module.args.pkgsUnstable = import inputs.nixpkgs-unstable { inherit (pkgs) system config overlays; };
+  config._module.args.pkgsUnstable = import inputs.nixpkgs-unstable { inherit (pkgs.stdenv.hostPlatform) system; inherit (pkgs) config overlays; };
 
   config._module.args.my = config.my;
 
@@ -44,5 +44,5 @@ in
     visible = false;
     readOnly = true;
   };
-  config.my.pkgsUnstable = inputs.self.packagesFunc inputs.nixpkgs-unstable.legacyPackages.${pkgs.system};
+  config.my.pkgsUnstable = inputs.self.packagesFunc inputs.nixpkgs-unstable.legacyPackages.${pkgs.stdenv.hostPlatform.system};
 }

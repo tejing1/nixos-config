@@ -258,7 +258,11 @@ in
     };
 
     programs.ssh.enable = true;
+    programs.ssh.enableDefaultConfig = false;
     programs.ssh.matchBlocks = {
+      "*" = {
+        # Global settings would go here
+      };
       "rsync.net" = {
         hostname = "de1348.rsync.net";
         user = "de1348";

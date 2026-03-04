@@ -80,7 +80,7 @@ in
         inherit my;
       }
       {
-        my.using = mapAttrs (n: { my, ... }: my) (forSystem pkgs.system).allPkgs;
+        my.using = mapAttrs (n: { my, ... }: my) (forSystem pkgs.stdenv.hostPlatform.system).allPkgs;
       }
     ];
 

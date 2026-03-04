@@ -6,11 +6,6 @@ in
 {
   options.my.customize.nix = mkEnableOption "customization of nix";
   config = mkIf my.customize.nix {
-    nixpkgs.overlays = [
-      # make `nix repl` handle home and end keys in urxvt properly
-      my.overlays.editline-urxvt-home-end-fix
-    ];
-
     nix = {
       # Use the new CLI and enable flakes
       settings.experimental-features = [ "nix-command" "flakes" ];

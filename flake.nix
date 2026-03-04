@@ -14,7 +14,7 @@
     flake-programdb.url = "github:tejing1/flake-programdb";
     home-manager = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:nix-community/home-manager/release-25.05";
+      url = "github:nix-community/home-manager/release-25.11";
     };
     home-manager-unstable = {
       inputs.nixpkgs.follows = "nixpkgs-unstable";
@@ -24,7 +24,7 @@
       flake = false;
       url = "github:tejing1/mobile-nixos/tejingphone";
     };
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     vieb-nix = {
       inputs.nixpkgs.follows = "nixpkgs";
@@ -66,10 +66,8 @@
       lib/mkShellScript.nix
       lib/readSecret.nix
       lib/repoLockedTestResult
-      overlays/editline-urxvt-home-end-fix
       overlays/gh-urxvt-fix-termenv
       overlays/steam-fix-screensaver
-      overlays/urxvt-color-termination
       pkgs/hred
       pkgs/moonlander-firmware
       pkgs/starsector

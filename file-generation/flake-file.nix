@@ -21,7 +21,7 @@ let
     subpath
   ;
 
-  nixos-release = "25.05"; # FIXME set elsewhere
+  nixos-release = "25.11"; # FIXME set elsewhere
 in
 
 {

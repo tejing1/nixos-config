@@ -16,12 +16,12 @@
 
   programs.git = {
     enable = true;
-    userName = "Jeff Huffman";
-    userEmail = "tejing@tejing.com";
     ignores = [ "*~" ".#*" "\\#*#" ];
     signing.key = "963D3AFB8AA4D693153C150046E96F6FF44F3D74";
     signing.signByDefault = true;
-    extraConfig = {
+    settings = {
+      user.name = "Jeff Huffman";
+      user.email = "tejing@tejing.com";
       tag.gpgSign = true;
       gcrypt.publish-participants = true;
       gcrypt.participants = "963D3AFB8AA4D693153C150046E96F6FF44F3D74";

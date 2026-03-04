@@ -3,7 +3,7 @@
 {
   home.packages = builtins.attrValues {
     inherit (pkgs)
-      mpc_cli
+      mpc
       ncmpc
       pulsemixer
     ;
@@ -11,17 +11,17 @@
   xsession.windowManager.i3.config.keybindings = let
     mod = config.xsession.windowManager.i3.config.modifier;
   in {
-    "XF86AudioPrev" = "exec --no-startup-id ${pkgs.mpc_cli}/bin/mpc -q prev";
-    "XF86AudioPlay" = "exec --no-startup-id ${pkgs.mpc_cli}/bin/mpc -q toggle";
-    "XF86AudioStop" = "exec --no-startup-id ${pkgs.mpc_cli}/bin/mpc -q stop";
-    "XF86AudioNext" = "exec --no-startup-id ${pkgs.mpc_cli}/bin/mpc -q next";
+    "XF86AudioPrev" = "exec --no-startup-id ${pkgs.mpc}/bin/mpc -q prev";
+    "XF86AudioPlay" = "exec --no-startup-id ${pkgs.mpc}/bin/mpc -q toggle";
+    "XF86AudioStop" = "exec --no-startup-id ${pkgs.mpc}/bin/mpc -q stop";
+    "XF86AudioNext" = "exec --no-startup-id ${pkgs.mpc}/bin/mpc -q next";
     "XF86AudioLowerVolume" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ -5%";
     "XF86AudioRaiseVolume" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ +5%";
     "XF86AudioMute" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-mute @DEFAULT_SINK@ toggle";
-    "${mod}+F1" = "exec --no-startup-id ${pkgs.mpc_cli}/bin/mpc -q prev";
-    "${mod}+F2" = "exec --no-startup-id ${pkgs.mpc_cli}/bin/mpc -q toggle";
-    "${mod}+F3" = "exec --no-startup-id ${pkgs.mpc_cli}/bin/mpc -q stop";
-    "${mod}+F4" = "exec --no-startup-id ${pkgs.mpc_cli}/bin/mpc -q next";
+    "${mod}+F1" = "exec --no-startup-id ${pkgs.mpc}/bin/mpc -q prev";
+    "${mod}+F2" = "exec --no-startup-id ${pkgs.mpc}/bin/mpc -q toggle";
+    "${mod}+F3" = "exec --no-startup-id ${pkgs.mpc}/bin/mpc -q stop";
+    "${mod}+F4" = "exec --no-startup-id ${pkgs.mpc}/bin/mpc -q next";
     "${mod}+F5" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ -5%";
     "${mod}+F6" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ +5%";
     "${mod}+F7" = "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-mute @DEFAULT_SINK@ toggle";
