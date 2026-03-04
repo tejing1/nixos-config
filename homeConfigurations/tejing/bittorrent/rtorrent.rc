@@ -203,9 +203,9 @@ method.set_key = event.download.inserted_new, meta_make_torrent, "branch=\"and={
 group.seeding.ratio.enable=
 
 # When to trigger the command for the default group.
-group2.seeding.ratio.min.set    =  200
-group2.seeding.ratio.max.set    = 1000
-group2.seeding.ratio.upload.set =  20M
+group.seeding.ratio.min.set    =  200
+group.seeding.ratio.max.set    = 1000
+group.seeding.ratio.upload.set =  20M
 
 # The command triggered when the ratio is reached.
 # (the default is "d.try_close= ; d.ignore_commands.set=1")
