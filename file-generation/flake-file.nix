@@ -7,19 +7,33 @@
 
 let
   inherit (builtins)
+    elem
+    foldl'
     isPath
     length
     sort
   ;
   inherit (lib)
+    concatMapStringsSep
     mkOption
     path
     removePrefix
     types
+    unique
+    warnIf
   ;
   inherit (path)
     subpath
   ;
+
+  separateRepeats = foldl' (acc: e:
+    if ! elem e acc.uniques then
+      acc // { uniques = acc.uniques ++ [ e ]; }
+    else if ! elem e acc.repeats then
+      acc // { repeats = acc.repeats ++ [ e ]; }
+    else
+      acc
+  ) { uniques = []; repeats = []; };
 
   nixos-release = "25.11"; # FIXME set elsewhere
 in
@@ -31,6 +45,21 @@ in
       flake.modules = mkOption {
         type = types.listOf (types.addCheck types.path isPath);
         default = [];
+        apply = modules: let
+          lessThan = x: y: let
+            x' = subpath.components (path.removePrefix my.flake.root x);
+            xl = length x';
+            y' = subpath.components (path.removePrefix my.flake.root y);
+            yl = length y';
+          in
+            if xl != yl && (xl < 2 || yl < 2) then
+              xl < yl
+            else
+              x' < y';
+          inherit (separateRepeats (sort lessThan modules)) uniques repeats;
+        in
+          warnIf (length repeats > 0) "Same path added to my.flake.modules more than once: ${concatMapStringsSep " " (path.removePrefix my.flake.root) repeats}"
+            uniques;
       };
       # flake.specialArgs = mkOption {}; # FIXME
     };
@@ -90,18 +119,7 @@ in
                   sel.from.var = "builtins";
                   sel.attr = "pathExists";
                 };
-                app.args.items.literal = sort (x: y: # FIXME do this in 'apply' on the option?
-                  let
-                    x' = subpath.components (path.removePrefix my.flake.root x);
-                    xl = length x';
-                    y' = subpath.components (path.removePrefix my.flake.root y);
-                    yl = length y';
-                  in
-                    if xl != yl && (xl < 2 || yl < 2) then
-                      xl < yl
-                    else
-                      x' < y'
-                ) my.flake.modules;
+                app.args.items.literal = my.flake.modules;
               };
               set.defs.my.literal.flake.modules = [ (my.flake.root + "/fpentry.nix") ];
             };
