@@ -16,6 +16,7 @@ let
   inherit (lib)
     concatMapStringsSep
     mkOption
+    optionalAttrs
     path
     removePrefix
     types
@@ -62,7 +63,10 @@ in
           warnIf (length repeats > 0) "Same path added to my.flake.modules more than once: ${concatMapStringsSep " " (path.removePrefix my.flake.root) repeats}"
             uniques;
       };
-      # specialArgs = mkOption {}; # FIXME
+      specialArgs = mkOption {
+        type = types.attrsOf types.raw; # FIXME make a proper nix expression AST type
+        default = {};
+      };
     };
   };
 
@@ -102,6 +106,7 @@ in
           app.arg = [ "main" "module" ];
           app.args.main = {
             set.inh.inputs = null;
+            set.defs = optionalAttrs (my.flake.specialArgs != {}) { specialArgs.set.defs = my.flake.specialArgs; };
           };
           app.args.module = {
             set.defs.imports = {
