@@ -733,8 +733,9 @@ find_fixed_point() {
     close result
     rm -rf result
     pushd eval >/dev/null
-    ./.generate-files "$tmpdir/result"
+    ./.generate-files "$tmpdir/result" || die ".generate-files script failed."
     popd >/dev/null
+    [ -e result ] || die "result directory not created."
     open result
 
     update_from result eval
