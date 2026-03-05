@@ -71,6 +71,8 @@ in
   };
 
   config = {
+    my.flake.modules = [ (my.flake.root + "/fpentry.nix") ];
+
     my.flake.inputs = {
       flake-parts.url = "github:hercules-ci/flake-parts";
       flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
@@ -121,7 +123,6 @@ in
               };
               app.args.items.literal = my.flake.modules;
             };
-            set.defs.my.literal.flake.modules = [ (my.flake.root + "/fpentry.nix") ];
           };
         };
       };

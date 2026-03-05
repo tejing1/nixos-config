@@ -72,8 +72,5 @@
       pkgs/starsector
       pkgs/vieb.nix
     ];
-    my.flake.modules = [
-      ./fpentry.nix
-    ];
   };
 }
