@@ -120,6 +120,11 @@ in
   config = {
     my.flake.modules = listImportablePathsExcept ./. [ "default" ];
 
+    my.flake.inputs = {
+      flake-compat.url = "github:NixOS/flake-compat";
+      flake-compat.flake = false;
+    };
+
     perSystem = { pkgs, my, ... }: let
       regenPackage = pkgs.writeShellScriptBin "regen" (readFile ./regenerate-files.sh);
 

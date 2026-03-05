@@ -34,15 +34,16 @@ let
     else
       acc
   ) { uniques = []; repeats = []; };
-
-  nixos-release = "25.11"; # FIXME set elsewhere
 in
 
 {
   options = {
-    my = {
-      # flake.inputs = mkOption {}; # FIXME
-      flake.modules = mkOption {
+    my.flake = {
+      inputs = mkOption {
+        type = types.attrsOf types.raw; # FIXME make a proper nix literal type
+        default = {};
+      };
+      modules = mkOption {
         type = types.listOf (types.addCheck types.path isPath);
         default = [];
         apply = modules: let
@@ -61,68 +62,61 @@ in
           warnIf (length repeats > 0) "Same path added to my.flake.modules more than once: ${concatMapStringsSep " " (path.removePrefix my.flake.root) repeats}"
             uniques;
       };
-      # flake.specialArgs = mkOption {}; # FIXME
+      # specialArgs = mkOption {}; # FIXME
     };
   };
 
   config = {
+    my.flake.inputs = {
+      flake-parts.url = "github:hercules-ci/flake-parts";
+      flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
+
+
+      # FIXME set elsewhere
+      home-manager.url = "github:nix-community/home-manager/release-${my.nixpkgs.release}";
+      home-manager.inputs.nixpkgs.follows = "nixpkgs";
+
+      home-manager-unstable.url = "github:nix-community/home-manager/master";
+      home-manager-unstable.inputs.nixpkgs.follows = "nixpkgs-unstable";
+
+      mobile-nixos.url = "github:tejing1/mobile-nixos/tejingphone";
+      mobile-nixos.flake = false;
+
+      flake-programdb.url = "github:tejing1/flake-programdb";
+    };
+
     my.flake.files."flake.nix".expr = {
-      save.exprs.inputs.literal = { # FIXME set elsewhere
-        nixpkgs.url = "github:NixOS/nixpkgs/nixos-${nixos-release}";
+      format.before = ''
+        # This file is generated. (Yes, really.)
+        # See ${removePrefix "${inputs.self}/" __curPos.file} for its definition.
 
-        home-manager.url = "github:nix-community/home-manager/release-${nixos-release}";
-        home-manager.inputs.nixpkgs.follows = "nixpkgs";
-
-        nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
-        home-manager-unstable.url = "github:nix-community/home-manager/master";
-        home-manager-unstable.inputs.nixpkgs.follows = "nixpkgs-unstable";
-        mobile-nixos.url = "github:tejing1/mobile-nixos/tejingphone";
-        mobile-nixos.flake = false;
-
-        flake-parts.url = "github:hercules-ci/flake-parts";
-        flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
-
-        vieb-nix.url = "github:tejing1/vieb-nix";
-        vieb-nix.inputs.nixpkgs.follows = "nixpkgs";
-
-        flake-programdb.url = "github:tejing1/flake-programdb";
-
-        flake-compat.url = "github:NixOS/flake-compat";
-        flake-compat.flake = false;
-      };
-      save.body = {
-        format.before = ''
-          # This file is generated. (Yes, really.)
-          # See ${removePrefix "${inputs.self}/" __curPos.file} for its definition.
-
-        '';
-        format.expr = {
-          set.defs.inputs.saved = "inputs";
-          set.defs.outputs.lambda.var = "inputs";
-          set.defs.outputs.lambda.body = {
-            app.func = {
-              sel.from.var = "inputs";
-              sel.attr = [ "flake-parts" "lib" "mkFlake" ];
-            };
-            app.arg = [ "main" "module" ];
-            app.args.main = {
-              set.inh.inputs = null;
-            };
-            app.args.module = {
-              set.defs.imports = {
-                app.func = {
-                  sel.from.var = "builtins";
-                  sel.attr = "filter";
-                };
-                app.arg = [ "pred" "items" ];
-                app.args.pred = {
-                  sel.from.var = "builtins";
-                  sel.attr = "pathExists";
-                };
-                app.args.items.literal = my.flake.modules;
+      '';
+      format.expr = {
+        set.defs.inputs.literal = my.flake.inputs;
+        set.defs.outputs.lambda.var = "inputs";
+        set.defs.outputs.lambda.body = {
+          app.func = {
+            sel.from.var = "inputs";
+            sel.attr = [ "flake-parts" "lib" "mkFlake" ];
+          };
+          app.arg = [ "main" "module" ];
+          app.args.main = {
+            set.inh.inputs = null;
+          };
+          app.args.module = {
+            set.defs.imports = {
+              app.func = {
+                sel.from.var = "builtins";
+                sel.attr = "filter";
               };
-              set.defs.my.literal.flake.modules = [ (my.flake.root + "/fpentry.nix") ];
+              app.arg = [ "pred" "items" ];
+              app.args.pred = {
+                sel.from.var = "builtins";
+                sel.attr = "pathExists";
+              };
+              app.args.items.literal = my.flake.modules;
             };
+            set.defs.my.literal.flake.modules = [ (my.flake.root + "/fpentry.nix") ];
           };
         };
       };

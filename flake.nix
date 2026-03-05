@@ -45,7 +45,6 @@
       ./nixosModules
       ./nixpkgs.nix
       ./overlays
-      ./perPkgs.nix
       ./pkgs
       file-generation/flake-file.nix
       file-generation/nix-expr.nix
