@@ -37,6 +37,11 @@
 
   programs.direnv.enable = true;
   programs.direnv.nix-direnv.enable = true;
+  programs.direnv.config.global = {
+    # Regex that matches every string other than "using nix".
+    log_filter = "^($|[^u].*$|u(($|[^s].*$|s(($|[^i].*$|i(($|[^n].*$|n(($|[^g].*$|g(($|[^ ].*$| (($|[^n].*$|n(($|[^i].*$|i(($|[^x].*$|x.+$)))))))))))))))))";
+    hide_env_diff = true;
+  };
 
   # Retain build deps for building my moonlander firmware
   xdg.configFile.".moonlander-firmware-buildTools".source = my.pkgs.moonlander-firmware.buildTools;
