@@ -11,8 +11,11 @@
 let
 
   inherit (builtins)
+    any
+    isList
     isString
     mapAttrs
+    match
   ;
 
   inherit (flake-parts-lib)
@@ -23,6 +26,9 @@ let
   inherit (lib)
     evalModules
     fix
+    getName
+    literalExpression
+    mkDefault
     mkOption
     types
   ;
@@ -31,6 +37,7 @@ let
     anything
     attrsOf
     either
+    listOf
     path
     str
     strMatching
@@ -46,6 +53,27 @@ in
     my.nixpkgs.release = mkOption {
       type = strMatching "[0-9][0-9]\\.(05|11)";
     };
+    my.nixpkgs.config = mkOption {
+      type = submodule ({
+        freeformType = attrsOf types.raw;
+      });
+      default = {};
+    };
+    my.nixpkgs.overlays = mkOption {
+      type = listOf path;
+      default = [];
+    };
+    my.nixpkgs.allowUnfreePackages = mkOption {
+      type = listOf str;
+      description = "List of regular expressions matching unfree packages allowed to be installed";
+      default = [];
+      example = literalExpression ''[ "steam" "nvidia-.*" ]'';
+    };
+    my.nixpkgs.args = mkOption {
+      type = types.raw;
+      readOnly = true;
+      internal = true;
+    };
 
     perSystem = mkPerSystemOption ({ system, ... }: {
       options = {
@@ -53,11 +81,11 @@ in
         nixpkgs = mkOption {
           type = attrsOf (either str (submodule ({ config, ... }: {
             options = {
-              source = mkOption {
+              src = mkOption {
                 type = path;
               };
-              arg = mkOption {
-                type = anything;
+              args = mkOption {
+                type = types.addCheck (attrsOf types.raw) (args: ! args ? system && ! args ? localSystem);
               };
               pkgs = mkOption {
                 type = types.pkgs;
@@ -65,9 +93,11 @@ in
             };
 
             config = {
-              arg.system = system;
+              # Forces nixpkgs purity even if evaluating impurely
+              args.config = mkDefault {};
+              args.overlays = mkDefault [];
 
-              pkgs = import config.source config.arg;
+              pkgs = import config.src (config.args // { inherit system; });
             };
           })));
           apply = attrs: fix (self: mapAttrs (n: v:
@@ -112,18 +142,22 @@ in
       nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     };
 
+    my.nixpkgs.config.allowUnfreePredicate = pkg: any (reg: isList (match reg (getName pkg))) my.nixpkgs.allowUnfreePackages;
+
+    my.nixpkgs.args = { inherit (my.nixpkgs) config overlays; };
+
     perSystem = { config, ... }: {
 
       nixpkgs.stable = {
-        source = inputs.nixpkgs;
-        arg.config.allowUnfree = true;
+        src = inputs.nixpkgs;
+        inherit (my.nixpkgs) args;
       };
       nixpkgs.unstable = {
-        source = inputs.nixpkgs-unstable;
-        inherit (config.nixpkgs.stable) arg;
+        src = inputs.nixpkgs-unstable;
+        inherit (my.nixpkgs) args;
       };
-      nixpkgs.stable-uncustomized.source = inputs.nixpkgs;
-      nixpkgs.unstable-uncustomized.source = inputs.nixpkgs-unstable;
+      nixpkgs.stable-uncustomized.src = inputs.nixpkgs;
+      nixpkgs.unstable-uncustomized.src = inputs.nixpkgs-unstable;
       nixpkgs.default = "stable";
 
       allPkgs = fix (self: mapAttrs (n: { copyOf ? null, pkgs, ... }: if isNull copyOf then forPkgs pkgs else self.${copyOf}) config.nixpkgs);
