@@ -25,6 +25,10 @@ in
 
     ];
 
+    # Don't install nix-channel or create stuff on the filesystem
+    # for channels
+    nix.channel.enable = false;
+
     # Indirect our NIX_PATH through /etc so that it updates without a
     # relog
     nix.nixPath = [ "/etc/nix/path" ];
