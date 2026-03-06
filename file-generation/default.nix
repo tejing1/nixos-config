@@ -139,9 +139,26 @@ in
         shellHook = pkgs.writeShellScript "install-pre-commit-hook" ''
           set -eu
 
-          echo Installing pre-commit hook
           hookInstallLocation="$(git rev-parse --git-path hooks/pre-commit)"
-          nix build ${preCommitHook} -o "$hookInstallLocation"
+          if [ -L "$hookInstallLocation" ]; then
+            currentHookTarget="$(realpath "$hookInstallLocation")"
+            if [ "$currentHookTarget" == ${preCommitHook} ]; then
+              exit 0
+            else
+              echo -n "Updating pre-commit hook..."
+              rm -- "$hookInstallLocation"
+            fi
+          elif [ -e "$hookInstallLocation" ]; then
+            echo "Refusing to overwrite non-symlink pre-commit hook!"
+            exit 1
+          else
+            echo -n "Installing pre-commit hook..."
+          fi
+          if nix-store --realise ${preCommitHook} --add-root "$hookInstallLocation" >/dev/null; then
+            echo " Success."
+          else
+            echo " Failed!"
+          fi
         '';
       };
     };
