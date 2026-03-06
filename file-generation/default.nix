@@ -7,28 +7,34 @@
 
 let
   inherit (builtins)
-    readFile
+    attrNames
+    concatMap
+    isList
     length
+    match
+    readFile
+    seq
   ;
   inherit (lib)
-    head
     attrsToList
-    stringLength
-    mapAttrs'
-    nameValuePair
-    foldl
-    imap1
     fixedWidthNumber
-    mkOption
-    types
-    mkMerge
+    foldl
+    head
+    imap1
+    mapAttrs'
     mkIf
+    mkMerge
+    mkOption
+    nameValuePair
     optionalString
     path
+    stringLength
+    types
   ;
   inherit (types)
-    attrsOf
+    addCheck
     attrTag
+    attrsOf
     lines
     str
   ;
@@ -75,7 +81,7 @@ let
         contentvar="content_''${pathvar#path_}"
         content="''${!contentvar}"
 
-        [[ ! "$path" =~ (^|/)(|\.|\.\.)(/|$) ]] || die "paths must not begin or end with a '/', contain '//', or involve '.' or '..': $path"
+        [[ ! "$path" =~ (^|/)(|\.|\.\.)(/|$) ]] || die "paths must not be empty, begin or end with a '/', contain '//', or involve '.' or '..': $path"
         if [ -n "$prevpath" ]; then
           [[ "$path" != "$prevpath"/* ]] || die "non-disjoint paths: $path, $prevpath"
           [[ "$prevpath" != "$path"/* ]] || die "non-disjoint paths: $prevpath, $path"
@@ -92,28 +98,36 @@ let
     '';
   };
 
+  checkedTree = opt: tree: seq (concatMap (path:
+    if isList (match "([^/]*/)*(|\\.|\\.\\.)(/[^/]*)*" path) then
+      throw "paths in ${opt} must not be empty, begin or end with a '/', contain '//', or involve '.' or '..': ${path}"
+    else
+      []
+  ) (attrNames tree)) tree;
+
 in
 
 {
   options = {
     my.flake.files = mkOption {
-      type = attrsOf (attrTag { # FIXME check attr names are in canonical form
+      type = attrsOf (attrTag {
         norm = mkOption { type = lines; };
         exec = mkOption { type = lines; };
         link = mkOption { type = str; };
         expr = mkOption { type = types.raw; }; # FIXME make this type
         tree = mkOption {
-          type = attrsOf (attrTag { # FIXME check attr names are in canonical form
+          type = attrsOf (attrTag {
             norm = mkOption { type = lines; };
             exec = mkOption { type = lines; };
             link = mkOption { type = str; };
             expr = mkOption { type = types.raw; }; # FIXME make this type
           });
           default = {};
-          apply = x: if x == {} then throw "A generated tree cannot be empty!" else x;
+          apply = checkedTree "my.flake.files.<name>.tree";
         };
       });
       default = {};
+      apply = checkedTree "my.flake.files";
     };
   };
 
