@@ -163,7 +163,49 @@ let
       set = tagValue "sdstring" [ (normalizeNixExpr ctx repr) ];
       list = tagValue "sdstring" (concatStringsMapOthers (normalizeNixExpr ctx) repr);
     }.${typeOf repr} or (throw "unknown sdstring representation type: ${typeOf repr}");
-    sdstring.render = ctx: repr: "\"" + renderUnwrappedNixString "sd" ctx repr + "\"";
+    sdstring.render = ctx: repr: let
+      rendered = concatMapStringsWithLookahead (cur: next: let
+        mostlyEscaped = replaceStrings
+          [ "$$"   "\${"   "\\"   "\""  "\n"  "\r"  "\t" ]
+          [ "$$" "\\\${" "\\\\" "\\\"" "\\n" "\\r" "\\t" ]
+          cur;
+
+        # We translate every sequence that nix's lexer would treat
+        # specially into a sequence that properly escapes it and
+        # leaves the lexer in the default state for further
+        # lexing... except non-doubled $.  This translates as itself,
+        # but the lexer is in a slightly non-default state after
+        # lexing it. As long as what follows is a different character,
+        # this state behaves the same as the default state, so it's
+        # not normally a problem. However, if this portion of the
+        # literal is followed by ${, this state can prevent proper
+        # lexing of that sequence. So an unpaired trailing $ needs to
+        # be escaped if it will be followed by ${ from the following
+        # component.
+
+        # To find out if this is necessary, we have to imitate the
+        # lexer up to the final time it is in the default state, then
+        # take the remaining portion of the string. If it's $, we need
+        # to escape it with \.
+
+        # Got all that? No? That's ok. Fortunately, it works whether
+        # you understand it or not.
+        discriminator = elemAt (match ''.*([^$]|^)(\$\$)*(\$?)'' cur) 2;
+        escaped =
+          if typeOf next == "set" && discriminator == "$" then
+            removeSuffix "$" mostlyEscaped + "\\$"
+          else
+            mostlyEscaped;
+
+      in
+        if typeOf cur != "string" then
+          "\${" + renderNixExpr ctx cur + "}"
+        else if typeOf next == "string" then
+          throw "non-normalized string representation."
+        else
+          escaped
+      ) repr;
+    in "\"" + rendered + "\"";
 
     dsstring.normalize = ctx: repr: {
       string = tagValue "dsstring" [ repr ];
@@ -171,7 +213,62 @@ let
       list = tagValue "dsstring" (concatStringsMapOthers (normalizeNixExpr ctx) repr);
     }.${typeOf repr} or (throw "unknown dsstring representation type: ${typeOf repr}");
     dsstring.render = ctx: repr: let
-      rendered = renderUnwrappedNixString "ds" ctx repr;
+      rendered = concatMapStringsWithLookahead (cur: next: let
+        mostlyEscaped = replaceStrings
+          [  "''" "$$"       "'\${"   "\${"        "'\r"    "\r"        "'\t"    "\t" ]
+          [ "'''" "$$" "''\\'''\${" "''\${" "''\\'''\\r" "''\\r" "''\\'''\\t" "''\\t" ]
+          cur;
+
+        # We translate every sequence that nix's lexer would treat
+        # specially into a sequence that properly escapes it and
+        # leaves the lexer in the default state for further
+        # lexing... except non-doubled $ or '.  These translate as
+        # themselves, but the lexer is in a slightly non-default state
+        # after lexing them. As long as what follows is a different
+        # character, these states behave the same as the default
+        # state, so it's not normally a problem. However, if this
+        # portion of the literal is followed by ${ or '', these states
+        # can prevent proper lexing of those sequences. We take care
+        # of a single ' altering a following '' with extra entries in
+        # the replaceStrings call, but an unpaired trailing $ needs to
+        # be escaped if it will be followed by ${ from the following
+        # component. However, the way we can escape the trailing $ is
+        # with '', so we need to also check if it is preceded by an
+        # unpaired ' so that we can prevent the failure of the '' we
+        # use the escape the $.
+
+        # To find out what escaping we need to do, we have to imitate
+        # the lexer up to the final time it is in the default state,
+        # then take the remaining portion of the string and look at
+        # its final 2 characters (or less if its length is less than
+        # 2). If it's $, we need to escape it with ''. If it's '$, we
+        # need to escape the ' with ''\ so that we can then escape the
+        # following $ with ''.
+
+        # Got all that? No? That's ok. Fortunately, it works whether
+        # you understand it or not.
+        discriminator =
+          elemAt (match ''.*(..|^.|^)'' (
+            elemAt (match ''.*([^'$]|^)('?(\$')*\$\$|\$?('\$)*''')*('?(\$')*\$?)''
+              cur
+            ) 4
+          )) 0;
+        escaped =
+          if      typeOf next == "set" && discriminator ==  "$" then
+            removeSuffix  "$" mostlyEscaped + "''$"
+          else if typeOf next == "set" && discriminator == "'$" then
+            removeSuffix "'$" mostlyEscaped + "''\\'''$"
+          else
+            mostlyEscaped;
+
+      in
+        if typeOf cur != "string" then
+          "\${" + renderNixExpr ctx cur + "}"
+        else if typeOf next == "string" then
+          throw "non-normalized string representation."
+        else
+          escaped
+      ) repr;
       willLoseTrailingSpaces = isList (match ".*\n +" rendered);
       willEatIndents = isNull (match ".*(^|\n)[^ \n].*" (concatMapStrings (x: if isString x then x else "a") repr));
       fixed =
@@ -279,38 +376,6 @@ let
     collatedInh = groupBy' (ns: {name, ...}: ns ++ [ name ]) [] ({ value, ... }: if isAttrs value then renderNixExpr (ctx // { outerPrec = prec.outer; chain = true; }) value else "") (attrsToList inh);
     inhlines = mapAttrsToList (n: v: "inherit " + wrapNonEmpty "(" n ") " + concatMapStringsSep " " escapeNixIdentifier v + ";") collatedInh;
   in concatStringsSep "\n" (inhlines ++ deflines);
-
-  renderUnwrappedNixString = type: ctx: concatMapStringsWithLookahead (cur: next: let
-    sequentialStrings = typeOf cur == "string" && typeOf next == "string";
-    antiquoteFollows = typeOf next == "set";
-    ending = elemAt (match ''.*([^'$]|^)('?(\$')*\$\$|\$?('\$)*''')*('?(\$')*\$?)'' cur) 4;
-    endingLength = stringLength ending;
-    discriminator = substring (if endingLength >= 2 then endingLength - 2 else 0) endingLength ending;
-    escapeFinalDollar = antiquoteFollows && discriminator == "$";
-    escapeFinalTickDollar = antiquoteFollows && discriminator == "'$";
-    mostlyEscaped = {
-      sd = replaceStrings
-        [       "$$"                "\${"   "\\"   "\""  "\n"                 "\r"                 "\t" ]
-        [       "$$"              "\\\${" "\\\\" "\\\"" "\\n"                "\\r"                "\\t" ]
-        cur;
-      ds = replaceStrings
-        [  "''" "$$"       "'\${"   "\${"                            "'\r"    "\r"        "'\t"    "\t" ]
-        [ "'''" "$$" "''\\'''\${" "''\${"                     "''\\'''\\r" "''\\r" "''\\'''\\t" "''\\t" ]
-        cur;
-    }.${type};
-  in
-    if sequentialStrings then
-      throw "non-normalized string representation."
-    else if typeOf cur != "string" then
-      "\${" + renderNixExpr ctx cur + "}"
-    else if escapeFinalDollar then
-      removeSuffix  "$" mostlyEscaped + { sd =  "\\$"; ds =      "''$"; }.${type}
-    else if escapeFinalTickDollar then
-      removeSuffix "'$" mostlyEscaped + { sd = "'\\$"; ds = "''\\'''$"; }.${type}
-    else
-      mostlyEscaped
-  );
-
 
   mkNixExpr = ctx: expr: renderNixExpr ctx (normalizeNixExpr ctx expr);
   mkNixEqs  = ctx:  eqs: renderNixEqs  ctx (normalizeNixEqs  ctx  eqs);
