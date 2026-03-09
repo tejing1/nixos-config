@@ -198,9 +198,9 @@ let
     in
       concatMapStringsSep "/" (s:
         if all (e: isAttrs e || isList (match pathcompregex e)) s then
-          concatMapStrings (e: if isAttrs e then "\${" + renderNixExpr ctx e + "}" else e) s
+          concatMapStrings (e: if isAttrs e then "\${" + renderNixExpr (ctx // { outerPrec = prec.outer; chain = true; }) e + "}" else e) s
         else
-          "\${" + renderNixExpr ctx { sdstring = s; } + "}"
+          "\${" + renderNixExpr (ctx // { outerPrec = prec.outer; chain = true; }) { sdstring = s; } + "}"
       ) prefixed;
 
     string.normalize = ctx: repr: normalizeNixExpr ctx {
@@ -258,7 +258,7 @@ let
 
       in
         if typeOf cur != "string" then
-          "\${" + renderNixExpr ctx cur + "}"
+          "\${" + renderNixExpr (ctx // { outerPrec = prec.outer; chain = true; }) cur + "}"
         else if typeOf next == "string" then
           throw "non-normalized string representation."
         else
@@ -322,7 +322,7 @@ let
 
       in
         if typeOf cur != "string" then
-          "\${" + renderNixExpr ctx cur + "}"
+          "\${" + renderNixExpr (ctx // { outerPrec = prec.outer; chain = true; }) cur + "}"
         else if typeOf next == "string" then
           throw "non-normalized string representation."
         else
