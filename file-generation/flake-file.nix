@@ -103,7 +103,7 @@ in
         set.defs.outputs.lambda.body = {
           app.func = {
             sel.from.var = "inputs";
-            sel.attr = [ "flake-parts" "lib" "mkFlake" ];
+            sel.attrpath = [ "flake-parts" "lib" "mkFlake" ];
           };
           app.arg = [ "main" "module" ];
           app.args.main = {

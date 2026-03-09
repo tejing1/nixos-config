@@ -50,6 +50,7 @@ let
     mapAttrsToList
     mkOption
     optional
+    optionalAttrs
     optionalString
     path
     pipe
@@ -353,12 +354,44 @@ let
     recset.normalize = ctx: tagResult "recset" (normalizeNixEqs ctx);
     recset.render    = ctx: eqsArgs: "rec {" + wrapNonEmpty "\n" (indentString "  " (renderNixEqs ctx eqsArgs)) "\n" + "}";
 
-    # FIXME add support for 'or'
-    # FIXME add support for antiquotes in 'attr'
-    sel.normalize = ctx: { from, attr }: pipe (normalizeNixExpr ctx from) (map (n: f: { sel.from = f; sel.attr = n; }) (if isList attr then attr else [ attr ]));
-    sel.render = ctx: { from, attr }: maybeParen ctx prec.sel ( # FIXME only allow single attr in render stage?
-      renderNixExpr (ctx // { outerPrec = prec.sel; chain = true; }) from + concatMapStrings (attr: "." + escapeNixIdentifier attr) (if isList attr then attr else [ attr ])
-    );
+    sel.normalize = ctx: { from, attr ? null, attrpath ? null, default ? null }: let
+      normalizeAttr = repr: {
+        string = [ repr ];
+        set = [ (normalizeNixExpr ctx repr) ];
+        list = (concatStringsMapOthers (normalizeNixExpr ctx) repr);
+      }.${typeOf repr} or (throw "unknown attr representation type: ${typeOf repr}");
+    in
+      if isNull attr == isNull attrpath then
+        throw "must set exactly one of 'attr' and 'attrpath'"
+      else if isNull attrpath then
+        tagValue "sel" ({ from = normalizeNixExpr ctx from; attr = normalizeAttr attr; } // optionalAttrs (!isNull default) { default = normalizeNixExpr ctx default; } )
+      else if isNull default then
+        pipe (normalizeNixExpr ctx from) (map (n: f: tagValue "sel" { from = f; attr = normalizeAttr n; }) attrpath)
+      else
+        throw "cannot set 'default' when using 'attrpath'";
+    sel.render = ctx: { from, attr, default ? null }: let
+      renderAttr = repr:
+        if length repr == 1 then let
+          h = head repr;
+        in
+          if typeOf h == "string" then
+            if isList (match "[a-zA-Z_][a-zA-Z0-9_'-]*" h) then
+              h
+            else
+              renderNixExpr ctx { sdstring = repr; }
+          else
+            "\${" + renderNixExpr (ctx // { outerPrec = prec.outer; chain = true; }) h + "}"
+        else
+          renderNixExpr ctx { sdstring = repr; };
+      # prec.sel would always be safe for the nix parser, but extra
+      # parens help humans read expressions with 'or' correctly
+      pretendInnerPrec = if isNull default then prec.sel else prec.outer;
+    in
+      maybeParen ctx pretendInnerPrec (
+        renderNixExpr (ctx // { outerPrec = prec.sel; chain = true; }) from
+        + "." + renderAttr attr
+        + optionalString (isAttrs default) (" or " + renderNixExpr (ctx // { outerPrec = prec.sel; chain = false; }) default)
+      );
 
     app.normalize = ctx: { func, arg, args ? {} }:
       if isList arg then
