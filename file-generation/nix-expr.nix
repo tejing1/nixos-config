@@ -8,6 +8,7 @@ let
     all
     any
     attrNames
+    concatMap
     concatStringsSep
     elemAt
     foldl'
@@ -28,6 +29,7 @@ let
     split
     stringLength
     substring
+    tail
     typeOf
     zipAttrsWith
   ;
@@ -42,6 +44,8 @@ let
     hasInfix
     hasPrefix
     hasSuffix
+    init
+    last
     lists
     mapAttrsToList
     mkOption
@@ -51,6 +55,7 @@ let
     pipe
     removePrefix
     removeSuffix
+    splitString
     types
     unique
   ;
@@ -141,8 +146,62 @@ let
 
     float.render = ctx: f: if isFloat f then toString f else throw "contents of 'float' node not a float";
 
-    # FIXME move path-type conversion to normalization phase and allow string-based specification and antiquotes
-    path.render = ctx: p: if isPath p then mkNixPath ctx p else throw "contents of 'path' node not a path";
+    path.normalize = ctx: repr: {
+      path = let
+        targetcomps = subpath.components (path.removePrefix ctx.toplevel (dirOf ctx.targetfile));
+        pathcomps = subpath.components (path.removePrefix ctx.toplevel repr);
+        common = lists.commonPrefix targetcomps pathcomps;
+        relativecomps = map (const "..") (lists.removePrefix common targetcomps) ++ lists.removePrefix common pathcomps;
+      in
+        tagValue "path" [ (concatStringsSep "/" relativecomps) ];
+      string = tagValue "path" [ repr ];
+      set = tagValue "path" [ (normalizeNixExpr ctx repr) ];
+      list = tagValue "path" (concatStringsMapOthers (normalizeNixExpr ctx) repr);
+    }.${typeOf repr} or (throw "unknown path representation: ${typeOf repr}");
+    path.render = ctx: repr: let
+      isAbsolute = length repr > 0 && isString (head repr) && hasPrefix "/" (head repr);
+      accumulated = foldl' (acc: e: {
+        string = let
+          comps = splitString "/" e;
+          h = head comps;
+          t = tail comps;
+        in
+          if length comps == 1 then
+            acc // { part = acc.part ++ comps; }
+          else
+            {
+              list = acc.list ++ [ (acc.part ++ [ h ]) ] ++ map (x: [ x ]) (init t);
+              part = [ (last t) ];
+            };
+        set = acc // { part = acc.part ++ [ e ]; };
+      }.${typeOf e} or (throw "non-normalized path")) { list = []; part = []; } repr;
+      separated = concatMap (o: let
+        o' = concatMap (i:
+          optional (i != "") i
+        ) o;
+      in
+        optional (o' != []) o'
+      ) (accumulated.list ++ [ accumulated.part ]);
+      pathcompregex = "[-A-Za-z0-9._+]+";
+      prefixed = (
+        if isAbsolute && length separated == 0 then
+          [ [] [ "." ] ]
+        else if isAbsolute then
+          [ [] ]
+        else if length separated == 0 then
+          [ [ "." ] [ "." ] ]
+        else if length separated == 1 || any (e: isAttrs e || isNull (match pathcompregex e)) (head separated) then
+          [ [ "." ] ]
+        else
+          []
+      ) ++ separated;
+    in
+      concatMapStringsSep "/" (s:
+        if all (e: isAttrs e || isList (match pathcompregex e)) s then
+          concatMapStrings (e: if isAttrs e then "\${" + renderNixExpr ctx e + "}" else e) s
+        else
+          "\${" + renderNixExpr ctx { sdstring = s; } + "}"
+      ) prefixed;
 
     string.normalize = ctx: repr: normalizeNixExpr ctx {
       string =
