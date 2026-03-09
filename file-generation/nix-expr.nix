@@ -140,7 +140,7 @@ let
       else
         throw "the 'before' and 'after' elements of a 'format' node can only include whitespace and comments";
 
-    var.render = ctx: name: if isList (match "[A-Za-z_][A-Za-z0-9_'-]+" name) && isNull (match "assert|else|if|in|inherit|let|or|rec|then|with" name) then name else throw "bad variable name: ${name}";
+    var.render = ctx: name: if isList (match "[A-Za-z_][A-Za-z0-9_'-]*" name) && isNull (match "assert|else|if|in|inherit|let|or|rec|then|with" name) then name else throw "bad variable name: ${name}";
 
     int.render = ctx: i: if isInt i then toString i else throw "contents of 'int' node not an integer";
 
