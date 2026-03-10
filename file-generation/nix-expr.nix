@@ -472,19 +472,6 @@ let
   mkNixExpr = ctx: expr: renderNixExpr ctx (normalizeNixExpr ctx expr);
   mkNixEqs  = ctx:  eqs: renderNixEqs  ctx (normalizeNixEqs  ctx  eqs);
 
-  mkNixPath = { toplevel, targetfile, ... }: p: let
-    targetcomps = subpath.components (path.removePrefix toplevel (dirOf targetfile));
-    pathcomps = subpath.components (path.removePrefix toplevel p);
-    common = lists.commonPrefix targetcomps pathcomps;
-    pathcompregex = "[-A-Za-z0-9._+]+";
-  in
-    pipe (map (const "..") (lists.removePrefix common targetcomps) ++ lists.removePrefix common pathcomps) [
-      (cs: if length cs == 0 then [ "." ] else cs)
-      (cs: if isNull (match pathcompregex (head cs)) then [ "." ] ++ cs else cs)
-      (cs: if length cs <= 1 then [ "." ] ++ cs else cs)
-      (map (c: if isList (match pathcompregex c) then c else "\${" + escapeNixString c + "}"))
-      (concatStringsSep "/")
-    ];
 in
 
 {
