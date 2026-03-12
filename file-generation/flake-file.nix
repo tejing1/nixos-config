@@ -23,6 +23,11 @@ let
     unique
     warnIf
   ;
+  inherit (my.lib)
+    nixLiteralType
+    nixExprType
+    pathType
+  ;
   inherit (path)
     subpath
   ;
@@ -41,11 +46,11 @@ in
   options = {
     my.flake = {
       inputs = mkOption {
-        type = types.attrsOf types.raw; # FIXME make a proper nix literal type
+        type = types.attrsOf nixLiteralType;
         default = {};
       };
       modules = mkOption {
-        type = types.listOf (types.addCheck types.path isPath);
+        type = types.listOf pathType;
         default = [];
         apply = modules: let
           lessThan = x: y: let
@@ -64,7 +69,7 @@ in
             uniques;
       };
       specialArgs = mkOption {
-        type = types.attrsOf types.raw; # FIXME make a proper nix expression AST type
+        type = types.attrsOf nixExprType;
         default = {};
       };
     };

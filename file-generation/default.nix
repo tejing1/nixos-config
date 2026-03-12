@@ -41,6 +41,7 @@ let
   inherit (my.lib)
     listImportablePathsExcept
     mkNixExpr
+    nixExprType
   ;
 
   getSingleton = list: if length list == 1 then head list else throw "List is not a singleton";
@@ -54,6 +55,7 @@ let
       name = baseNameOf filepath;
       executable = false;
       text = mkNixExpr {
+        alreadyTypeChecked = true;
         inherit toplevel;
         targetfile = path.append toplevel filepath;
       } expr + "\n";
@@ -114,13 +116,13 @@ in
         norm = mkOption { type = lines; };
         exec = mkOption { type = lines; };
         link = mkOption { type = str; };
-        expr = mkOption { type = types.raw; }; # FIXME make this type
+        expr = mkOption { type = nixExprType; };
         tree = mkOption {
           type = attrsOf (attrTag {
             norm = mkOption { type = lines; };
             exec = mkOption { type = lines; };
             link = mkOption { type = str; };
-            expr = mkOption { type = types.raw; }; # FIXME make this type
+            expr = mkOption { type = nixExprType; };
           });
           default = {};
           apply = checkedTree "my.flake.files.<name>.tree";

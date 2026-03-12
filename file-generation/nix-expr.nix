@@ -8,6 +8,7 @@ let
     all
     any
     attrNames
+    attrValues
     concatMap
     concatStringsSep
     elemAt
@@ -40,6 +41,7 @@ let
     concatMapStringsSep
     const
     filterAttrs
+    fix
     groupBy'
     hasInfix
     hasPrefix
@@ -48,7 +50,10 @@ let
     last
     lists
     mapAttrsToList
+    mergeEqualOption
+    mergeDefinitions
     mkOption
+    mkOptionType
     optional
     optionalAttrs
     optionalString
@@ -57,6 +62,7 @@ let
     removePrefix
     removeSuffix
     splitString
+    throwIf
     types
     unique
   ;
@@ -121,7 +127,61 @@ let
     res.list ++ optional (res ? part) res.part;
   concatMapStringsWithLookahead = f: xs: let len = length xs; in concatStringsSep "" (genList (i: f (elemAt xs i) (if i+1 < len then elemAt xs (i+1) else null)) len);
 
-  impl = {
+  addPostMerge = t: f: t // {
+    merge = loc: defs: f loc (t.merge loc defs);
+
+    # Note that this only works in one direction, and is thus only really useful for manual calls.
+    typeMerge = functor: addPostMerge (t.typeMerge functor) f;
+
+    # The module system calls this in fixupOptionType before merging.
+    substSubModules = x: let res = t.substSubModules x; in if isNull res then res else addPostMerge res f;
+  };
+
+  recordType = fields: let
+    prelimType = types.submodule { options = mapAttrs (n: mkOption) fields; };
+  in
+    if any (f: f ? default) (attrValues fields) then
+      addPostMerge prelimType (loc: r:
+        removeAttrs r (attrNames (
+          filterAttrs (n: v:
+            fields.${n} ? default && v == fields.${n}.default
+          ) r
+        ))
+      )
+    else
+      prelimType;
+
+  pathType = types.mkOptionType {
+    name = "pathType";
+    description = "nix path-type";
+    descriptionClass = "noun";
+    check = isPath;
+    merge = mergeEqualOption;
+  };
+
+  validNixVarNameType = mkOptionType {
+    name = "validNixVarNameType";
+    description = "valid nix variable name";
+    descriptionClass = "noun";
+    check = name: isString name && isList (match "[A-Za-z_][A-Za-z0-9_'-]*" name) && isNull (match "assert|else|if|in|inherit|let|or|rec|then|with" name);
+    merge = mergeEqualOption;
+  };
+
+  nixLiteralType = fix (literal: types.nullOr (types.oneOf [
+    types.bool
+    types.int
+    types.float
+    types.str
+    pathType
+    (types.listOf literal)
+    (types.attrsOf literal)
+  ])) // {
+    description = "serializable nix data";
+    descriptionClass = "noun";
+  };
+
+  nodes = {
+    literal.type = nixLiteralType;
     literal.normalize = ctx: data: normalizeNixExpr ctx (switchType tagValue {
       null = tagResult "var"  (const "null");
       bool = tagResult "var"   boolToString;
@@ -129,24 +189,47 @@ let
       set  = tagResult "set"  (tagResult "defs" (mapAttrs (n: tagValue "literal")));
       lambda = throw "Cannot serialize a lambda as a literal";
     } data);
+
+    save.type = recordType {
+      exprs.type = types.attrsOf nixExprType;
+      exprs.default = {};
+      eqs.type = types.attrsOf nixEqsType;
+      eqs.default = {};
+      body.type = nixExprType;
+    };
     save.normalize = ctx: { exprs ? {}, eqs ? {}, body}: normalizeNixExpr (ctx // { exprs = (ctx.exprs or {}) // exprs; eqs = (ctx.eqs or {}) // eqs; }) body;
+
+    saved.type = types.str;
     saved.normalize = ctx: name: normalizeNixExpr ctx ((ctx.exprs or {}).${name} or (throw "no saved expression by name ${name}"));
 
-    format.normalize = ctx: { expr, ... }@arg: { format = arg // { expr = normalizeNixExpr ctx expr; }; };
-    format.render = ctx: { before ? "", after ? "", expr }:
-      if
-        all (s: isList (match "([ \n\t]+|#[^\n]*\n|/\\*([^*]|\\*+[^*/])*\\*+/)*" s)) [ before after ]
-      then
-        before + renderNixExpr ctx expr + after
-      else
-        throw "the 'before' and 'after' elements of a 'format' node can only include whitespace and comments";
+    format.type = recordType {
+      before.type = types.strMatching "([ \n\t]+|#[^\n]*\n|/\\*([^*]|\\*+[^*/])*\\*+/)*";
+      before.default = "";
+      after.type = types.strMatching "([ \n\t]+|#[^\n]*\n|/\\*([^*]|\\*+[^*/])*\\*+/)*";
+      after.default = "";
+      expr.type = nixExprType;
+    };
+    format.normalize = ctx: { expr, ... }@arg: tagValue "format" (arg // { expr = normalizeNixExpr ctx expr; });
+    format.render = ctx: { before ? "", after ? "", expr }: before + renderNixExpr ctx expr + after;
 
-    var.render = ctx: name: if isList (match "[A-Za-z_][A-Za-z0-9_'-]*" name) && isNull (match "assert|else|if|in|inherit|let|or|rec|then|with" name) then name else throw "bad variable name: ${name}";
+    var.type = validNixVarNameType;
+    var.render = ctx: name: name;
 
-    int.render = ctx: i: if isInt i then toString i else throw "contents of 'int' node not an integer";
+    int.type = types.int;
+    int.render = ctx: toString;
 
-    float.render = ctx: f: if isFloat f then toString f else throw "contents of 'float' node not a float";
+    float.type = types.float;
+    float.render = ctx: toString;
 
+    path.type = types.oneOf [
+      pathType
+      types.str
+      nixExprType
+      (types.listOf (types.oneOf [
+        types.str
+        nixExprType
+      ]))
+    ];
     path.normalize = ctx: repr: {
       path = let
         targetcomps = subpath.components (path.removePrefix ctx.toplevel (dirOf ctx.targetfile));
@@ -158,7 +241,7 @@ let
       string = tagValue "path" [ repr ];
       set = tagValue "path" [ (normalizeNixExpr ctx repr) ];
       list = tagValue "path" (concatStringsMapOthers (normalizeNixExpr ctx) repr);
-    }.${typeOf repr} or (throw "unknown path representation: ${typeOf repr}");
+    }.${typeOf repr};
     path.render = ctx: repr: let
       isAbsolute = length repr > 0 && isString (head repr) && hasPrefix "/" (head repr);
       accumulated = foldl' (acc: e: {
@@ -204,6 +287,14 @@ let
           "\${" + renderNixExpr (ctx // { outerPrec = prec.outer; chain = true; }) { sdstring = s; } + "}"
       ) prefixed;
 
+    string.type = types.oneOf [
+      types.str
+      nixExprType
+      (types.listOf (types.oneOf [
+        types.str
+        nixExprType
+      ]))
+    ];
     string.normalize = ctx: repr: normalizeNixExpr ctx {
       string =
         if hasInfix "\n" repr then
@@ -218,6 +309,14 @@ let
           tagValue "sdstring" repr;
     }.${typeOf repr} or (throw "unknown string representation type: ${typeOf repr}");
 
+    sdstring.type = types.oneOf [
+      types.str
+      nixExprType
+      (types.listOf (types.oneOf [
+        types.str
+        nixExprType
+      ]))
+    ];
     sdstring.normalize = ctx: repr: {
       string = tagValue "sdstring" [ repr ];
       set = tagValue "sdstring" [ (normalizeNixExpr ctx repr) ];
@@ -267,6 +366,14 @@ let
       ) repr;
     in "\"" + rendered + "\"";
 
+    dsstring.type = types.oneOf [
+      types.str
+      nixExprType
+      (types.listOf (types.oneOf [
+        types.str
+        nixExprType
+      ]))
+    ];
     dsstring.normalize = ctx: repr: {
       string = tagValue "dsstring" [ repr ];
       set = tagValue "dsstring" [ (normalizeNixExpr ctx repr) ];
@@ -344,31 +451,66 @@ let
       else
         "''" + fixed + "''";
 
+    list.type = types.listOf nixExprType;
     list.normalize = ctx: tagResult "list" (map (normalizeNixExpr ctx));
     list.render    = ctx: list: "[" + wrapNonEmpty "\n" (indentString "  " (concatStringsSep "\n" (map (renderNixExpr (ctx // { outerPrec = prec.app; chain = false; })) list))) "\n" + "]";
 
-    # FIXME add support for antiquotes in LHS of definitions
+    set.type = nixEqsType;
     set.normalize = ctx: tagResult "set" (normalizeNixEqs ctx);
     set.render    = ctx: eqsArgs: "{" + wrapNonEmpty "\n" (indentString "  " (renderNixEqs ctx eqsArgs)) "\n" + "}";
 
+    recset.type = nixEqsType;
     recset.normalize = ctx: tagResult "recset" (normalizeNixEqs ctx);
     recset.render    = ctx: eqsArgs: "rec {" + wrapNonEmpty "\n" (indentString "  " (renderNixEqs ctx eqsArgs)) "\n" + "}";
 
+    sel.type = addPostMerge (recordType {
+      from.type = nixExprType;
+      attr.type = types.nullOr (types.oneOf [
+        types.str
+        nixExprType
+        (types.listOf (types.oneOf [
+          types.str
+          nixExprType
+        ]))
+      ]);
+      attr.default = null;
+      attrpath.type = types.nullOr (types.listOf (types.oneOf [
+        types.str
+        nixExprType
+        (types.listOf (types.oneOf [
+          types.str
+          nixExprType
+        ]))
+      ]));
+      attrpath.default = null;
+      default.type = types.nullOr nixExprType;
+      default.default = null;
+    }) (loc: sel:
+      if ! sel ? attr && ! sel ? attrpath then
+        throw "You must set one of 'attr' or 'attrpath'"
+      else if sel ? attr && sel ? attrpath then
+        throw "You cannot set both 'attr' and 'attrpath'"
+      else if sel ? attrpath && sel ? default then
+        throw "You cannot set 'default' when using 'attrpath'"
+      else
+        sel
+    );
     sel.normalize = ctx: { from, attr ? null, attrpath ? null, default ? null }: let
       normalizeAttr = repr: {
         string = [ repr ];
         set = [ (normalizeNixExpr ctx repr) ];
         list = (concatStringsMapOthers (normalizeNixExpr ctx) repr);
-      }.${typeOf repr} or (throw "unknown attr representation type: ${typeOf repr}");
+      }.${typeOf repr};
     in
-      if isNull attr == isNull attrpath then
-        throw "must set exactly one of 'attr' and 'attrpath'"
-      else if isNull attrpath then
-        tagValue "sel" ({ from = normalizeNixExpr ctx from; attr = normalizeAttr attr; } // optionalAttrs (!isNull default) { default = normalizeNixExpr ctx default; } )
-      else if isNull default then
-        pipe (normalizeNixExpr ctx from) (map (n: f: tagValue "sel" { from = f; attr = normalizeAttr n; }) attrpath)
+      if ! isNull attr then
+        tagValue "sel" ({
+          from = normalizeNixExpr ctx from;
+          attr = normalizeAttr attr;
+        } // optionalAttrs (! isNull default) {
+          default = normalizeNixExpr ctx default;
+        })
       else
-        throw "cannot set 'default' when using 'attrpath'";
+        pipe (normalizeNixExpr ctx from) (map (n: f: tagValue "sel" { from = f; attr = normalizeAttr n; }) attrpath);
     sel.render = ctx: { from, attr, default ? null }: let
       renderAttr = repr:
         if length repr == 1 then let
@@ -393,12 +535,26 @@ let
         + optionalString (isAttrs default) (" or " + renderNixExpr (ctx // { outerPrec = prec.sel; chain = false; }) default)
       );
 
+    app.type = addPostMerge (recordType {
+      func.type = nixExprType;
+      arg.type = types.oneOf [
+        (types.listOf types.str)
+        nixExprType
+      ];
+      args.type = types.attrsOf nixExprType;
+      args.default = {};
+    }) (loc: app:
+      if isList app.arg && sort (x: y: x < y) (unique app.arg) != attrNames app.args then
+        throw "when 'arg' is a list, it should have the same elements as 'args' has keys"
+      else if isAttrs app.arg && app ? args then
+        throw "'args' should only be set if 'arg' is a list of strings"
+      else
+        app
+    );
     app.normalize = ctx: { func, arg, args ? {} }:
       if isList arg then
-        assert sort (x: y: x < y) (unique arg) == attrNames args;
         pipe (normalizeNixExpr ctx func) (map (n: f: { app.func = f; app.arg = normalizeNixExpr ctx args.${n}; }) arg)
       else
-        assert args == {};
         {
           app.func = normalizeNixExpr ctx func;
           app.arg = normalizeNixExpr ctx arg;
@@ -407,6 +563,11 @@ let
       renderNixExpr (ctx // { outerPrec = prec.app; chain = true; }) func + " " + renderNixExpr (ctx // { outerPrec = prec.app; chain = false; }) arg
     );
 
+    branch.type = recordType {
+      cond.type = nixExprType;
+      truecase.type = nixExprType;
+      falsecase.type = nixExprType;
+    };
     branch.normalize = ctx: tagResult "branch" (mapAttrs (n: normalizeNixExpr ctx));
     branch.render    = ctx: { cond, truecase, falsecase }: maybeParen ctx prec.outer (
       removeSuffix "\n" ''
@@ -419,6 +580,9 @@ let
       ''
     );
 
+    letin.type = nixEqsType.typeMerge (recordType {
+      body.type = nixExprType;
+    }).functor;
     letin.normalize = ctx: tagResult "letin" ({ defs ? {}, inh ? {}, saved ? [], body }: normalizeNixEqs ctx { inherit defs inh saved; } // { body = normalizeNixExpr ctx body; });
     letin.render    = ctx: { defs ? {}, inh ? {}, body }: maybeParen ctx prec.outer (
       removeSuffix "\n" ''
@@ -430,25 +594,47 @@ let
     );
 
     # FIXME add support for attrset arg deconstruction
+    lambda.type = recordType {
+      var.type = validNixVarNameType;
+      body.type = nixExprType;
+    };
     lambda.normalize = ctx: tagResult "lambda" ({ var, body }: { inherit var; body = normalizeNixExpr ctx body; });
     lambda.render    = ctx: { var, body }: maybeParen ctx prec.outer (
       var + ": " + renderNixExpr (ctx // { outerPrec = prec.outer; chain = true; }) body
     );
 
+    withexp.type = recordType {
+      from.type = nixExprType;
+      body.type = nixExprType;
+    };
     withexp.normalize = ctx: tagResult "withexp" ({ from, body }@args: mapAttrs (n: normalizeNixExpr ctx) args);
     withexp.render    = ctx: { from, body }: maybeParen ctx prec.outer (
       "with " + renderNixExpr (ctx // { outerPrec = prec.outer; chain = true; }) from + "; " + renderNixExpr (ctx // { outerPrec = prec.outer; chain = true; }) body
     );
 
+    assertion.type = recordType {
+      cond.type = nixExprType;
+      body.type = nixExprType;
+    };
     assertion.normalize = ctx: tagResult "assertion" ({ cond, body }@args: mapAttrs (n: normalizeNixExpr ctx) args);
     assertion.render    = ctx: { cond, body }: maybeParen ctx prec.outer (
       "assert " + renderNixExpr (ctx // { outerPrec = prec.outer; chain = true; }) cond + "; " + renderNixExpr (ctx // { outerPrec = prec.outer; chain = true; }) body
     );
   };
 
-  normalizeNixExpr = ctx: switchAttrTag tagValue (mapAttrs (n: v: v.normalize ctx) (filterAttrs (n: v: v ? normalize) impl));
-  renderNixExpr = ctx: switchAttrTag (name: throw "renderNixExpr: unknown tag ${name}") (mapAttrs (n: v: v.render ctx) (filterAttrs (n: v: v ? render) impl));
+  nixExprType = types.attrTag (mapAttrs (n: v: mkOption { inherit (v) type; }) (filterAttrs (n: v: v ? type) nodes)) // { description = "nix expression syntax tree"; };
+  normalizeNixExpr = ctx: switchAttrTag tagValue (mapAttrs (n: v: v.normalize ctx) (filterAttrs (n: v: v ? normalize) nodes));
+  renderNixExpr = ctx: switchAttrTag (name: throw "renderNixExpr: unknown tag ${name}") (mapAttrs (n: v: v.render ctx) (filterAttrs (n: v: v ? render) nodes));
 
+  # FIXME add support for antiquotes in LHS of definitions
+  nixEqsType = recordType {
+    defs.type = types.attrsOf nixExprType;
+    defs.default = {};
+    inh.type = types.attrsOf (types.nullOr nixExprType);
+    inh.default = {};
+    saved.type = types.listOf types.str;
+    saved.default = [];
+  };
   normalizeNixEqs = { eqs ? {}, ... }@ctx: { defs ? {}, inh ? {}, saved ? [] }: zipAttrsWith (n: foldl' unionOfDisjoint {}) (
     map ({defs, inh, ...}: {
       defs = mapAttrs (n: normalizeNixExpr ctx) defs;
@@ -469,8 +655,26 @@ let
     inhlines = mapAttrsToList (n: v: "inherit " + wrapNonEmpty "(" n ") " + concatMapStringsSep " " escapeNixIdentifier v + ";") collatedInh;
   in concatStringsSep "\n" (inhlines ++ deflines);
 
-  mkNixExpr = ctx: expr: renderNixExpr ctx (normalizeNixExpr ctx expr);
-  mkNixEqs  = ctx:  eqs: renderNixEqs  ctx (normalizeNixEqs  ctx  eqs);
+  mkNixExpr = ctx: expr: let
+    checkedExpr =
+      if ctx.alreadyTypeChecked or false then
+        expr
+      else if ! nixExprType.check expr then
+        throw "value passed to mkNixExpr is not of type `${nixExprType.description}`"
+      else
+        nixExprType.merge [ "<mkNixExpr argument>" ] [ { file = "<mkNixExpr argument>"; value = expr; } ];
+  in
+    renderNixExpr ctx (normalizeNixExpr ctx checkedExpr);
+  mkNixEqs = ctx: eqs: let
+    checkedEqs =
+      if ctx.alreadyTypeChecked or false then
+        eqs
+      else if ! nixEqsType.check eqs then
+        throw "value passed to mkNixEqs is not of type `${nixEqsType.description}`"
+      else
+        nixEqsType.merge [ "<mkNixEqs argument>" ] [ { file = "<mkNixEqs argument>"; value = eqs; } ];
+  in
+    renderNixEqs ctx (normalizeNixEqs ctx checkedEqs);
 
 in
 
@@ -480,6 +684,10 @@ in
       inherit
         mkNixExpr
         mkNixEqs
+        pathType
+        nixLiteralType
+        nixExprType
+        nixEqsType
       ;
     };
   };
