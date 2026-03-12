@@ -9,7 +9,7 @@ let
     types
   ;
   inherit (my.lib)
-    listImportablePathsExcept
+    listFlakePartsModules
   ;
 in
 
@@ -27,11 +27,6 @@ in
     };
 
     my.flake.root = ./.;
-    my.flake.modules = listImportablePathsExcept ./. [
-      "fpentry"
-      "flake"
-      "default"
-      "shell"
-    ];
+    my.flake.modules = listFlakePartsModules ./.;
   };
 }

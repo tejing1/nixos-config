@@ -16,7 +16,7 @@ let
     raw
   ;
   inherit (my.lib)
-    listImportablePathsExcept
+    listFlakePartsModules
   ;
 in
 
@@ -28,7 +28,7 @@ in
   };
 
   config = {
-    my.flake.modules = listImportablePathsExcept ./. [ "default" ];
+    my.flake.modules = listFlakePartsModules ./.;
 
     flake.overlays = my.overlays;
   };

@@ -20,7 +20,7 @@ let
     unspecified
   ;
   inherit (my.lib)
-    listImportablePathsExcept
+    listFlakePartsModules
   ;
 in
 
@@ -61,7 +61,7 @@ in
   };
 
   config = {
-    my.flake.modules = listImportablePathsExcept ./. [ "default" ];
+    my.flake.modules = listFlakePartsModules ./.;
 
     perSystem = { my, ... }: {
       libFor = my.using.stable-uncustomized.lib;

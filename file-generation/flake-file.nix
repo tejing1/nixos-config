@@ -8,17 +8,25 @@
 let
   inherit (builtins)
     elem
+    filter
     foldl'
+    groupBy
     isPath
     length
+    mapAttrs
+    pathExists
+    readDir
     sort
   ;
   inherit (lib)
+    attrsToList
     concatMapStringsSep
+    hasSuffix
     mkOption
     optionalAttrs
     path
     removePrefix
+    subtractLists
     types
     unique
     warnIf
@@ -132,5 +140,27 @@ in
         };
       };
     };
+
+    my.lib.listFlakePartsModules = dir: let
+      byType = mapAttrs (n: map (x: x.name)) (groupBy (x: x.value) (attrsToList (readDir dir)));
+      filteredRegulars =
+        map (n: dir + "/${n}") (
+          subtractLists [
+            "fpentry.nix"
+            "flake.nix"
+            "default.nix"
+            "shell.nix"
+            "overlay.nix"
+            "package.nix"
+          ] (
+            filter (hasSuffix ".nix") (byType.regular or [])
+          )
+        );
+      filteredDirectories =
+        filter pathExists (
+          map (n: dir + "/${n}/fpentry.nix") (byType.directory or [])
+        );
+    in
+      filteredRegulars ++ filteredDirectories;
   };
 }

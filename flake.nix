@@ -35,20 +35,16 @@
     inherit inputs;
   } {
     imports = builtins.filter builtins.pathExists [
-      ./file-generation
       ./fpentry.nix
-      ./homeConfigurations
-      ./homeModules
-      ./lib
       ./my.nix
-      ./nixosConfigurations
-      ./nixosModules
       ./nixpkgs.nix
-      ./overlays
-      ./pkgs
       file-generation/flake-file.nix
+      file-generation/fpentry.nix
       file-generation/nix-expr.nix
+      homeConfigurations/fpentry.nix
+      homeModules/fpentry.nix
       lib/flakeClosureRef.nix
+      lib/fpentry.nix
       lib/getImportable.nix
       lib/getImportableExcept.nix
       lib/importAll.nix
@@ -64,12 +60,16 @@
       lib/mkFlake.nix
       lib/mkShellScript.nix
       lib/readSecret.nix
-      lib/repoLockedTestResult
-      overlays/gh-urxvt-fix-termenv
-      overlays/steam-fix-screensaver
-      pkgs/hred
-      pkgs/moonlander-firmware
-      pkgs/starsector
+      lib/repoLockedTestResult/fpentry.nix
+      nixosConfigurations/fpentry.nix
+      nixosModules/fpentry.nix
+      overlays/fpentry.nix
+      overlays/gh-urxvt-fix-termenv/fpentry.nix
+      overlays/steam-fix-screensaver/fpentry.nix
+      pkgs/fpentry.nix
+      pkgs/hred/fpentry.nix
+      pkgs/moonlander-firmware/fpentry.nix
+      pkgs/starsector/fpentry.nix
       pkgs/vieb.nix
     ];
   };

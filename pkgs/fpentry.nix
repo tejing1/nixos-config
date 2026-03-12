@@ -24,7 +24,7 @@ let
     lazyAttrsOf
   ;
   inherit (my.lib)
-    listImportablePathsExcept
+    listFlakePartsModules
   ;
 in
 
@@ -57,7 +57,7 @@ in
   };
 
   config = {
-    my.flake.modules = listImportablePathsExcept ./. [ "default" ];
+    my.flake.modules = listFlakePartsModules ./.;
 
     systems = [
       "x86_64-linux"

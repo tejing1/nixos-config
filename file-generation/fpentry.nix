@@ -39,7 +39,7 @@ let
     str
   ;
   inherit (my.lib)
-    listImportablePathsExcept
+    listFlakePartsModules
     mkNixExpr
     nixExprType
   ;
@@ -134,7 +134,7 @@ in
   };
 
   config = {
-    my.flake.modules = listImportablePathsExcept ./. [ "default" ];
+    my.flake.modules = listFlakePartsModules ./.;
 
     my.flake.inputs = {
       flake-compat.url = "github:NixOS/flake-compat";
