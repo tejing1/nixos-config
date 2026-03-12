@@ -2,6 +2,7 @@
   inputs,
   lib,
   my,
+  options,
   ...
 }:
 
@@ -10,6 +11,7 @@ let
     elem
     filter
     foldl'
+    genericClosure
     groupBy
     isPath
     length
@@ -22,6 +24,7 @@ let
     attrsToList
     concatMapStringsSep
     hasSuffix
+    listToAttrs
     mkOption
     optionalAttrs
     path
@@ -72,9 +75,17 @@ in
             else
               x' < y';
           inherit (separateRepeats (sort lessThan modules)) uniques repeats;
+          importGraph = listToAttrs (map ({file, value}: { name = file; value = map toString value; }) options.my.flake.modules.definitionsWithLocations);
+          rootedList = map (x: my.flake.root + removePrefix (toString my.flake.root) x.key) (genericClosure {
+            startSet = [ { key = toString (my.flake.root + "/fpentry.nix"); } ];
+            operator = item: map (key: { inherit key; }) (importGraph.${item.key} or []);
+          });
+          unrootedList = lib.subtractLists rootedList uniques;
         in
-          warnIf (length repeats > 0) "Same path added to my.flake.modules more than once: ${concatMapStringsSep " " (path.removePrefix my.flake.root) repeats}"
-            uniques;
+          warnIf (length repeats > 0) "Same path(s) added to my.flake.modules more than once: ${concatMapStringsSep " " (path.removePrefix my.flake.root) repeats}" (
+            warnIf (length unrootedList > 0) "Some path(s) in my.flake.modules are not in the closure of the root module: ${concatMapStringsSep " " (path.removePrefix my.flake.root) unrootedList}"
+              uniques
+          );
       };
       specialArgs = mkOption {
         type = types.attrsOf nixExprType;
@@ -84,8 +95,6 @@ in
   };
 
   config = {
-    my.flake.modules = [ (my.flake.root + "/fpentry.nix") ];
-
     my.flake.inputs = {
       flake-parts.url = "github:hercules-ci/flake-parts";
       flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
@@ -134,7 +143,7 @@ in
                 sel.from.var = "builtins";
                 sel.attr = "pathExists";
               };
-              app.args.items.literal = my.flake.modules;
+              app.args.items.literal = [ (my.flake.root + "/fpentry.nix") ] ++ my.flake.modules;
             };
           };
         };
