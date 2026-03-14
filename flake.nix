@@ -62,6 +62,8 @@
       lib/readSecret.nix
       lib/repoLockedTestResult/fpentry.nix
       nixosConfigurations/fpentry.nix
+      nixosConfigurations/tejingdesk/fpentry.nix
+      nixosConfigurations/tejingphone/fpentry.nix
       nixosModules/fpentry.nix
       overlays/fpentry.nix
       overlays/gh-urxvt-fix-termenv/fpentry.nix
