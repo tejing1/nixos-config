@@ -12,6 +12,11 @@ let
 in
 
 {
+  my.flake.inputs = {
+    mobile-nixos.url = "github:tejing1/mobile-nixos/tejingphone";
+    mobile-nixos.flake = false;
+  };
+
   flake.nixosConfigurations.tejingphone = nixpkgs.lib.nixosSystem {
     system = "aarch64-linux"; # mobile-nixos still needs this set. It can't work from nixpkgs.hostPlatorm
     specialArgs = {

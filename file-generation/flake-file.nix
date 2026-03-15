@@ -107,9 +107,6 @@ in
       home-manager-unstable.url = "github:nix-community/home-manager/master";
       home-manager-unstable.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
-      mobile-nixos.url = "github:tejing1/mobile-nixos/tejingphone";
-      mobile-nixos.flake = false;
-
       flake-programdb.url = "github:tejing1/flake-programdb";
     };
 
