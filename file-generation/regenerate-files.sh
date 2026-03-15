@@ -142,6 +142,24 @@ cachecolors() {
   reset="$(tput -T "$term" sgr0)"
 }
 
+setup_git_env() {
+  local -A vars=()
+
+  # Retain git environment
+  vars[GIT_DIR]="$(git rev-parse --path-format=absolute --git-dir)"
+  vars[GIT_WORK_TREE]="$(git rev-parse --path-format=absolute --show-toplevel)"
+
+  # When called from a pre-commit hook, this variable is set to a relative path
+  [ -v GIT_INDEX_FILE ] && [[ "$GIT_INDEX_FILE" != /* ]] && vars[GIT_INDEX_FILE]="$PWD/$GIT_INDEX_FILE"
+
+  # Avoid globbing in git commands since we'll be working with arbitrary data
+  vars[GIT_LITERAL_PATHSPECS]=1
+
+  for var in "${!vars[@]}"; do
+    export "$var"="${vars["$var"]}"
+  done
+}
+
 # hash_path <target> <path>
 # Determines a git mode and object id for $path inside $target
 # Also ensures the object id actually exists in the repo
@@ -779,14 +797,8 @@ find_fixed_point() {
 
 parseopts "$@"
 cachecolors
+setup_git_env
 
-# Retain git environment
-export       GIT_DIR="$(git rev-parse --path-format=absolute --git-dir)"
-[ -v GIT_INDEX_FILE ] && [[ "$GIT_INDEX_FILE" != /* ]] && export GIT_INDEX_FILE="$PWD/$GIT_INDEX_FILE"
-export GIT_WORK_TREE="$(git rev-parse --path-format=absolute --show-toplevel)"
-
-# Avoid globbing in git commands since we'll be working with arbitrary data
-export GIT_LITERAL_PATHSPECS=1
 
 # Make a tmpdir and set a hook to automatically clean up after ourselves
 unset tmpdir
