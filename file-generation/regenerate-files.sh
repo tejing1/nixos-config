@@ -89,10 +89,10 @@ parseopts() {
       -h|--help)
         local -i maxshort=0 maxlong=0
         for n in $(seq 0 3 $(( ${#optionshelp[@]} - 1 )));do
-          maxshort=$(($maxshort>${#optionshelp[n]}?maxshort:${#optionshelp[n]}))
+          maxshort=$((maxshort>${#optionshelp[n]}?maxshort:${#optionshelp[n]}))
         done
         for n in $(seq 1 3 $(( ${#optionshelp[@]} - 1 )));do
-          maxlong=$(($maxlong>${#optionshelp[n]}?maxlong:${#optionshelp[n]}))
+          maxlong=$((maxlong>${#optionshelp[n]}?maxlong:${#optionshelp[n]}))
         done
 
         echo Usage: "$progname" '[options]'
@@ -240,55 +240,55 @@ hash_path() {
 }
 
 open() {
-  local target="$1" fd prevpath moderec obidrec status modeact obidact path part lpath rpath fd2 link
+  local target="$1" fd prevpath moderec obidrec status modeact obidact path part lpath rpath
   [[ "$target" == @(eval|result|worktree|index) ]] || die "Bad target argument to 'open': $target"
 
-  [ ! -e $target.manifest ] || die "$target does not seem to have been properly closed"
-  [ ! -e $target.manifest.changed  ] || die "$target does not seem to have been properly closed"
-  [ ! -e $target.changed  ] || die "$target does not seem to have been properly closed"
+  [ ! -e "$target".manifest ] || die "$target does not seem to have been properly closed"
+  [ ! -e "$target".manifest.changed  ] || die "$target does not seem to have been properly closed"
+  [ ! -e "$target".changed  ] || die "$target does not seem to have been properly closed"
 
   case "$target" in
     eval|result)
       if [ -e "$target/.generated-files-manifest" ]; then
-        cat -- "$target/.generated-files-manifest" >$target.manifest.tmp
+        cat -- "$target/.generated-files-manifest" >"$target".manifest.tmp
       else
-        : >$target.manifest.tmp
+        : >"$target".manifest.tmp
       fi
       ;;&
     worktree)
       if [ -e "$GIT_WORK_TREE/.generated-files-manifest" ]; then
-        cat -- "$GIT_WORK_TREE/.generated-files-manifest" >$target.manifest.tmp
+        cat -- "$GIT_WORK_TREE/.generated-files-manifest" >"$target".manifest.tmp
       else
-        : >$target.manifest.tmp
+        : >"$target".manifest.tmp
       fi
       ;;&
     index)
       if git cat-file -e :.generated-files-manifest &>/dev/null; then
-        git cat-file --filters :.generated-files-manifest >$target.manifest.tmp
+        git cat-file --filters :.generated-files-manifest >"$target".manifest.tmp
       else
-        : >$target.manifest.tmp
+        : >"$target".manifest.tmp
       fi
       ;;&
     result)
-      sed -E 's/^([^\x00\n]+)$/\x00\x00\1\//;t;Q1' -- $target.manifest.tmp > $target.manifest.tmp.part || die "malformed manifest in $target"
-      mv -f $target.manifest.tmp{.part,}
+      sed -E 's/^([^\x00\n]+)$/\x00\x00\1\//;t;Q1' -- "$target".manifest.tmp > "$target".manifest.tmp.part || die "malformed manifest in $target"
+      mv -f "$target".manifest.tmp{.part,}
       ;;&
     eval|worktree|index)
-      sed -E 's/^([0-7]+) ([0-9a-f]+) ([^\x00\n]+)$/\1\x00\2\x00\3\//;t;Q1' -- $target.manifest.tmp > $target.manifest.tmp.part || die "malformed manifest in $target"
-      mv -f $target.manifest.tmp{.part,}
+      sed -E 's/^([0-7]+) ([0-9a-f]+) ([^\x00\n]+)$/\1\x00\2\x00\3\//;t;Q1' -- "$target".manifest.tmp > "$target".manifest.tmp.part || die "malformed manifest in $target"
+      mv -f "$target".manifest.tmp{.part,}
       ;;&
   esac
-  if ! LC_ALL=C sort -t'\0' -k3 --check=quiet $target.manifest.tmp; then
+  if ! LC_ALL=C sort -t'\0' -k3 --check=quiet "$target".manifest.tmp; then
     [ "$target" == result ] && die "generated manifest in result was not properly sorted"
     printf "Sorting manifest in %s\n" "$target"
-    LC_ALL=C sort -t'\0' -k3 $target.manifest.tmp > $target.manifest.tmp.part
-    mv -f $target.manifest.tmp{.part,}
-    touch $target.manifest.changed
+    LC_ALL=C sort -t'\0' -k3 "$target".manifest.tmp > "$target".manifest.tmp.part
+    mv -f "$target".manifest.tmp{.part,}
+    touch "$target".manifest.changed
   fi
-  LC_ALL=C sort -t'\0' -k3 -u --check=quiet $target.manifest.tmp || die "manifest has repeated paths in $target"
+  LC_ALL=C sort -t'\0' -k3 -u --check=quiet "$target".manifest.tmp || die "manifest has repeated paths in $target"
 
   prevpath=""
-  : {fd}< <(tr '\0' $'\x1f' <$target.manifest.tmp)
+  : {fd}< <(tr '\0' $'\x1f' <"$target".manifest.tmp)
   while IFS=$'\x1f' read -ru $fd moderec obidrec path; do
     [ "$target" == result ] || [ -n "$moderec" ] || die "missing mode in $target/.generated-files-manifest"
     [ "$target" == result ] || [ -n "$obidrec" ] || die "missing object id in $target/.generated-files-manifest"
@@ -351,33 +351,33 @@ open() {
         status=dirty
       fi
     fi
-    printf "%s\x00%s\x00%s\x00%s\x00%s\x00%s\n" "$moderec" "$obidrec" "$status" "$modeact" "$obidact" "$path" >>$target.manifest.tmp.part
+    printf "%s\x00%s\x00%s\x00%s\x00%s\x00%s\n" "$moderec" "$obidrec" "$status" "$modeact" "$obidact" "$path" >>"$target".manifest.tmp.part
   done
   : {fd}<&-
-  mv -f $target.manifest.tmp{.part,}
-  mv -f $target.manifest{.tmp,}
+  mv -f "$target".manifest.tmp{.part,}
+  mv -f "$target".manifest{.tmp,}
 }
 
 flush() {
   local target="$1"
   [[ "$target" == @(eval|result|worktree|index) ]] || die "Bad target argument to 'flush': $target"
 
-  if [ -e $target.manifest ] && [ -e $target.manifest.changed ]; then
-    cut -d '' -f 1,2,6 < $target.manifest > $target.manifest.tmp.part
-    mv -f $target.manifest.tmp{.part,}
-    sed -i 's/\/$//' $target.manifest.tmp
-    tr '\0' ' ' < $target.manifest.tmp > $target.manifest.tmp.part
-    mv -f $target.manifest.tmp{.part,}
-    if [ -s $target.manifest.tmp ]; then
+  if [ -e "$target".manifest ] && [ -e "$target".manifest.changed ]; then
+    cut -d '' -f 1,2,6 < "$target".manifest > "$target".manifest.tmp.part
+    mv -f "$target".manifest.tmp{.part,}
+    sed -i 's/\/$//' "$target".manifest.tmp
+    tr '\0' ' ' < "$target".manifest.tmp > "$target".manifest.tmp.part
+    mv -f "$target".manifest.tmp{.part,}
+    if [ -s "$target".manifest.tmp ]; then
       case "$target" in
         eval)
-          cat $target.manifest.tmp > eval/.generated-files-manifest
+          cat "$target".manifest.tmp > eval/.generated-files-manifest
           ;;
         worktree)
-          cat $target.manifest.tmp > "$GIT_WORK_TREE/.generated-files-manifest"
+          cat "$target".manifest.tmp > "$GIT_WORK_TREE/.generated-files-manifest"
           ;;
         index)
-          hash="$(git hash-object -w --path=".generated-files-manifest" $target.manifest.tmp)"
+          hash="$(git hash-object -w --path=".generated-files-manifest" "$target".manifest.tmp)"
           printf '%s %s\t%s\n' "100644" "$hash" ".generated-files-manifest" | git update-index --index-info
           ;;
         result)
@@ -400,8 +400,8 @@ flush() {
           ;;
       esac
     fi
-    rm -f $target.manifest.{tmp,changed}
-    touch $target.changed
+    rm -f "$target".manifest.{tmp,changed}
+    touch "$target".changed
   fi
 }
 
@@ -411,7 +411,7 @@ close() {
 
   flush "$target"
 
-  rm -f $target.manifest
+  rm -f "$target".manifest
 }
 
 update_from() {
@@ -422,7 +422,7 @@ update_from() {
   [[ "$target" == @(eval|index|worktree) ]] || die "Bad target argument to 'update': $target"
   shift 2
 
-  LC_ALL=C join -t'\0' -j6 -e '' -a1 -a2 -o '1.1,1.2,1.3,1.4,1.5,2.1,2.2,2.3,2.4,2.5,0' $target.manifest $source.manifest > manifest.combined
+  LC_ALL=C join -t'\0' -j6 -e '' -a1 -a2 -o '1.1,1.2,1.3,1.4,1.5,2.1,2.2,2.3,2.4,2.5,0' "$target".manifest "$source".manifest > manifest.combined
 
   : {fd}< <(tr '\0' $'\x1f' <manifest.combined)
   prevpath=""
@@ -484,7 +484,7 @@ update_from() {
       fi
 
       # Set failure flag for later and skip to next path
-      touch $target.failed
+      touch "$target".failed
       continue
     fi
 
@@ -499,7 +499,7 @@ update_from() {
       fi
 
       # Set failure flag for later and skip to next path
-      touch $target.failed
+      touch "$target".failed
       continue
     fi
 
@@ -513,9 +513,9 @@ update_from() {
       if [ -n "$oldobidrec" ]; then
         LC_ALL=C join -t'\0' -j6 -v2 -o '2.1,2.2,2.3,2.4,2.5,0' <(
           printf "%s\x00%s\x00%s\x00%s\x00%s\x00%s\n" "$oldmoderec" "$oldobidrec" "$oldstatus" "$oldmodeact" "$oldobidact" "$path"
-        ) $target.manifest > $target.manifest.part
-        mv -f $target.manifest{.part,}
-        touch $target.manifest.changed
+        ) "$target".manifest > "$target".manifest.part
+        mv -f "$target".manifest{.part,}
+        touch "$target".manifest.changed
 
         if [ "$oldmoderec" != "$newmoderec" ] || [ "$oldobidrec" != "$newobidrec" ]; then
           actions+=r
@@ -528,9 +528,9 @@ update_from() {
       if [ -n "$newobidrec" ]; then
         LC_ALL=C sort -t'\0' -k6 -u <(
           printf "%s\x00%s\x00%s\x00%s\x00%s\x00%s\n" "$newmoderec" "$newobidrec" "$newstatus" "$newmodeact" "$newobidact" "$path"
-        ) $target.manifest > $target.manifest.part
-        mv -f $target.manifest{.part,}
-        touch $target.manifest.changed
+        ) "$target".manifest > "$target".manifest.part
+        mv -f "$target".manifest{.part,}
+        touch "$target".manifest.changed
 
         if [ "$oldmoderec" != "$newmoderec" ] || [ "$oldobidrec" != "$newobidrec" ]; then
           actions+=c
@@ -552,7 +552,7 @@ update_from() {
               rm -rf "eval/${path%/}"
               ;;
             worktree)
-              rm -rf -- "$GIT_WORK_TREE/${path%/}"
+              rm -rf -- "${GIT_WORK_TREE:?GIT_WORK_TREE was somehow unset!}/${path%/}"
               ;;
             index)
               git rm -qr --cached -- "${path%/}"
@@ -561,7 +561,7 @@ update_from() {
               die "cannot modify result"
               ;;
           esac
-          touch $target.changed
+          touch "$target".changed
 
           actions+=r
         else
@@ -593,7 +593,7 @@ update_from() {
             die "cannot modify result"
             ;;
         esac
-        touch $target.changed
+        touch "$target".changed
 
         actions+=c
       else
@@ -774,7 +774,7 @@ find_fixed_point() {
   if [ -e eval.failed ]; then
     echo "Aborting due to earlier failure."
     rm eval.failed
-    touch $target.failed
+    touch "$target".failed
     exit 1
   fi
 
@@ -784,12 +784,12 @@ find_fixed_point() {
   else
     # We set 'changed' at least once, so there's something to do
     echo "Fixed point of $target found. Writing back..."
-    open $target
-    update_from result $target
-    close $target
+    open "$target"
+    update_from result "$target"
+    close "$target"
   fi
 
-  if   [ -e $target.failed ]; then
+  if   [ -e "$target".failed ]; then
     echo "Writeback not fully successful."
     exit 1
   fi
@@ -802,6 +802,7 @@ setup_git_env
 
 # Make a tmpdir and set a hook to automatically clean up after ourselves
 unset tmpdir
+# shellcheck disable=2329 # False positive because shellcheck doesn't follow traps.
 cleanup() {
   if [ -v tmpdir ] && [ -d "$tmpdir" ]; then
     cd -- "$tmpdir"
@@ -816,13 +817,13 @@ cd -- "$tmpdir"
 
 
 for target in index worktree; do
-  if [ -n "${opts[$target]}" ]; then
-    (find_fixed_point $target) || touch $target.failed
+  if [ -n "${opts["$target"]}" ]; then
+    (find_fixed_point "$target") || touch "$target".failed
   fi
 done
 
 for target in index worktree; do
-  if [ -e $target.failed ]; then
+  if [ -e "$target".failed ]; then
     echo "${fg[red]}$target failed to reach fixed point!$reset"
   fi
 done

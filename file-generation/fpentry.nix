@@ -142,7 +142,22 @@ in
     };
 
     perSystem = { pkgs, my, ... }: let
-      regenPackage = pkgs.writeShellScriptBin "regen" (readFile ./regenerate-files.sh);
+      regenPackage = pkgs.writeShellApplication {
+        name = "regen";
+        text = readFile ./regenerate-files.sh;
+
+        runtimeInputs = [
+          pkgs.coreutils
+          pkgs.util-linux # getopt
+          pkgs.ncurses    # tput
+          pkgs.git        # git
+          pkgs.gnused     # sed
+          pkgs.findutils  # xargs
+        ];
+
+        # Override the default, since I set these in the code directly.
+        bashOptions = [];
+      };
 
       preCommitHook = pkgs.writeShellScript "pre-commit" ''
         exec ${regenPackage}/bin/regen -i
