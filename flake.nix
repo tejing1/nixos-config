@@ -1,5 +1,5 @@
 # This file is generated. (Yes, really.)
-# See file-generation/flake-file.nix for its definition.
+# See dev/flake-file.nix for its definition.
 
 {
   inputs = {
@@ -38,9 +38,11 @@
       ./fpentry.nix
       ./my.nix
       ./nixpkgs.nix
-      file-generation/flake-file.nix
-      file-generation/fpentry.nix
-      file-generation/nix-expr.nix
+      dev/dev-shell.nix
+      dev/expr-generation.nix
+      dev/file-generation.nix
+      dev/flake-file.nix
+      dev/fpentry.nix
       homeConfigurations/fpentry.nix
       homeModules/fpentry.nix
       lib/flakeClosureRef.nix

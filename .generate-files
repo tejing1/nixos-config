@@ -1,5 +1,8 @@
 #! /usr/bin/env bash
 
-set -u
+if [ "$#" != 1 ]; then
+  echo "Usage: $0 <where_to_output>"
+  exit 1
+fi
 
-exec nix build -f shell.nix default.generated-files -o "$1"
+exec nix --extra-experimental-features nix-command build -f shell.nix default.generated-files -o "$1"

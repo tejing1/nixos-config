@@ -1,5 +1,6 @@
 {
   config,
+  flake-parts-lib,
   lib,
   my,
   ...
@@ -14,6 +15,9 @@ let
     match
     readFile
     seq
+  ;
+  inherit (flake-parts-lib)
+    mkPerSystemOption
   ;
   inherit (lib)
     attrsToList
@@ -111,6 +115,7 @@ in
 
 {
   options = {
+
     my.flake.files = mkOption {
       type = attrsOf (attrTag {
         norm = mkOption { type = lines; };
@@ -131,18 +136,22 @@ in
       default = {};
       apply = checkedTree "my.flake.files";
     };
+
+    perSystem = mkPerSystemOption ({ system, ... }: {
+      options = {
+        my.flake.generated-files = mkOption {
+          type = types.package;
+          readOnly = true;
+          internal = true;
+        };
+      };
+    });
+
   };
 
   config = {
-    my.flake.modules = listFlakePartsModules ./.;
-
-    my.flake.inputs = {
-      flake-compat.url = "github:NixOS/flake-compat";
-      flake-compat.flake = false;
-    };
-
-    perSystem = { pkgs, my, ... }: let
-      regenPackage = pkgs.writeShellApplication {
+    perPkgs = { pkgs, my, ... }: {
+      my.pkgs.regenerate-files = pkgs.writeShellApplication {
         name = "regen";
         text = readFile ./regenerate-files.sh;
 
@@ -158,39 +167,15 @@ in
         # Override the default, since I set these in the code directly.
         bashOptions = [];
       };
+    };
 
-      preCommitHook = pkgs.writeShellScript "pre-commit" ''
-        exec ${regenPackage}/bin/regen -i
-      '';
-    in {
-      # FIXME probably rename this file. the dev shell shouldn't go in 'file-generation'
-      devShells.default = pkgs.mkShellNoCC {
-        packages = [ regenPackage ];
-        passthru.generated-files = mkfile { inherit pkgs; toplevel = my.flake.root; writeManifest = true; } { tree = my.flake.files; };
-        shellHook = pkgs.writeShellScript "install-pre-commit-hook" ''
-          set -eu
-
-          hookInstallLocation="$(git rev-parse --git-path hooks/pre-commit)"
-          if [ -L "$hookInstallLocation" ]; then
-            currentHookTarget="$(realpath "$hookInstallLocation")"
-            if [ "$currentHookTarget" == ${preCommitHook} ]; then
-              exit 0
-            else
-              echo -n "Updating pre-commit hook..."
-              rm -- "$hookInstallLocation"
-            fi
-          elif [ -e "$hookInstallLocation" ]; then
-            echo "Refusing to overwrite non-symlink pre-commit hook!"
-            exit 1
-          else
-            echo -n "Installing pre-commit hook..."
-          fi
-          if nix-store --realise ${preCommitHook} --add-root "$hookInstallLocation" >/dev/null; then
-            echo " Success."
-          else
-            echo " Failed!"
-          fi
-        '';
+    perSystem = { pkgs, ... }: {
+      my.flake.generated-files = mkfile {
+        inherit pkgs;
+        toplevel = my.flake.root;
+        writeManifest = true;
+      } {
+        tree = my.flake.files;
       };
     };
   };
