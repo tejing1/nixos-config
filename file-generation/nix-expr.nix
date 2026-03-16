@@ -144,7 +144,7 @@ let
       addPostMerge prelimType (loc: r:
         removeAttrs r (attrNames (
           filterAttrs (n: v:
-            fields.${n} ? default && v == fields.${n}.default
+            fields ? ${n} && fields.${n} ? default && v == fields.${n}.default
           ) r
         ))
       )
