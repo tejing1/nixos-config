@@ -535,6 +535,49 @@ let
         + optionalString (isAttrs default) (" or " + renderNixExpr (ctx // { outerPrec = prec.sel; chain = false; }) default)
       );
 
+    has.type = recordType {
+      expr.type = nixExprType;
+      attr.type = types.nullOr (types.oneOf [
+        types.str
+        nixExprType
+        (types.listOf (types.oneOf [
+          types.str
+          nixExprType
+        ]))
+      ]);
+    };
+    has.normalize = ctx: let
+      normalizeAttr = repr: {
+        string = [ repr ];
+        set = [ (normalizeNixExpr ctx repr) ];
+        list = (concatStringsMapOthers (normalizeNixExpr ctx) repr);
+      }.${typeOf repr};
+    in
+      tagResult "has" ({ expr, attr }: {
+        expr = normalizeNixExpr ctx expr;
+        attr = normalizeAttr attr;
+      });
+    has.render = ctx: { expr, attr }: let
+      renderAttr = repr:
+        if length repr == 1 then let
+          h = head repr;
+        in
+          if typeOf h == "string" then
+            if isList (match "[a-zA-Z_][a-zA-Z0-9_'-]*" h) then
+              h
+            else
+              renderNixExpr ctx { sdstring = repr; }
+          else
+            "\${" + renderNixExpr (ctx // { outerPrec = prec.outer; chain = true; }) h + "}"
+        else
+          renderNixExpr ctx { sdstring = repr; };
+    in
+      maybeParen ctx prec.has (
+        renderNixExpr (ctx // { outerPrec = prec.has; }) expr
+        + " ? "
+        + renderAttr attr
+      );
+
     app.type = addPostMerge (recordType {
       func.type = nixExprType;
       arg.type = types.oneOf [
