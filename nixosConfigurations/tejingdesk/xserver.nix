@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ lib, config, pkgs, my, ... }:
 
 {
   services.xserver.enable = true;
@@ -15,8 +15,8 @@
 
   # Enable experimental nvidia_drm framebuffer console
   hardware.nvidia.modesetting.enable = true;
-  boot.kernelParams = [ "nvidia-drm.fbdev=1" ];
-  boot.initrd.availableKernelModules = [ "nvidia" "nvidia_modeset" "nvidia_drm" "nvidia_uvm" ];
+  boot.kernelParams = lib.mkIf (! my.isBuildVm) [ "nvidia-drm.fbdev=1" ];
+  boot.initrd.availableKernelModules = lib.mkIf (! my.isBuildVm) [ "nvidia" "nvidia_modeset" "nvidia_drm" "nvidia_uvm" ];
 
   # 32-bit graphics libraries
   hardware.graphics.enable32Bit = true;
