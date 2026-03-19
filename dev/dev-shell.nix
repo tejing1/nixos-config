@@ -1,10 +1,15 @@
 {
+  inputs,
   my,
   ...
 }:
 
 {
   config = {
+    flake = {
+      inherit inputs;
+    };
+
     perSystem = { pkgs, my, ... }: {
       devShells.default = let
         preCommitHook = pkgs.writeShellScript "pre-commit" ''

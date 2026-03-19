@@ -21,11 +21,6 @@ in
   };
 
   config = {
-    flake = {
-      # Useful for debugging
-      inherit inputs;
-    };
-
     my.flake.root = ./.;
     my.flake.modules = listFlakePartsModules ./.;
   };
