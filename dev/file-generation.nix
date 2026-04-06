@@ -12,9 +12,11 @@ let
     concatMap
     isList
     length
+    mapAttrs
     match
     readFile
     seq
+    toFile
   ;
   inherit (flake-parts-lib)
     mkPerSystemOption
@@ -39,13 +41,16 @@ let
     addCheck
     attrTag
     attrsOf
+    lazyAttrsOf
     lines
     str
+    raw
   ;
   inherit (my.lib)
     listFlakePartsModules
     mkNixExpr
     nixExprType
+    nixEqsType
   ;
 
   getSingleton = list: if length list == 1 then head list else throw "List is not a singleton";
@@ -59,6 +64,8 @@ let
       name = baseNameOf filepath;
       executable = false;
       text = mkNixExpr {
+        exprs = my.flake.exprs;
+        eqs = my.flake.eqs;
         alreadyTypeChecked = true;
         inherit toplevel;
         targetfile = path.append toplevel filepath;
@@ -137,6 +144,26 @@ in
       apply = checkedTree "my.flake.files";
     };
 
+    my.flake.exprs = mkOption {
+      type = attrsOf nixExprType;
+      default = {};
+    };
+
+    my.flake.exprsRendered = mkOption {
+      type = lazyAttrsOf str;
+      readOnly = true;
+    };
+
+    my.flake.exprsEvaluated = mkOption {
+      type = lazyAttrsOf raw;
+      readOnly = true;
+    };
+
+    my.flake.eqs = mkOption {
+      type = attrsOf nixEqsType;
+      default = {};
+    };
+
     perSystem = mkPerSystemOption ({ system, ... }: {
       options = {
         my.flake.generated-files = mkOption {
@@ -150,6 +177,18 @@ in
   };
 
   config = {
+    my.flake.exprsRendered = mapAttrs (n: v:
+      mkNixExpr {
+        exprs = my.flake.exprs;
+        eqs = my.flake.eqs;
+        alreadyTypeChecked = true;
+      } v
+    ) my.flake.exprs;
+
+    my.flake.exprsEvaluated = mapAttrs (n: v:
+      import (toFile "eval.nix" v)
+    ) my.flake.exprsRendered;
+
     perPkgs = { pkgs, my, ... }: {
       my.pkgs.regenerate-files = pkgs.writeShellApplication {
         name = "regen";

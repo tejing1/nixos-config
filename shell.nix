@@ -1,29 +1,10 @@
-let
-  inherit (lockFile.nodes.${lockFile.nodes.${lockFile.root}.inputs.flake-compat}) locked;
-  flake-compat = import (
-    {
-      github = fetchTarball {
-        sha256 = locked.narHash;
-        url = "https://github.com/${locked.owner}/${locked.repo}/archive/${locked.rev}.tar.gz";
-      };
-      tarball = fetchTarball {
-        inherit (locked) url;
-        sha256 = locked.narHash;
-      };
-    }.${locked.type} or (throw "Could not derive tarball url from lockfile node")
-  );
-  lockFile = builtins.fromJSON (builtins.readFile ./flake.lock);
-  thisFlake = if
-    builtins.functionArgs flake-compat ? copySourceTreeToStore
-  then
-    flake-compat {
-      copySourceTreeToStore = false;
-      src = ./.;
-      useBuiltinsFetchTree = builtins ? fetchTree;
+(
+  import (
+    fetchTarball {
+      sha256 = "sha256-vNpUSpF5Nuw8xvDLj2KCwwksIbjua2LZCqhV1LNRDns=";
+      url = "https://github.com/NixOS/flake-compat/archive/5edf11c44bc78a0d334f6334cdaf7d60d732daab.tar.gz";
     }
-  else
-    flake-compat {
-      src.outPath = toString ./.;
-    };
-in
-  thisFlake.shellNix
+  ) {
+    src.outPath = toString ./.;
+  }
+).shellNix

@@ -4,6 +4,15 @@
   ...
 }:
 
+let
+
+  inherit (builtins)
+    fromJSON
+    readFile
+  ;
+
+in
+
 {
   config = {
     flake = {
@@ -60,131 +69,64 @@
       use nix
     '';
 
-    my.flake.inputs = {
-      flake-compat.url = "github:NixOS/flake-compat";
-      flake-compat.flake = false;
+    my.flake.files."shell.nix".expr = {
+      sel.from.saved = "thisFlake";
+      sel.attr = "shellNix";
     };
 
-    my.flake.files."shell.nix".expr = {
-      letin.defs.lockFile = {
-        app.func = {
-          sel.from.var = "builtins";
-          sel.attr = "fromJSON";
-        };
-        app.arg = {
-          app.func = {
-            sel.from.var = "builtins";
-            sel.attr = "readFile";
-          };
-          app.arg.path = my.flake.root + "/flake.lock";
-        };
-      };
-      letin.inh.locked = {
-        sel.from.var = "lockFile";
-        sel.attrpath = [
-          "nodes"
+    my.flake.exprs.thisFlake = {
+      app.func.saved = "invokeFlakeCompat";
+      app.arg =
+        if builtins.functionArgs my.flake.exprsEvaluated.invokeFlakeCompat ? copySourceTreeToStore then
+          # Lix variant
           {
-            sel.from.var = "lockFile";
-            sel.attrpath = [
-              "nodes"
-              {
-                sel.from.var = "lockFile";
-                sel.attr = "root";
-              }
-              "inputs"
-              "flake-compat"
-            ];
-          }
-        ];
-      };
-      letin.defs.flake-compat = {
-        app.func.var = "import";
-        app.arg = {
-          sel.from = {
-            set.defs.tarball = {
-              app.func.var = "fetchTarball";
-              app.arg = {
-                set.inh.url.var = "locked";
-                set.defs.sha256 = {
-                  sel.from.var = "locked";
-                  sel.attr = "narHash";
-                };
-              };
-            };
-            set.defs.github = {
-              app.func.var = "fetchTarball";
-              app.arg = {
-                set.defs.url.string = [
-                  "https://github.com/"
-                  {
-                    sel.from.var = "locked";
-                    sel.attr = "owner";
-                  }
-                  "/"
-                  {
-                    sel.from.var = "locked";
-                    sel.attr = "repo";
-                  }
-                  "/archive/"
-                  {
-                    sel.from.var = "locked";
-                    sel.attr = "rev";
-                  }
-                  ".tar.gz"
-                ];
-                set.defs.sha256 = {
-                  sel.from.var = "locked";
-                  sel.attr = "narHash";
-                };
-              };
-            };
-          };
-          sel.attr = {
-            sel.from.var = "locked";
-            sel.attr = "type";
-          };
-          sel.default = {
-            app.func.var = "throw";
-            app.arg.string = "Could not derive tarball url from lockfile node";
-          };
-        };
-      };
-      letin.defs.thisFlake = {
-        branch.cond = {
-          has.expr = {
-            app.func = {
-              sel.from.var = "builtins";
-              sel.attr = "functionArgs";
-            };
-            app.arg.var = "flake-compat";
-          };
-          has.attr = "copySourceTreeToStore";
-        };
-        branch.truecase = {
-          app.func.var = "flake-compat";
-          app.arg = {
             set.defs.src.path = my.flake.root;
-            set.defs.copySourceTreeToStore.var = "false";
+            set.defs.copySourceTreeToStore.literal = false;
             set.defs.useBuiltinsFetchTree = {
               has.expr.var = "builtins";
               has.attr = "fetchTree";
             };
-          };
-        };
-        branch.falsecase = {
-          app.func.var = "flake-compat";
-          app.arg = {
+          }
+        else
+          # Edolstra variant
+          {
             set.defs.src.set.defs.outPath = {
               app.func.var = "toString";
               app.arg.path = my.flake.root;
             };
           };
-        };
-      };
-      letin.body = {
-        sel.from.var = "thisFlake";
-        sel.attr = "shellNix";
-      };
     };
+
+    my.flake.exprs.invokeFlakeCompat = let
+      lockFile = fromJSON (readFile (my.flake.root + "/flake.lock"));
+      inherit (lockFile.nodes.${lockFile.nodes.${lockFile.root}.inputs.flake-compat}) locked;
+    in {
+      app.func.var = "import";
+      app.arg = {
+        github = {
+          app.func.var = "fetchTarball";
+          app.arg.literal = {
+            url = "https://github.com/${locked.owner}/${locked.repo}/archive/${locked.rev}.tar.gz";
+            sha256 = locked.narHash;
+          };
+        };
+        tarball = {
+          app.func.var = "fetchTarball";
+          app.arg.literal = {
+            url = locked.url;
+            sha256 = locked.narHash;
+          };
+        };
+      }.${locked.type} or (throw "Could not derive fetch expression from lockfile node");
+    };
+
+    my.flake.inputs.flake-compat = {
+      # Lix variant
+      #url = "https://git.lix.systems/lix-project/flake-compat/archive/main.tar.gz";
+      # Edolstra variant
+      url = "github:NixOS/flake-compat";
+      flake = false;
+    };
+
   };
 }
