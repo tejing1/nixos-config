@@ -116,7 +116,7 @@ in
         # See ${removePrefix "${inputs.self}/" __curPos.file} for its definition.
 
       '';
-      format.expr = {
+      format.body = {
         set.defs.inputs.literal = my.flake.inputs;
         set.defs.outputs.lambda.var = "inputs";
         set.defs.outputs.lambda.body = {

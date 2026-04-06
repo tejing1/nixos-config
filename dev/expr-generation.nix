@@ -207,10 +207,10 @@ let
       before.default = "";
       after.type = types.strMatching "([ \n\t]+|#[^\n]*\n|/\\*([^*]|\\*+[^*/])*\\*+/)*";
       after.default = "";
-      expr.type = nixExprType;
+      body.type = nixExprType;
     };
-    format.normalize = ctx: { expr, ... }@arg: tagValue "format" (arg // { expr = normalizeNixExpr ctx expr; });
-    format.render = ctx: { before ? "", after ? "", expr }: before + renderNixExpr ctx expr + after;
+    format.normalize = ctx: { body, ... }@arg: tagValue "format" (arg // { body = normalizeNixExpr ctx body; });
+    format.render = ctx: { before ? "", after ? "", body }: before + renderNixExpr ctx body + after;
 
     var.type = validNixVarNameType;
     var.render = ctx: name: name;
