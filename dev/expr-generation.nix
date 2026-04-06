@@ -47,6 +47,7 @@ let
     hasPrefix
     hasSuffix
     init
+    isFunction
     last
     lists
     mapAttrsToList
@@ -203,13 +204,35 @@ let
     saved.normalize = ctx: name: normalizeNixExpr ctx ((ctx.exprs or {}).${name} or (throw "no saved expression by name ${name}"));
 
     format.type = recordType {
-      before.type = types.strMatching "([ \n\t]+|#[^\n]*\n|/\\*([^*]|\\*+[^*/])*\\*+/)*";
+      before.type = types.either (types.functionTo (types.strMatching "([ \n\t]+|#[^\n]*\n|/\\*([^*]|\\*+[^*/])*\\*+/)*")) (types.strMatching "([ \n\t]+|#[^\n]*\n|/\\*([^*]|\\*+[^*/])*\\*+/)*");
       before.default = "";
-      after.type = types.strMatching "([ \n\t]+|#[^\n]*\n|/\\*([^*]|\\*+[^*/])*\\*+/)*";
+      after.type = types.either (types.functionTo (types.strMatching "([ \n\t]+|#[^\n]*\n|/\\*([^*]|\\*+[^*/])*\\*+/)*")) (types.strMatching "([ \n\t]+|#[^\n]*\n|/\\*([^*]|\\*+[^*/])*\\*+/)*");
       after.default = "";
       body.type = nixExprType;
     };
-    format.normalize = ctx: { body, ... }@arg: tagValue "format" (arg // { body = normalizeNixExpr ctx body; });
+    format.normalize = ctx: { body, ... }@arg:
+      tagValue "format" (
+        mapAttrs (n: v:
+          if isFunction v then
+            v {
+              relPath = p: let
+                targetcomps = subpath.components (path.removePrefix ctx.toplevel (dirOf ctx.targetfile));
+                pathcomps =
+                  if hasPrefix (toString ctx.toplevel) (toString p) then
+                    subpath.components ("./" + removePrefix (toString ctx.toplevel) (toString p))
+                  else
+                    throw "relPath called on a path that is not a subpath of ctx.toplevel (${toString ctx.toplevel})";
+                common = lists.commonPrefix targetcomps pathcomps;
+                relativecomps = map (const "..") (lists.removePrefix common targetcomps) ++ lists.removePrefix common pathcomps;
+              in
+                concatStringsSep "/" relativecomps;
+            }
+          else
+            v
+        ) arg // {
+          body = normalizeNixExpr ctx body;
+        }
+      );
     format.render = ctx: { before ? "", after ? "", body }: before + renderNixExpr ctx body + after;
 
     var.type = validNixVarNameType;

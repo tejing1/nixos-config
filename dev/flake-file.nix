@@ -1,5 +1,4 @@
 {
-  inputs,
   lib,
   my,
   options,
@@ -111,9 +110,9 @@ in
     };
 
     my.flake.files."flake.nix".expr = {
-      format.before = ''
+      format.before = { relPath, ... }: ''
         # This file is generated. (Yes, really.)
-        # See ${removePrefix "${inputs.self}/" __curPos.file} for its definition.
+        # See ${relPath __curPos.file} for its definition.
 
       '';
       format.body = {

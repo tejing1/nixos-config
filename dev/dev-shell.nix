@@ -12,10 +12,6 @@ let
     readFile
   ;
 
-  inherit (lib)
-    removePrefix
-  ;
-
 in
 
 {
@@ -75,9 +71,9 @@ in
     '';
 
     my.flake.files."shell.nix".expr = {
-      format.before = ''
+      format.before = { relPath, ... }: ''
         # This file is generated.
-        # See ${removePrefix "${inputs.self}/" __curPos.file} for its definition.
+        # See ${relPath __curPos.file} for its definition.
 
       '';
       format.body = {
