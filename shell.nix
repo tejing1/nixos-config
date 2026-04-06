@@ -1,3 +1,6 @@
+# This file is generated.
+# See dev/dev-shell.nix for its definition.
+
 (
   import (
     fetchTarball {

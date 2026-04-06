@@ -1,5 +1,6 @@
 {
   inputs,
+  lib,
   my,
   ...
 }:
@@ -9,6 +10,10 @@ let
   inherit (builtins)
     fromJSON
     readFile
+  ;
+
+  inherit (lib)
+    removePrefix
   ;
 
 in
@@ -70,8 +75,15 @@ in
     '';
 
     my.flake.files."shell.nix".expr = {
-      sel.from.saved = "thisFlake";
-      sel.attr = "shellNix";
+      format.before = ''
+        # This file is generated.
+        # See ${removePrefix "${inputs.self}/" __curPos.file} for its definition.
+
+      '';
+      format.body = {
+        sel.from.saved = "thisFlake";
+        sel.attr = "shellNix";
+      };
     };
 
     my.flake.exprs.thisFlake = {
