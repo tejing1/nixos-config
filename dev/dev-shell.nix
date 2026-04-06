@@ -9,6 +9,7 @@ let
 
   inherit (builtins)
     fromJSON
+    functionArgs
     readFile
   ;
 
@@ -85,7 +86,7 @@ in
     my.flake.exprs.thisFlake = {
       app.func.saved = "invokeFlakeCompat";
       app.arg =
-        if builtins.functionArgs my.flake.exprsEvaluated.invokeFlakeCompat ? copySourceTreeToStore then
+        if functionArgs my.flake.exprsEvaluated.invokeFlakeCompat ? copySourceTreeToStore then
           # Lix variant
           {
             set.defs.src.path = my.flake.root;
