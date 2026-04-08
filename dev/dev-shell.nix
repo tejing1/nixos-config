@@ -67,6 +67,16 @@ in
       exec nix --extra-experimental-features nix-command build -f shell.nix default.generated-files -o "$1"
     '';
 
+    my.flake.files.".normalize-files".exec = ''
+      #! /usr/bin/env bash
+
+      exec nix --extra-experimental-features "nix-command flakes" flake lock
+    '';
+
+    my.flake.files.".normalized-files-list".norm = ''
+      flake.lock
+    '';
+
     my.flake.files.".envrc".norm = ''
       use nix
     '';

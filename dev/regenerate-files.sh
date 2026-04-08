@@ -287,22 +287,57 @@ open() {
   fi
   LC_ALL=C sort -t'\0' -k3 -u --check=quiet "$target".manifest.tmp || die "manifest has repeated paths in $target"
 
-  prevpath=""
   : {fd}< <(tr '\0' $'\x1f' <"$target".manifest.tmp)
   while IFS=$'\x1f' read -ru $fd moderec obidrec path; do
     [ "$target" == result ] || [ -n "$moderec" ] || die "missing mode in $target/.generated-files-manifest"
     [ "$target" == result ] || [ -n "$obidrec" ] || die "missing object id in $target/.generated-files-manifest"
+  done
+  : {fd}<&-
+
+  case "$target" in
+    eval)
+      if [ -e "$target/.normalized-files-list" ]; then
+        cat -- "$target/.normalized-files-list" >"$target".normalized.tmp
+      else
+        : >"$target".normalized.tmp
+      fi
+      ;;&
+    worktree)
+      if [ -e "$GIT_WORK_TREE/.normalized-files-list" ]; then
+        cat -- "$GIT_WORK_TREE/.normalized-files-list" >"$target".normalized.tmp
+      else
+        : >"$target".normalized.tmp
+      fi
+      ;;&
+    index)
+      if git cat-file -e :.normalized-files-list &>/dev/null; then
+        git cat-file --filters :.normalized-files-list >"$target".normalized.tmp
+      else
+        : >"$target".normalized.tmp
+      fi
+      ;;&
+    eval|worktree|index)
+      sed -E 's/^([^\x00\n]+)$/\x00\x00\1\//;t;Q1' -- "$target".normalized.tmp >> "$target".manifest.tmp || die "malformed normalized files list in $target"
+      rm -f "$target".normalized.tmp
+      LC_ALL=C sort -t'\0' -k3 "$target".manifest.tmp > "$target".manifest.tmp.part
+      mv -f "$target".manifest.tmp{.part,}
+      ;;&
+  esac
+
+  prevpath=""
+  : {fd}< <(tr '\0' $'\x1f' <"$target".manifest.tmp)
+  while IFS=$'\x1f' read -ru $fd moderec obidrec path; do
     if [[ "${path%/}" =~ (^|/)(|\.|\.\.)(/|$) ]]; then
-      [[ "${path%/}" !=   /* ]] || die "path from $target/.generated-files-manifest is absolute: ${path%/}"
-      [[ "${path%/}" != */   ]] || die "path from $target/.generated-files-manifest ends in /: ${path%/}"
-      [[ "${path%/}" != *//* ]] || die "path from $target/.generated-files-manifest contains //: ${path%/}"
-      [ -n "${path%/}" ] || die "missing path in $target/.generated-files-manifest"
-      die "path from $target/.generated-files-manifest involves . or ..: ${path%/}"
+      [[ "${path%/}" !=   /* ]] || die "path from $target/.generated-files-manifest or $target/.normalized-files-list is absolute: ${path%/}"
+      [[ "${path%/}" != */   ]] || die "path from $target/.generated-files-manifest or $target/.normalized-files-list ends in /: ${path%/}"
+      [[ "${path%/}" != *//* ]] || die "path from $target/.generated-files-manifest or $target/.normalized-files-list contains //: ${path%/}"
+      [ -n "${path%/}" ] || die "missing path in $target/.generated-files-manifest or $target/.normalized-files-list"
+      die "path from $target/.generated-files-manifest or $target/.normalized-files-list involves . or ..: ${path%/}"
     fi
-    [[ "$path" != .git/* ]] || die "$target/.generated-files-manifest lists path inside .git: $path"
+    [[ "$path" != .git/* ]] || die "$target/.generated-files-manifest or $target/.normalized-files-list lists path inside .git: $path"
     if [ -n "$prevpath" ]; then
-      [[ "$path" != "$prevpath"* ]] || die "non-disjoint paths in $target/.generated-files-manifest: $path, $prevpath"
-      [[ "$prevpath" != "$path"* ]] || die "non-disjoint paths in $target/.generated-files-manifest: $prevpath, $path"
+      [[ "$path" != "$prevpath"* ]] || die "non-disjoint paths in $target/.generated-files-manifest or $target/.normalized-files-list: $path, $prevpath"
+      [[ "$prevpath" != "$path"* ]] || die "non-disjoint paths in $target/.generated-files-manifest or $target/.normalized-files-list: $prevpath, $path"
     fi
     prevpath="$path"
 
@@ -314,15 +349,15 @@ open() {
     while [ -n "$rpath" ]; do
       case "$target" in
         eval|result)
-          [ ! -L "$target/$lpath" ] || die "path in $target/.generated-files-manifest follows symlink: $path"
-          [ ! -f "$target/$lpath" ] || die "path in $target/.generated-files-manifest collides with file: $path"
+          [ ! -L "$target/$lpath" ] || die "path in $target/.generated-files-manifest or $target/.normalized-files-list follows symlink: $path"
+          [ ! -f "$target/$lpath" ] || die "path in $target/.generated-files-manifest or $target/.normalized-files-list collides with file: $path"
           ;;
         worktree)
-          [ ! -L "$GIT_WORK_TREE/$lpath" ] || die "path in $target/.generated-files-manifest follows symlink: $path"
-          [ ! -f "$GIT_WORK_TREE/$lpath" ] || die "path in $target/.generated-files-manifest collides with file: $path"
+          [ ! -L "$GIT_WORK_TREE/$lpath" ] || die "path in $target/.generated-files-manifest or $target/.normalized-files-list follows symlink: $path"
+          [ ! -f "$GIT_WORK_TREE/$lpath" ] || die "path in $target/.generated-files-manifest or $target/.normalized-files-list collides with file: $path"
           ;;
         index)
-          ! git cat-file -e :"$lpath" 2>/dev/null || die "path in $target/.generated-files-manifest collides with file/symlink: $path"
+          ! git cat-file -e :"$lpath" 2>/dev/null || die "path in $target/.generated-files-manifest or $target/.normalized-files-list collides with file/symlink: $path"
           ;;
       esac
 
@@ -344,12 +379,12 @@ open() {
       moderec="$modeact"
       obidrec="$obidact"
       status=clean
+    elif [ -z "$moderec" ] && [ -z "$obidrec" ]; then
+      status=normal
+    elif [ "$moderec" == "$modeact" ] && [ "$obidrec" == "$obidact" ]; then
+      status=clean
     else
-      if [ "$moderec" == "$modeact" ] && [ "$obidrec" == "$obidact" ]; then
-        status=clean
-      else
-        status=dirty
-      fi
+      status=dirty
     fi
     printf "%s\x00%s\x00%s\x00%s\x00%s\x00%s\n" "$moderec" "$obidrec" "$status" "$modeact" "$obidact" "$path" >>"$target".manifest.tmp.part
   done
@@ -365,7 +400,7 @@ flush() {
   if [ -e "$target".manifest ] && [ -e "$target".manifest.changed ]; then
     cut -d '' -f 1,2,6 < "$target".manifest > "$target".manifest.tmp.part
     mv -f "$target".manifest.tmp{.part,}
-    sed -i 's/\/$//' "$target".manifest.tmp
+    sed -i '/^\x00\x00/d;s/\/$//' "$target".manifest.tmp
     tr '\0' ' ' < "$target".manifest.tmp > "$target".manifest.tmp.part
     mv -f "$target".manifest.tmp{.part,}
     if [ -s "$target".manifest.tmp ]; then
@@ -414,12 +449,143 @@ close() {
   rm -f "$target".manifest
 }
 
+print_action() {
+  case "$actions" in
+    ------)
+      return
+      ;;
+
+    -????-)
+      dirtychar=" "
+      ;;&
+    d????-)
+      dirtychar="!"
+      ;;&
+    ?--??-)
+      recchar=" "
+      ;;&
+    ?-c??-)
+      recchar="+"
+      ;;&
+    ?rc??-)
+      recchar="%"
+      ;;&
+    ?r-??-)
+      recchar="-"
+      ;;&
+    ???---)
+      actchar=" "
+      ;;&
+    ???-c-)
+      actchar="+"
+      ;;&
+    ???rc-)
+      actchar="%"
+      ;;&
+    ???r--)
+      actchar="-"
+      ;;&
+
+    # Typical operations
+    --c-c-)
+      # Created
+      pathcolor="${fg[green]}"
+      ;;
+    -r-r--)
+      # Removed
+      pathcolor="${fg[red]}"
+      ;;
+    -rcrc-)
+      # Modified
+      pathcolor="${fg[yellow]}"
+      ;;
+
+    -r----)
+      # Removed with --keep active
+      pathcolor="${fg[magenta]}"
+      ;;
+
+    # Normalization operations
+    ----c-)
+      # Created
+      pathcolor="${fg[green]}"
+      ;;
+    ---r--)
+      # Removed
+      pathcolor="${fg[red]}"
+      ;;
+    ---rc-)
+      # Modified
+      pathcolor="${fg[yellow]}"
+      ;;
+
+    # Forced operations
+    d-crc-)
+      # Created, overwriting dirty content
+      pathcolor="${fg[green]}$bold$underline"
+      ;;
+    drcrc-)
+      # Modified, overwriting dirty content
+      pathcolor="${fg[yellow]}$bold$underline"
+      ;;
+    drc-c-)
+      # Modified manifest, content was missing
+      pathcolor="${fg[yellow]}$bold"
+      ;;
+    dr-r--)
+      # Removed dirty content
+      pathcolor="${fg[red]}$bold$underline"
+      ;;
+
+    # Cleaning operations
+    d--rc-)
+      # Untouched manifest, fixed content
+      pathcolor="${fg[cyan]}$bold$underline"
+      ;;
+    d---c-)
+      # Untouched manifest, recreated content
+      pathcolor="${fg[cyan]}$bold"
+      ;;
+
+    # Manifest-only operations
+    d-c---)
+      # Created in manifest, dirty content happened to already be correct
+      pathcolor="${fg[green]}"
+      ;;
+    drc---)
+      # Modified manifest, dirty content happened to already be correct
+      pathcolor="${fg[yellow]}"
+      ;;
+    dr----)
+      # Removed from manifest, content already gone
+      pathcolor="${fg[red]}"
+      ;;
+    *)
+      # Others should all be impossible
+      die "bad actions value: $actions"
+      ;;
+  esac
+  case "$target" in
+    eval)
+      targetchar=' '
+      ;;
+    worktree)
+      targetchar='W'
+      ;;
+    index)
+      targetchar='I'
+      ;;
+  esac
+  printf "%s%s%s%s %s%s%s\n" "$targetchar" "$dirtychar" "$recchar" "$actchar" "$pathcolor" "${path%/}" "$reset"
+}
+
 update_from() {
   local source target fd prevpath oldmoderec oldobidrec oldstatus oldmodeact oldobidact newmoderec newobidrec newstatus newmodeact newobidact path targetchar dirtychar recchar actchar pathcolor actions
   source="$1"
-  [[ "$source" == @(result) ]] || die "Bad source argument to 'update': $source"
+  [[ "$source" == @(eval|result) ]] || die "Bad source argument to 'update': $source"
   target="$2"
   [[ "$target" == @(eval|index|worktree) ]] || die "Bad target argument to 'update': $target"
+  [ "$source" != "$target" ] || die "Cannot update $source from itself"
   shift 2
 
   LC_ALL=C join -t'\0' -j6 -e '' -a1 -a2 -o '1.1,1.2,1.3,1.4,1.5,2.1,2.2,2.3,2.4,2.5,0' "$target".manifest "$source".manifest > manifest.combined
@@ -450,8 +616,11 @@ update_from() {
         oldobidact=
         oldstatus=clean
       fi
+      if [ "$newstatus" == normal ]; then
+        oldstatus=normal
+      fi
     fi
-    [[ "$oldstatus" == @(clean|dirty) ]] || die "bad value for oldstatus: $oldstatus"
+    [[ "$oldstatus" == @(clean|dirty|normal) ]] || die "bad value for oldstatus: $oldstatus"
 
     if [ -z "$newstatus" ]; then
       if [ "$source" == result ]; then
@@ -470,8 +639,11 @@ update_from() {
           newstatus=clean
         fi
       fi
+      if [ "$oldstatus" == normal ]; then
+        newstatus=normal
+      fi
     fi
-    [[ "$newstatus" == @(clean|dirty) ]] || die "bad value for newstatus: $newstatus"
+    [[ "$newstatus" == @(clean|dirty|normal) ]] || die "bad value for newstatus: $newstatus"
 
     # If target is dirty, don't do anything, unless --force is passed
     if [ "$oldstatus" == dirty ] && [ -z "${opts[force]}" ]; then
@@ -500,6 +672,10 @@ update_from() {
 
       # Set failure flag for later and skip to next path
       touch "$target".failed
+      continue
+    fi
+
+    if [ "$source" == result ] && [ "$oldstatus" == normal ]; then
       continue
     fi
 
@@ -604,122 +780,67 @@ update_from() {
     fi
 
     actions+=-
-    case "$actions" in
-      ------)
-        continue
-        ;;
-
-      -????-)
-        dirtychar=" "
-        ;;&
-      d????-)
-        dirtychar="!"
-        ;;&
-      ?--??-)
-        recchar=" "
-        ;;&
-      ?-c??-)
-        recchar="+"
-        ;;&
-      ?rc??-)
-        recchar="%"
-        ;;&
-      ?r-??-)
-        recchar="-"
-        ;;&
-      ???---)
-        actchar=" "
-        ;;&
-      ???-c-)
-        actchar="+"
-        ;;&
-      ???rc-)
-        actchar="%"
-        ;;&
-      ???r--)
-        actchar="-"
-        ;;&
-
-      # Normal operations
-      --c-c-)
-        # Created
-        pathcolor="${fg[green]}"
-        ;;
-      -r-r--)
-        # Removed
-        pathcolor="${fg[red]}"
-        ;;
-      -rcrc-)
-        # Modified
-        pathcolor="${fg[yellow]}"
-        ;;
-
-      -r----)
-        # Removed with --keep active
-        pathcolor="${fg[magenta]}"
-        ;;
-
-      # Forced operations
-      d-crc-)
-        # Created, overwriting dirty content
-        pathcolor="${fg[green]}$bold$underline"
-        ;;
-      drcrc-)
-        # Modified, overwriting dirty content
-        pathcolor="${fg[yellow]}$bold$underline"
-        ;;
-      drc-c-)
-        # Modified manifest, content was missing
-        pathcolor="${fg[yellow]}$bold"
-        ;;
-      dr-r--)
-        # Removed dirty content
-        pathcolor="${fg[red]}$bold$underline"
-        ;;
-
-      # Cleaning operations
-      d--rc-)
-        # Untouched manifest, fixed content
-        pathcolor="${fg[cyan]}$bold$underline"
-        ;;
-      d---c-)
-        # Untouched manifest, recreated content
-        pathcolor="${fg[cyan]}$bold"
-        ;;
-
-      # Manifest-only operations
-      d-c---)
-        # Created in manifest, dirty content happened to already be correct
-        pathcolor="${fg[green]}"
-        ;;
-      drc---)
-        # Modified manifest, dirty content happened to already be correct
-        pathcolor="${fg[yellow]}"
-        ;;
-      dr----)
-        # Removed from manifest, content already gone
-        pathcolor="${fg[red]}"
-        ;;
-      *)
-        # Others should all be impossible
-        die "bad actions value: $actions"
-        ;;
-    esac
-    case "$target" in
-      eval)
-        targetchar=' '
-        ;;
-      worktree)
-        targetchar='W'
-        ;;
-      index)
-        targetchar='I'
-        ;;
-    esac
-    printf "%s%s%s%s %s%s%s\n" "$targetchar" "$dirtychar" "$recchar" "$actchar" "$pathcolor" "${path%/}" "$reset"
+    print_action "$actions"
   done
   : {fd}<&-
   rm -f manifest.combined
+}
+
+rehash_normal() {
+  local target moderec obidrec status oldmodeact oldobidact newmodeact newobidact path actions
+  target="$1"
+  [[ "$target" == @(eval) ]] || die "Bad target argument to 'rehash_normal': $target"
+
+  cp "$target".manifest "$target".manifest.tmp
+
+  : {fd}< <(tr '\0' $'\x1f' <"$target".manifest)
+  while IFS=$'\x1f' read -ru $fd moderec obidrec status oldmodeact oldobidact path; do
+    [ "$status" == normal ] || continue
+
+    hash_path "$target" "${path%/}"
+    if [ -n "$retval" ]; then
+      [[ "$retval" =~ ([0-9]+)\ (blob|tree)\ ([0-9a-f]+)$'\t'(.+) ]] || die "bad result from hash_path"
+      newmodeact="${BASH_REMATCH[1]}"
+      newobidact="${BASH_REMATCH[3]}"
+    else
+      newmodeact=
+      newobidact=
+    fi
+
+    actions=---
+
+    if [ "$oldmodeact" != "$newmodeact" ] || [ "$oldobidact" != "$newobidact" ]; then
+      if [ -n "$oldobidact" ]; then
+        LC_ALL=C join -t'\0' -j6 -v2 -o '2.1,2.2,2.3,2.4,2.5,0' <(
+          printf "%s\x00%s\x00%s\x00%s\x00%s\x00%s\n" "$moderec" "$obidrec" "$status" "$oldmodeact" "$oldobidact" "$path"
+        ) "$target".manifest.tmp > "$target".manifest.tmp.part
+        mv -f "$target".manifest.tmp{.part,}
+        touch "$target".changed
+        actions+=r
+      else
+        actions+=-
+      fi
+      if [ -n "$newobidact" ]; then
+        LC_ALL=C sort -t'\0' -k6 -u <(
+          printf "%s\x00%s\x00%s\x00%s\x00%s\x00%s\n" "$moderec" "$obidrec" "$status" "$newmodeact" "$newobidact" "$path"
+        ) "$target".manifest.tmp > "$target".manifest.tmp.part
+        mv -f "$target".manifest.tmp{.part,}
+        touch "$target".changed
+        actions+=c
+      else
+        actions+=-
+      fi
+    else
+      actions+=--
+    fi
+
+    actions+=-
+
+    print_action "$actions"
+  done
+  : {fd}<&-
+
+  mv -f "$target".manifest{.tmp,}
 }
 
 find_fixed_point() {
@@ -745,32 +866,58 @@ find_fixed_point() {
   esac
   open eval
 
-  declare -i attempt=1
+  declare -i attempt=0
   while true; do
-    echo "Building generated files from copy of $target..."
-    close result
-    rm -rf result
-    pushd eval >/dev/null
-    ./.generate-files "$tmpdir/result" || die ".generate-files script failed."
-    popd >/dev/null
-    [ -e result ] || die "result directory not created."
-    open result
-
-    update_from result eval
-    flush eval
-    [ -e eval.failed ] && break
-    [ -e eval.changed ] || break
-    rm -f eval.changed
-
     attempt+=1
     if [ $attempt -gt "${opts[tries]}" ]; then
       echo "Retry limit (${opts[tries]}) reached for $target, giving up on finding fixed point." >&2
       touch eval.failed
       break
     fi
+
+    if [ -x eval/.generate-files ]; then
+      echo "Building generated files from copy of $target..."
+      close result
+      rm -rf result
+      pushd eval >/dev/null
+      ./.generate-files "$tmpdir/result" || die ".generate-files script failed."
+      popd >/dev/null
+      [ -e result ] || die "result directory not created."
+      open result
+
+      update_from result eval
+      flush eval
+      [ -e eval.failed ] && break
+      if [ -e eval.changed ]; then
+        rm -f eval.changed
+        continue
+      fi
+    fi
+
+    if [ -x eval/.normalize-files ]; then
+      echo "Normalizing files in copy of $target..."
+      pushd eval >/dev/null
+      ./.normalize-files || die ".normalize-files script failed."
+      popd >/dev/null
+
+      rehash_normal eval
+      if [ -e eval.changed ]; then
+        rm -f eval.changed
+        continue
+      fi
+    fi
+
+    if [ -x eval/.verify-files ]; then
+      echo "Verifying files in copy of $target..."
+      pushd eval >/dev/null
+      ./.verify-files || die ".verify-files script failed."
+      popd >/dev/null
+    fi
+
+    break
   done
 
-  close eval
+  flush eval
   if [ -e eval.failed ]; then
     echo "Aborting due to earlier failure."
     rm eval.failed
@@ -785,11 +932,12 @@ find_fixed_point() {
     # We set 'changed' at least once, so there's something to do
     echo "Fixed point of $target found. Writing back..."
     open "$target"
-    update_from result "$target"
+    update_from eval "$target"
     close "$target"
   fi
+  close eval
 
-  if   [ -e "$target".failed ]; then
+  if [ -e "$target".failed ]; then
     echo "Writeback not fully successful."
     exit 1
   fi
