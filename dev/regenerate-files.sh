@@ -322,7 +322,7 @@ open() {
           [ ! -f "$GIT_WORK_TREE/$lpath" ] || die "path in $target/.generated-files-manifest collides with file: $path"
           ;;
         index)
-          ! git cat-file -e :"$lpath" 2>/dev/null || die die "path in $target/.generated-files-manifest collides with file/symlink: $path"
+          ! git cat-file -e :"$lpath" 2>/dev/null || die "path in $target/.generated-files-manifest collides with file/symlink: $path"
           ;;
       esac
 
