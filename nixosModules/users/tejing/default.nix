@@ -24,7 +24,8 @@ in
       programs.fish.enable = true;
       programs.zsh.enable = true;
 
-      nixpkgs.config.allowUnfree = true;
+      # FIXME commented to avoid infrec with internal instantiation
+      #nixpkgs.config.allowUnfree = true;
 
       # Set available fonts
       fonts.packages = builtins.attrValues {
@@ -43,11 +44,12 @@ in
         ;
       };
 
-      nixpkgs.overlays = [
-        # Prevents gh from leaving garbage characters in the input
-        # buffer when urxvt is set to a transparent background
-        inputs.self.overlays.gh-urxvt-fix-termenv
-      ];
+      # FIXME commented to avoid infrec with internal instantiation
+      #nixpkgs.overlays = [
+      #  # Prevents gh from leaving garbage characters in the input
+      #  # buffer when urxvt is set to a transparent background
+      #  inputs.self.overlays.gh-urxvt-fix-termenv
+      #];
 
       # PAM rules for i3lock are no longer enabled by default.
       security.pam.services.i3lock.enable = true;
@@ -66,7 +68,8 @@ in
       };
     })
     (mkIf my.users.tejing.desktop {
-      home-manager.users.tejing.imports = [ inputs.self.homeConfigurations.tejing.configurationModule ];
+      # FIXME moved to nixosConfigurations/tejingdesk/fpentry.nix for separate implementation
+      #home-manager.users.tejing.imports = [ inputs.self.homeConfigurations.tejing.configurationModule ];
 
       # Enable touchpad support.
       # I actually just need this for the mouse acceleration settings that I'm used to.

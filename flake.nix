@@ -36,14 +36,19 @@
   } {
     imports = builtins.filter builtins.pathExists [
       ./fpentry.nix
+      ./home-manager.nix
+      ./hosts.nix
       ./my.nix
+      ./nixos.nix
       ./nixpkgs.nix
+      ./users.nix
       dev/dev-shell.nix
       dev/expr-generation.nix
       dev/file-generation.nix
       dev/flake-file.nix
       dev/fpentry.nix
       homeConfigurations/fpentry.nix
+      homeConfigurations/tejing/fpentry.nix
       homeModules/fpentry.nix
       lib/flakeClosureRef.nix
       lib/fpentry.nix

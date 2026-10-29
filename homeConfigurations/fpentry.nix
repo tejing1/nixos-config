@@ -1,5 +1,5 @@
-{ inputs, my, ... }:
+{ my, ... }:
 
 {
-  flake.homeConfigurations = my.lib.importAllNamedExceptWithArg ./. [ "fpentry" ] inputs;
+  my.flake.modules = my.lib.listFlakePartsModules ./.;
 }

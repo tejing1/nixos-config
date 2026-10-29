@@ -23,6 +23,9 @@ let
     types
     mkMerge
   ;
+  inherit (lib.options)
+    showOption
+  ;
   inherit (types)
     attrsOf
     unspecified
@@ -62,11 +65,24 @@ in
       options.my = mkOption {
         type = types.submodule {
           freeformType = onlyfromfile "${__curPos.file}, via option perSystem" unspecified;
-          options.using = mkOption {
-            type = attrsOf unspecified;
-          };
         };
       };
+    };
+    hosts = mkOption {
+      type = attrsOf (types.submodule ({ name, ... }: {
+        options.my = mkOption {
+          type = types.submodule {
+            freeformType = onlyfromfile "${__curPos.file}, via option perHost" unspecified;
+          };
+        };
+        options.nixos.cfg = mkDeferredModuleOption {
+          options.my = mkOption {
+            type = types.submodule {
+              freeformType = onlyfromfile "${__curPos.file}, via option perHost, via option ${showOption [ "hosts" name "nixos" "cfg" ]}" unspecified;
+            };
+          };
+        };
+      }));
     };
   };
 
@@ -87,6 +103,15 @@ in
     perSystem = { config, ... }: {
       _module.args.my = config.my;
       inherit (config.allPkgs.default) my;
+    };
+
+    perHost = { config, my, ... }: {
+      _module.args.my = config.my;
+      inherit (forPkgs config.nixpkgs.system config.nixpkgs.name) my;
+      nixos.cfg = { config, ... }: {
+        _module.args.my = config.my;
+        inherit my;
+      };
     };
   };
 }

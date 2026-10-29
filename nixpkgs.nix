@@ -1,7 +1,7 @@
 {
   config,
   flake-parts-lib,
-  forPkgs,
+  getSystem,
   inputs,
   lib,
   my,
@@ -28,22 +28,25 @@ let
     fix
     getName
     literalExpression
+    mergeOneOption
     mkDefault
+    mkIf
     mkOption
+    mkOptionType
     types
   ;
 
   inherit (types)
-    anything
     attrsOf
     either
     listOf
-    path
     str
     strMatching
     submodule
     unspecified
   ;
+
+  getPkgs = config.perPkgs;
 
 in
 
@@ -60,7 +63,7 @@ in
       default = {};
     };
     my.nixpkgs.overlays = mkOption {
-      type = listOf path;
+      type = listOf (types.functionTo (types.functionTo unspecified));
       default = [];
     };
     my.nixpkgs.allowUnfreePackages = mkOption {
@@ -82,13 +85,14 @@ in
           type = attrsOf (either str (submodule ({ config, ... }: {
             options = {
               src = mkOption {
-                type = path;
+                type = my.lib.types.flakeInput;
               };
               args = mkOption {
                 type = types.addCheck (attrsOf types.raw) (args: ! args ? system && ! args ? localSystem);
               };
               pkgs = mkOption {
                 type = types.pkgs;
+                default = import config.src (config.args // { inherit system; });
               };
             };
 
@@ -96,8 +100,6 @@ in
               # Forces nixpkgs purity even if evaluating impurely
               args.config = mkDefault {};
               args.overlays = mkDefault [];
-
-              pkgs = import config.src (config.args // { inherit system; });
             };
           })));
           apply = attrs: fix (self: mapAttrs (n: v:
@@ -131,9 +133,45 @@ in
       }).config;
     };
 
+    hosts = mkOption {
+      type = attrsOf (submodule ({ config, name, pairedPkgs, ... }: {
+        options = {
+          nixpkgs.system = mkOption {
+            type = types.str;
+            description = "Nix system-string. Used to set nixpkgs.hostPlatform and to determine which system to look under for the relevant perPkgs instance.";
+          };
+          nixpkgs.name = mkOption {
+            type = types.str;
+            default = name;
+            defaultText = lib.literalExpression "name";
+            description = "Name of the perPkgs instance to use with this host.";
+          };
+          nixpkgs.src = mkOption {
+            type = my.lib.types.flakeInput;
+            description = "Flake input to get nixpkgs contents, and in particular, lib.nixosSystem and possibly nixosModules.readOnlyPkgs, from.";
+          };
+          nixpkgs.instantiation = mkOption {
+            type = types.enum [ "external" "internal" ];
+            default = "external";
+            description = "Whether to import an external instantiation of nixpkgs or export the internal one.";
+          };
+        };
+        config = {
+          nixpkgs.src = mkIf (config.nixpkgs.instantiation == "external") pairedPkgs.src;
+          _module.args.pairedPkgs = (getSystem config.nixpkgs.system).nixpkgs.${config.nixpkgs.name};
+        };
+      }));
+    };
   };
 
   config = {
+    my.lib.types.flakeInput = mkOptionType {
+      name = "flake";
+      description = "flake input";
+      descriptionClass = "noun";
+      check = types.isType "flake";
+      merge = mergeOneOption;
+    };
 
     my.nixpkgs.release = "25.11";
 
@@ -160,15 +198,29 @@ in
       nixpkgs.unstable-uncustomized.src = inputs.nixpkgs-unstable;
       nixpkgs.default = "stable";
 
-      allPkgs = fix (self: mapAttrs (n: { copyOf ? null, pkgs, ... }: if isNull copyOf then forPkgs pkgs else self.${copyOf}) config.nixpkgs);
+      allPkgs = fix (self: mapAttrs (n: { copyOf ? null, pkgs, ... }: if isNull copyOf then getPkgs pkgs else self.${copyOf}) config.nixpkgs);
 
       _module.args.pkgs = config.nixpkgs.default.pkgs;
-      _module.args.forPkgs = config.allPkgs // { __functor = self: forPkgs; };
+      _module.args.forPkgs = config.allPkgs // {
+        __functor = self: pkgs:
+          if isString pkgs then
+            self.${pkgs}
+          else
+            config.perPkgs pkgs;
+      };
 
     };
 
-    _module.args.forSystem = config.allSystems // { __functor = self: system: self.${system} or (config.perSystem); };
-    _module.args.forPkgs = config.perPkgs;
+    _module.args.forSystem = config.allSystems // {
+      __functor = self: system: self.${system} or (config.perSystem system);
+    };
+    _module.args.forPkgs = mapAttrs (n: v: v.allModuleArgs.forPkgs) config.allSystems // {
+      __functor = self: arg:
+        if isString arg then
+          self.${arg} or ((config.perSystem arg).allModuleArgs.forPkgs)
+        else
+          config.perPkgs arg;
+    };
 
   };
 }
