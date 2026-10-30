@@ -1,6 +1,7 @@
 {
   config,
   flake-parts-lib,
+  inputs,
   lib,
   my,
   ...
@@ -11,6 +12,7 @@ let
     attrNames
     concatMap
     isList
+    isPath
     length
     mapAttrs
     match
@@ -122,6 +124,10 @@ in
 
 {
   options = {
+    my.flake.root = mkOption {
+      type = addCheck types.path isPath;
+      default = /. + builtins.unsafeDiscardStringContext inputs.self; # Yes, this is safe and supported. See https://github.com/NixOS/nix/issues/15413
+    };
 
     my.flake.files = mkOption {
       type = attrsOf (attrTag {
