@@ -97,15 +97,6 @@ in
     my.flake.inputs = {
       flake-parts.url = "github:hercules-ci/flake-parts";
       flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
-
-
-      # FIXME set elsewhere
-      home-manager.url = "github:nix-community/home-manager/release-${my.nixpkgs.release}";
-      home-manager.inputs.nixpkgs.follows = "nixpkgs";
-
-      home-manager-unstable.url = "github:nix-community/home-manager/master";
-      home-manager-unstable.inputs.nixpkgs.follows = "nixpkgs-unstable";
-
     };
 
     my.flake.files."flake.nix".expr = {
