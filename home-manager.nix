@@ -79,7 +79,7 @@ in
             # Import my basic modules for all users
             home-manager.sharedModules = [ inputs.self.homeModules.my ];
 
-            home-manager.users = mapAttrs (n: v: { imports = v.hm.cfg; }) (filterAttrs (n: v: v.type == "hm-module") config.users);
+            home-manager.users = mapAttrs (n: v: lib.mkMerge v.hm.cfg) (filterAttrs (n: v: v.type == "hm-module") config.users);
           };
         };
       }));

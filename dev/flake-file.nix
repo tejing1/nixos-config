@@ -106,7 +106,6 @@ in
       home-manager-unstable.url = "github:nix-community/home-manager/master";
       home-manager-unstable.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
-      flake-programdb.url = "github:tejing1/flake-programdb";
     };
 
     my.flake.files."flake.nix".expr = {

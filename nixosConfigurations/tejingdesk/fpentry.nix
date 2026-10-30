@@ -30,14 +30,6 @@ in
     users.tejing.type = "hm-module";
 
     nixos.cfg.imports = listImportablePathsExcept ./. [ "fpentry" ];
-
-    # FIXME commented at source to avoid infrec with internal instantiation
-    nixos.cfg.nixpkgs.config.allowUnfree = true;
-    nixos.cfg.nixpkgs.overlays = [
-      # Prevents gh from leaving garbage characters in the input
-      # buffer when urxvt is set to a transparent background
-      inputs.self.overlays.gh-urxvt-fix-termenv
-    ];
   };
 
   # FIXME move all this to the proper locations after they are converted to flake-parts modules
@@ -61,18 +53,6 @@ in
     modules = [
       {
         networking.hostName = "tejingdesk";
-      }
-      {
-        # FIXME commented at source to avoid infrec with internal instantiation
-        nixpkgs.config.allowUnfree = true;
-        nixpkgs.overlays = [
-          # Prevents gh from leaving garbage characters in the input
-          # buffer when urxvt is set to a transparent background
-          inputs.self.overlays.gh-urxvt-fix-termenv
-        ];
-
-        # FIXME moved here for separate implementation
-        home-manager.users.tejing.imports = [ inputs.self.homeConfigurations.tejing.configurationModule ];
       }
     ]
     ++ listImportablePathsExcept ./. [ "fpentry" ]
