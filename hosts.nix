@@ -12,6 +12,7 @@ let
   ;
 
   inherit (lib)
+    mkEnableOption
     mkOption
     types
   ;
@@ -29,6 +30,7 @@ in
     hosts = mkOption {
       type = attrsOf (submodule {
         imports = config.perHost;
+        options.enable = mkEnableOption "this host";
         options.type = mkOption {
           type = enum [ ];
         };

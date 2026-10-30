@@ -17,6 +17,7 @@ in
 
 {
   hosts.tejingdesk = {
+    enable = true;
     type = "nixos";
 
     #nixpkgs.system = "x86_64-linux";
@@ -28,6 +29,8 @@ in
 
     hm.src = home-manager;
     hm.module = true;
+
+    users.tejing.enable = true;
     users.tejing.type = "hm-module";
 
     nixos.cfg.imports = listImportablePathsExcept ./. [ "fpentry" ];

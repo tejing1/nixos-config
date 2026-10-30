@@ -24,6 +24,7 @@ let
     attrsOf
     enum
     submodule
+    submoduleWith
   ;
 
 in
@@ -43,18 +44,22 @@ in
             description = "Host-specific home-manger configuration settings, applying to all users on this host.";
           };
           users = mkOption {
-            type = attrsOf (submodule ({ ... }: {
-              options.type = mkOption {
-                type = enum [ "hm-module" ];
-              };
-              options.hm.cfg = mkOption {
-                type = mkDeferredModuleType {
-                  imports = config.hm.cfg;
-                };
-                default = {};
-                description = "Home-manager configuration settings.";
-              };
-            }));
+            type = attrsOf (submoduleWith {
+              modules = [
+                {
+                  options.type = mkOption {
+                    type = enum [ "hm-module" ];
+                  };
+                  options.hm.cfg = mkOption {
+                    type = mkDeferredModuleType {
+                      imports = config.hm.cfg;
+                    };
+                    default = {};
+                    description = "Home-manager configuration settings.";
+                  };
+                }
+              ];
+            });
           };
         };
         config = mkIf config.hm.module {
@@ -77,9 +82,9 @@ in
             };
 
             # Import my basic modules for all users
-            home-manager.sharedModules = [ inputs.self.homeModules.my ];
+            home-manager.sharedModules = [ inputs.self.homeModules.my ]; # FIXME do this the new way in my.nix
 
-            home-manager.users = mapAttrs (n: v: lib.mkMerge v.hm.cfg) (filterAttrs (n: v: v.type == "hm-module") config.users);
+            home-manager.users = mapAttrs (name: user: lib.mkMerge user.hm.cfg) (filterAttrs (name: user: user.enable && user.type == "hm-module") config.users);
           };
         };
       }));

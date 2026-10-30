@@ -12,6 +12,7 @@ let
   inherit (builtins)
     mapAttrs
     attrValues
+    filter
   ;
 
   inherit (flake-parts-lib)
@@ -32,6 +33,7 @@ let
   inherit (types)
     attrsOf
     submodule
+    submoduleWith
   ;
 
 in
@@ -60,18 +62,22 @@ in
             };
           };
           users = mkOption {
-            type = attrsOf (submodule {
-              options.nixos.cfg = mkOption {
-                type = mkDeferredModuleType {};
-                default = {};
-                description = "User-specific nixos configuration settings.";
-              };
+            type = attrsOf (submoduleWith {
+              modules = [
+                {
+                  options.nixos.cfg = mkOption {
+                    type = mkDeferredModuleType {};
+                    default = {};
+                    description = "User-specific nixos configuration settings.";
+                  };
+                }
+              ];
             });
           };
         };
         config = mkMerge [
           {
-            nixos.cfg.imports = concatLists (map (user: user.nixos.cfg) (attrValues config.users));
+            nixos.cfg.imports = concatLists (map (user: user.nixos.cfg) (filter (user: user.enable) (attrValues config.users)));
             nixos.cfg.networking.hostName = name;
             nixos.specialArgs = {
               inherit inputs;
@@ -92,13 +98,13 @@ in
   };
 
   config = {
-    flake.nixosConfigurations = mapAttrs (name: host: host.nixos.cfg) (filterAttrs (name: host: host.type == "nixos") config.hosts);
+    flake.nixosConfigurations = mapAttrs (name: host: host.nixos.cfg) (filterAttrs (name: host: host.enable && host.type == "nixos") config.hosts);
     perSystem = { system, ... }: {
       nixpkgs = mapAttrs' (name: host: nameValuePair host.nixpkgs.name {
         src = host.nixpkgs.src;
         args = { inherit (host.nixos.cfg.config.nixpkgs) config overlays; };
         pkgs = host.nixos.cfg.pkgs;
-      }) (filterAttrs (name: host: host.type == "nixos" && host.nixpkgs.system == system && host.nixpkgs.instantiation == "internal") config.hosts);
+      }) (filterAttrs (name: host: host.enable && host.type == "nixos" && host.nixpkgs.system == system && host.nixpkgs.instantiation == "internal") config.hosts);
     };
   };
 }
