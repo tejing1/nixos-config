@@ -24,6 +24,7 @@ in
 
     nixpkgs.src = nixpkgs;
     nixpkgs.instantiation = "internal";
+    nixos.cfg.nixpkgs.hostPlatform = "x86_64-linux";
 
     hm.src = home-manager;
     hm.module = true;
@@ -53,6 +54,7 @@ in
     modules = [
       {
         networking.hostName = "tejingdesk";
+        nixpkgs.hostPlatform = "x86_64-linux";
       }
     ]
     ++ listImportablePathsExcept ./. [ "fpentry" ]

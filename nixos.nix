@@ -3,6 +3,7 @@
   flake-parts-lib,
   inputs,
   lib,
+  my,
   ...
 }:
 
@@ -79,11 +80,10 @@ in
           }
           (mkIf (config.nixpkgs.instantiation == "internal") {
             nixpkgs.system = config.nixos.cfg.config.nixpkgs.hostPlatform.system;
+            nixos.cfg.nixpkgs = lib.mkDefault { inherit (my.nixpkgs) config overlays; };
           })
           (mkIf (config.nixpkgs.instantiation == "external") {
-            #nixos.cfg.imports = [ config.nixpkgs.nixosModules.readOnlyPkgs ]; # FIXME use this instead of forcing config and overlays
-            nixos.cfg.nixpkgs.config = lib.mkForce {}; # FIXME use readOnlyPkgs instead of this
-            nixos.cfg.nixpkgs.overlays = lib.mkForce []; # FIXME use readOnlyPkgs instead of this
+            nixos.cfg.imports = [ config.nixpkgs.src.nixosModules.readOnlyPkgs ];
             nixos.cfg.nixpkgs.pkgs = pairedPkgs.pkgs;
           })
         ];

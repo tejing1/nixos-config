@@ -40,9 +40,6 @@ in lib.mkMerge [
         types
       ;
     in {
-      imports = [
-      ];
-
       config._module.args.inputSpecs = mapAttrs (_: canonicalizeInputSpec) flakeNixInputs;
 
       options.my.isBuildVm = mkOption {
@@ -106,8 +103,6 @@ in lib.mkMerge [
           programs.fish.enable = true;
           programs.zsh.enable = true;
 
-          nixpkgs.config.allowUnfree = true;
-
           # Set available fonts
           fonts.packages = builtins.attrValues {
             nerdfonts = pkgs.nerd-fonts.dejavu-sans-mono;
@@ -124,12 +119,6 @@ in lib.mkMerge [
               rclone # used to connect git-annex to my phone's ftp server
             ;
           };
-
-          nixpkgs.overlays = [
-            # Prevents gh from leaving garbage characters in the input
-            # buffer when urxvt is set to a transparent background
-            inputs.self.overlays.gh-urxvt-fix-termenv
-          ];
 
           # PAM rules for i3lock are no longer enabled by default.
           security.pam.services.i3lock.enable = true;
