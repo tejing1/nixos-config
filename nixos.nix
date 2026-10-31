@@ -41,7 +41,7 @@ in
 {
   options = {
     hosts = mkOption {
-      type = attrsOf (submodule ({ config, name, pairedPkgs, ... }: {
+      type = attrsOf (submodule ({ config, name, pkgs, pkgsFrom, ... }: {
         options = {
           type = mkOption {
             type = types.enum [ "nixos" ];
@@ -78,10 +78,28 @@ in
         config = mkMerge [
           {
             nixos.cfg.imports = concatLists (map (user: user.nixos.cfg) (filter (user: user.enable) (attrValues config.users)));
+            nixos.cfg._module.args.pkgsFrom = pkgsFrom;
             nixos.cfg.networking.hostName = name;
             nixos.specialArgs = {
               inherit inputs;
               nixpkgs = config.nixpkgs.src;
+            };
+          }
+          {
+            nixos.cfg = { lib, ... }: {
+              options.my.isBuildVm = lib.mkOption {
+                type = lib.types.bool;
+                description = "Whether the system being built is part of a nixos-rebuild build-vm or build-vm-with-bootloader";
+                default = false;
+              };
+              options.my.isBuildVmWithBootLoader = lib.mkOption {
+                type = lib.types.bool;
+                description = "Whether the system being built is part of a nixos-rebuild build-vm-with-bootloader";
+                default = false;
+              };
+              config.virtualisation.vmVariant.my.isBuildVm = true;
+              config.virtualisation.vmVariantWithBootLoader.my.isBuildVm = true;
+              config.virtualisation.vmVariantWithBootLoader.my.isBuildVmWithBootLoader = true;
             };
           }
           (mkIf (config.nixpkgs.instantiation == "internal") {
@@ -90,7 +108,7 @@ in
           })
           (mkIf (config.nixpkgs.instantiation == "external") {
             nixos.cfg.imports = [ config.nixpkgs.src.nixosModules.readOnlyPkgs ];
-            nixos.cfg.nixpkgs.pkgs = pairedPkgs.pkgs;
+            nixos.cfg.nixpkgs.pkgs = pkgs;
           })
         ];
       }));

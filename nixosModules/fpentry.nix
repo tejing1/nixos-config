@@ -1,19 +1,6 @@
 { inputs, lib, my, ... }:
 
-let
-
-  inherit (builtins)
-    mapAttrs
-    parseFlakeRef
-  ;
-  inherit (lib)
-    genAttrs
-  ;
-
-  flakeNixInputs = (import (inputs.self + "/flake.nix")).inputs;
-
-  canonicalizeInputSpec = spec: if spec ? url then removeAttrs spec [ "url" ] // parseFlakeRef spec.url else spec;
-in lib.mkMerge [
+lib.mkMerge [
   {
     flake.nixosModules = my.lib.getImportableExcept ./. [ "fpentry" ];
 
@@ -24,6 +11,7 @@ in lib.mkMerge [
       options.my.customize.users = mkEnableOption "customization of options applying to all users";
       options.my.customize.shell = mkEnableOption "shell customization";
       options.my.customize.nix = mkEnableOption "customization of nix";
+      options.my.customize.registry = mkEnableOption "nix flake registry customization";
       options.my.users.tejing.enable = mkEnableOption "user \"tejing\"";
       options.my.users.tejing.pam = mkEnableOption "pam settings for user \"tejing\"";
       options.my.users.tejing.desktop = mkEnableOption "desktop-specific settings for user \"tejing\"";
@@ -33,39 +21,12 @@ in lib.mkMerge [
   }
 
   {
-    perHost.nixos.cfg = { lib, my, ... }: let
-      inherit (lib)
-        mkOption
-        mkOverride
-        types
-      ;
-    in {
-      config._module.args.inputSpecs = mapAttrs (_: canonicalizeInputSpec) flakeNixInputs;
-
-      options.my.isBuildVm = mkOption {
-        type = types.bool;
-        description = "Whether the system being built is part of a nixos-rebuild build-vm or build-vm-with-bootloader";
-        default = false;
-      };
-      options.my.isBuildVmWithBootLoader = mkOption {
-        type = types.bool;
-        description = "Whether the system being built is part of a nixos-rebuild build-vm-with-bootloader";
-        default = false;
-      };
-
-      config.virtualisation.vmVariant.my.isBuildVm = true;
-      config.virtualisation.vmVariantWithBootLoader.my.isBuildVm = true;
-      config.virtualisation.vmVariantWithBootLoader.my.isBuildVmWithBootLoader = true;
-      config.home-manager.sharedModules = [{
-        my.isBuildVm = my.isBuildVm;
-        my.isBuildVmWithBootLoader = my.isBuildVmWithBootLoader;
-      }];
-
+    perHost.nixos.cfg = { lib, my, ... }: {
       # Strictly definitional users, passwords, and groups
       config.users.mutableUsers = false;
 
       # undo default shellAliases
-      config.environment.shellAliases = genAttrs [ "l" "ll" "ls" ] (_: mkOverride 999 null);
+      config.environment.shellAliases = lib.genAttrs [ "l" "ll" "ls" ] (_: lib.mkOverride 999 null);
     };
   }
 
@@ -84,7 +45,7 @@ in lib.mkMerge [
   }
 
   {
-    perHost.nixos.cfg = { config, inputs, lib, my, pkgs, ... }: let
+    users.tejing.nixos.cfg = { config, lib, my, pkgs, ... }: let
       inherit (lib) mkEnableOption mkIf mkMerge;
       inherit (my.lib) readSecret;
     in {
@@ -212,6 +173,7 @@ in lib.mkMerge [
       };
       systemd.timers.system-profile-cleanup.timerConfig.Persistent = true;
 
+      # FIXME move this
       environment.systemPackages = attrValues {
         inherit (pkgs)
           # Needed to work with my flake
@@ -222,69 +184,69 @@ in lib.mkMerge [
   }
 
   {
-    perHost.nixos.cfg = { config, home-manager, inputs, inputSpecs, lib, my, nixpkgs, pkgs, ... }: let
-      inherit (builtins) toFile parseFlakeRef;
+    perHost.nixos.cfg = { config, home-manager, lib, my, nixpkgs, pkgs, ... }: let
+      inherit (builtins) mapAttrs toFile parseFlakeRef;
       inherit (inputs) self;
       inherit (lib) mkEnableOption mkIf;
       inherit (lib.strings) escapeNixIdentifier;
       inherit (my.lib) mkFlake repoLockedTestResult flakeClosureRef;
+      flakeNixInputs = (import (inputs.self + "/flake.nix")).inputs;
+      canonicalizeInputSpec = spec: if spec ? url then removeAttrs spec [ "url" ] // parseFlakeRef spec.url else spec;
+      inputSpecs = mapAttrs (_: canonicalizeInputSpec) flakeNixInputs;
     in {
-      options.my.customize.registry = mkEnableOption "nix flake registry customization";
-      config = mkIf my.customize.registry {
-        # Let 'nixos-version --json' know about the Git revision
-        # of this flake.
-        system.configurationRevision = mkIf (self ? rev) self.rev;
+      # Let 'nixos-version --configuration-revision' know about the
+      # Git revision of this flake.
+      system.configurationRevision = mkIf (self ? rev) self.rev;
 
-        system.extraDependencies = [
+      system.extraDependencies = [
 
-          # Save our single IFD derivation so we don't usually have to
-          # rebuild it
-          repoLockedTestResult
+        # Save our single IFD derivation so we don't usually have to
+        # rebuild it
+        repoLockedTestResult
 
-          # Save the whole input closure of this flake, so we have all the
-          # nix code necessary to rebuild this system
-          (flakeClosureRef self)
+        # Save the whole input closure of this flake, so we have all the
+        # nix code necessary to rebuild this system
+        (flakeClosureRef self)
 
-        ];
+      ];
 
-        # Don't install nix-channel or create stuff on the filesystem
-        # for channels
-        nix.channel.enable = false;
+      # Don't install nix-channel or create stuff on the filesystem
+      # for channels
+      nix.channel.enable = false;
 
-        # Indirect our NIX_PATH through /etc so that it updates without a
-        # relog
-        nix.nixPath = [ "/etc/nix/path" ];
+      # Indirect our NIX_PATH through /etc so that it updates without a
+      # relog
+      nix.nixPath = [ "/etc/nix/path" ];
 
-        # Don't talk to the internet every time I use the registry
-        # I don't use it anyway
-        nix.settings.flake-registry = toFile "global-registry.json" ''{"flakes":[],"version":2}'';
+      # Don't talk to the internet every time I use the registry
+      # I don't use it anyway
+      nix.settings.flake-registry = toFile "global-registry.json" ''{"flakes":[],"version":2}'';
 
-        # the version of nixpkgs used to build the system
-        nix.registry.nixpkgs.flake = nixpkgs;
-        environment.etc."nix/path/nixpkgs".source = nixpkgs;
+      # the version of nixpkgs used to build the system
+      nix.registry.nixpkgs.flake = nixpkgs;
+      environment.etc."nix/path/nixpkgs".source = nixpkgs;
 
-        # the version of home-manager used to build the system
-        nix.registry.home-manager.flake = home-manager;
-        environment.etc."nix/path/home-manager".source = home-manager;
+      # the version of home-manager used to build the system
+      nix.registry.home-manager.flake = home-manager;
+      environment.etc."nix/path/home-manager".source = home-manager;
 
-        # the version of this flake used to build the system
-        nix.registry.activeconfig.flake = self;
-        environment.etc."nix/path/activeconfig".source = self;
+      # the version of this flake used to build the system
+      nix.registry.activeconfig.flake = self;
+      environment.etc."nix/path/activeconfig".source = self;
 
-        # build and register a flake to capture this config's pkgs attribute
-        nix.registry.pkgs.flake = mkFlake {config = self;}
-          "{config,...}: {legacyPackages.${escapeNixIdentifier pkgs.stdenv.hostPlatform.system}=config.nixosConfigurations.${escapeNixIdentifier config.networking.hostName}.pkgs;}";
+      # build and register a flake to capture this config's pkgs attribute
+      nix.registry.pkgs.flake = mkFlake {config = self;}
+        "{config,...}: {legacyPackages.${escapeNixIdentifier pkgs.stdenv.hostPlatform.system}=config.nixosConfigurations.${escapeNixIdentifier config.networking.hostName}.pkgs;}";
 
-        # the (runtime) current version of this flake
-        nix.registry.config.to = { type = "path"; path = "/mnt/persist/tejing/flake"; };
-        environment.etc."nix/path/config".source = "/mnt/persist/tejing/flake";
+      # the (runtime) current version of this flake
+      nix.registry.config.to = { type = "path"; path = "/mnt/persist/tejing/flake"; };
+      environment.etc."nix/path/config".source = "/mnt/persist/tejing/flake";
 
-        # the (runtime) current version of nixos stable
-        nix.registry.nixpkgs-stable.to = inputSpecs.nixpkgs;
+      # the (runtime) current version of nixos stable
+      nix.registry.nixpkgs-stable.to = inputSpecs.nixpkgs;
 
-        # the (runtime) current version of nixos unstable
-        nix.registry.nixpkgs-unstable.to = parseFlakeRef "github:NixOS/nixpkgs/nixos-unstable";
-      };
+      # the (runtime) current version of nixos unstable
+      nix.registry.nixpkgs-unstable.to = parseFlakeRef "github:NixOS/nixpkgs/nixos-unstable";
     };
   }
 ]

@@ -43,6 +43,7 @@ let
     str
     strMatching
     submodule
+    submoduleWith
     unspecified
   ;
 
@@ -134,7 +135,7 @@ in
     };
 
     hosts = mkOption {
-      type = attrsOf (submodule ({ config, name, pairedPkgs, ... }: {
+      type = attrsOf (submodule ({ config, name, thisSystem, pkgsFrom, pkgs, ... }: {
         options = {
           nixpkgs.system = mkOption {
             type = types.str;
@@ -155,10 +156,22 @@ in
             default = "external";
             description = "Whether to import an external instantiation of nixpkgs or export the internal one.";
           };
+          users = mkOption {
+            type = attrsOf (submoduleWith {
+              modules = [
+                {
+                  _module.args.pkgsFrom = pkgsFrom;
+                  _module.args.pkgs = pkgs;
+                }
+              ];
+            });
+          };
         };
         config = {
-          nixpkgs.src = mkIf (config.nixpkgs.instantiation == "external") pairedPkgs.src;
-          _module.args.pairedPkgs = (getSystem config.nixpkgs.system).nixpkgs.${config.nixpkgs.name};
+          nixpkgs.src = mkIf (config.nixpkgs.instantiation == "external") thisSystem.nixpkgs.${config.nixpkgs.name}.src;
+          _module.args.thisSystem = getSystem config.nixpkgs.system;
+          _module.args.pkgsFrom = mapAttrs (n: v: v.pkgs) thisSystem.nixpkgs;
+          _module.args.pkgs = pkgsFrom.${config.nixpkgs.name};
         };
       }));
     };

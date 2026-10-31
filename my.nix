@@ -19,6 +19,7 @@ let
     mkPerSystemOption
   ;
   inherit (lib)
+    addErrorContext
     mkOption
     types
     mkMerge
@@ -37,10 +38,11 @@ let
       if all (def: def.file == file) defs then
         type.merge loc defs
       else
-        throw ''
+        addErrorContext "while evaluating the error message for ${lib.options.showOption loc}, which was set from a different file than the allowed one"
+        (throw ''
           The option ${lib.options.showOption loc} was set from a different file than the allowed one (${file}).
           Offending definition values:${lib.options.showDefs (filter (def: def.file != file) defs)}
-        '';
+        '');
   };
 in
 
@@ -69,7 +71,9 @@ in
       };
     };
     hosts = mkOption {
-      type = attrsOf (types.submodule ({ name, ... }: {
+      type = attrsOf (types.submodule ({ config, my, name, ... }: let
+        hostsConfig = config;
+      in {
         options.my = mkOption {
           type = types.submodule {
             freeformType = onlyfromfile "${__curPos.file}, via option perHost" unspecified;
@@ -81,6 +85,36 @@ in
               freeformType = onlyfromfile "${__curPos.file}, via option perHost, via option ${showOption [ "hosts" name "nixos" "cfg" ]}" unspecified;
             };
           };
+        };
+        options.users = mkOption {
+          type = attrsOf (types.submoduleWith {
+            modules = [
+              ({ config, ... }: let
+                usersConfig = config;
+              in {
+                options.my = mkOption {
+                  type = types.submodule {
+                    freeformType = onlyfromfile "${__curPos.file}" unspecified;
+                  };
+                };
+                options.hm.cfg = mkDeferredModuleOption ({ config, ... }: {
+                  options.my = mkOption {
+                    type = types.submodule {
+                      freeformType = onlyfromfile "${__curPos.file}" unspecified;
+                    };
+                  };
+                  config = {
+                    _module.args.my = config.my;
+                    inherit (usersConfig) my;
+                  };
+                });
+                config = {
+                  _module.args.my = config.my;
+                  inherit (hostsConfig) my;
+                };
+              })
+            ];
+          });
         };
       }));
     };

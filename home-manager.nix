@@ -46,25 +46,48 @@ in
           users = mkOption {
             type = attrsOf (submoduleWith {
               modules = [
-                {
+                ({ pkgsFrom, pkgs, ... }: {
                   options.type = mkOption {
                     type = enum [ "hm-module" ];
                   };
                   options.hm.cfg = mkOption {
-                    type = mkDeferredModuleType {
+                    type = mkDeferredModuleType ({ my, ... }: {
                       imports = config.hm.cfg;
-                    };
+
+                      config._module.args.pkgsFrom = pkgsFrom;
+
+                      options.my.isBuildVm = mkOption {
+                        type = types.bool;
+                        description = "Whether the system being built is part of a nixos-rebuild build-vm or build-vm-with-bootloader";
+                        default = false;
+                      };
+                      options.my.isBuildVmWithBootLoader = mkOption {
+                        type = types.bool;
+                        description = "Whether the system being built is part of a nixos-rebuild build-vm-with-bootloader";
+                        default = false;
+                      };
+
+                      # FIXME temporary fix. Use my.using.unstable.pkgs and pkgsFrom.unstable at the use site instead.
+                      options.my.pkgsUnstable = mkOption {
+                        type = types.unspecified;
+                        description = "Packages from self, with dependencies from unstable";
+                        visible = false;
+                        readOnly = true;
+                      };
+                      config.my.pkgsUnstable = my.using.unstable.pkgs;
+                      config._module.args.pkgsUnstable = pkgsFrom.unstable;
+                    });
                     default = {};
                     description = "Home-manager configuration settings.";
                   };
-                }
+                })
               ];
             });
           };
         };
         config = mkIf config.hm.module {
           nixos.specialArgs.home-manager = config.hm.src;
-          nixos.cfg = {
+          nixos.cfg = { my, ... }: {
             imports = [ config.hm.src.nixosModules.home-manager ];
 
             # Use /etc/profiles instead of ~/.nix-profile
@@ -81,8 +104,10 @@ in
               home-manager = config.hm.src;
             };
 
-            # Import my basic modules for all users
-            home-manager.sharedModules = [ inputs.self.homeModules.my ]; # FIXME do this the new way in my.nix
+            home-manager.sharedModules = [{
+              my.isBuildVm = my.isBuildVm;
+              my.isBuildVmWithBootLoader = my.isBuildVmWithBootLoader;
+            }];
 
             home-manager.users = mapAttrs (name: user: lib.mkMerge user.hm.cfg) (filterAttrs (name: user: user.enable && user.type == "hm-module") config.users);
           };
