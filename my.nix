@@ -21,11 +21,8 @@ let
   inherit (lib)
     addErrorContext
     mkOption
+    toList
     types
-    mkMerge
-  ;
-  inherit (lib.options)
-    showOption
   ;
   inherit (types)
     attrsOf
@@ -33,6 +30,7 @@ let
   ;
 
   # Type modifier which only allows definitions coming from the specified file
+  # For a normal option we'd just mark it readOnly, but that doesn't work for freeformType
   onlyfromfile = file: type: type // {
     merge = loc: defs:
       if all (def: def.file == file) defs then
@@ -44,77 +42,79 @@ let
           Offending definition values:${lib.options.showDefs (filter (def: def.file != file) defs)}
         '');
   };
+
+  # Creates a submodule option with a freeformType allowing additional data to be supplied, but only in this file.
+  # Make sure to use the argument 'lib' here for any module system functions or types.
+  mkMyOption = lib: module: lib.mkOption {
+    type = lib.types.submodule ([{
+      freeformType = onlyfromfile __curPos.file lib.types.unspecified;
+    }] ++ toList module);
+  };
+
+  # Make sure to use the module's 'lib' here for any module system functions or types.
+  homeModule = userConfig:
+    { config, lib, ... }: {
+      options.my = mkMyOption lib {};
+      config = {
+        _module.args.my = config.my;
+        inherit (userConfig) my;
+      };
+    };
+
+  # Make sure to use the module's 'lib' here for any module system functions or types.
+  nixosModule = hostConfig:
+    { config, lib, ... }: {
+      options.my = mkMyOption lib {};
+      config = {
+        _module.args.my = config.my;
+        inherit (hostConfig) my;
+      };
+    };
+
+  userModule = hostConfig:
+    { config, ... }: {
+      options.hm.cfg = mkDeferredModuleOption (homeModule config);
+      options.my = mkMyOption lib {};
+      config = {
+        _module.args.my = config.my;
+        inherit (hostConfig) my;
+      };
+    };
 in
 
 {
   options = {
-    my = {
-      using = mkOption {
-        type = attrsOf unspecified;
-      };
+    my.using = mkOption {
+      type = attrsOf unspecified;
     };
-    perPkgs = mkDeferredModuleOption {
-      options.my = mkOption {
-        type = types.submodule {
-          freeformType = onlyfromfile "${__curPos.file}, via option perPkgs" unspecified;
-          options.using = mkOption {
-            type = attrsOf unspecified;
-          };
+    perPkgs = mkDeferredModuleOption ({ config, ... }: {
+      options.my = mkMyOption lib {
+        options.using = mkOption {
+          type = attrsOf unspecified;
         };
       };
-    };
-    perSystem = mkPerSystemOption {
-      options.my = mkOption {
-        type = types.submodule {
-          freeformType = onlyfromfile "${__curPos.file}, via option perSystem" unspecified;
-        };
+      config = {
+        _module.args.my = config.my;
+        inherit my;
       };
-    };
+    });
+    perSystem = mkPerSystemOption ({ config, ... }: {
+      options.my = mkMyOption lib {};
+      config = {
+        _module.args.my = config.my;
+        inherit (config.allPkgs.default) my;
+      };
+    });
     hosts = mkOption {
-      type = attrsOf (types.submodule ({ config, my, name, ... }: let
-        hostsConfig = config;
-      in {
-        options.my = mkOption {
-          type = types.submodule {
-            freeformType = onlyfromfile "${__curPos.file}, via option perHost" unspecified;
-          };
-        };
-        options.nixos.cfg = mkDeferredModuleOption {
-          options.my = mkOption {
-            type = types.submodule {
-              freeformType = onlyfromfile "${__curPos.file}, via option perHost, via option ${showOption [ "hosts" name "nixos" "cfg" ]}" unspecified;
-            };
-          };
-        };
+      type = attrsOf (types.submodule ({ config, ... }: {
+        options.nixos.cfg = mkDeferredModuleOption (nixosModule config);
         options.users = mkOption {
-          type = attrsOf (types.submoduleWith {
-            modules = [
-              ({ config, ... }: let
-                usersConfig = config;
-              in {
-                options.my = mkOption {
-                  type = types.submodule {
-                    freeformType = onlyfromfile "${__curPos.file}" unspecified;
-                  };
-                };
-                options.hm.cfg = mkDeferredModuleOption ({ config, ... }: {
-                  options.my = mkOption {
-                    type = types.submodule {
-                      freeformType = onlyfromfile "${__curPos.file}" unspecified;
-                    };
-                  };
-                  config = {
-                    _module.args.my = config.my;
-                    inherit (usersConfig) my;
-                  };
-                });
-                config = {
-                  _module.args.my = config.my;
-                  inherit (hostsConfig) my;
-                };
-              })
-            ];
-          });
+          type = attrsOf (types.submoduleWith { modules = [ (userModule config) ]; });
+        };
+        options.my = mkMyOption lib {};
+        config = {
+          _module.args.my = config.my;
+          inherit (forPkgs config.nixpkgs.system config.nixpkgs.name) my;
         };
       }));
     };
@@ -124,28 +124,8 @@ in
     _module.args.my = config.my;
     my.using.__functor = self: pkgs: (forPkgs pkgs).my;
 
-    perPkgs = { config, pkgs, ... }: mkMerge [
-      {
-        _module.args.my = config.my;
-        inherit my;
-      }
-      {
-        my.using = mapAttrs (n: { my, ... }: my) (forSystem pkgs.stdenv.hostPlatform.system).allPkgs;
-      }
-    ];
-
-    perSystem = { config, ... }: {
-      _module.args.my = config.my;
-      inherit (config.allPkgs.default) my;
-    };
-
-    perHost = { config, my, ... }: {
-      _module.args.my = config.my;
-      inherit (forPkgs config.nixpkgs.system config.nixpkgs.name) my;
-      nixos.cfg = { config, ... }: {
-        _module.args.my = config.my;
-        inherit my;
-      };
+    perPkgs = { pkgs, ... }: {
+      my.using = mapAttrs (n: v: v.my) (forSystem pkgs.stdenv.hostPlatform.system).allPkgs;
     };
   };
 }
