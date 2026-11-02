@@ -62,12 +62,6 @@
       lib/fpentry.nix
       lib/getImportable.nix
       lib/getImportableExcept.nix
-      lib/importAll.nix
-      lib/importAllExcept.nix
-      lib/importAllExceptWithArg.nix
-      lib/importAllExceptWithScope.nix
-      lib/importAllNamedExceptWithArg.nix
-      lib/importAllWithArg.nix
       lib/importSecret.nix
       lib/isRepoLocked.nix
       lib/listImportablePaths.nix
