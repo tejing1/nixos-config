@@ -1,11 +1,12 @@
-{ lib, my, pkgs, ... }:
-let
-  inherit (builtins) attrValues;
-  inherit (lib) mkEnableOption mkIf escapeShellArg;
-in
+{ my, ... }:
+
 {
-  options.my.customize.nix = mkEnableOption "customization of nix";
-  config = mkIf my.customize.nix {
+  my.flake.modules = my.lib.listFlakePartsModules ./.;
+
+  perHost.nixos.cfg = { lib, my, pkgs, ... }: let
+    inherit (builtins) attrValues;
+    inherit (lib) mkEnableOption mkIf escapeShellArg;
+  in {
     nix = {
       # Use the new CLI and enable flakes
       settings.experimental-features = [ "nix-command" "flakes" ];
@@ -49,12 +50,5 @@ in
       '';
     };
     systemd.timers.system-profile-cleanup.timerConfig.Persistent = true;
-
-    environment.systemPackages = attrValues {
-      inherit (pkgs)
-        # Needed to work with my flake
-        git git-crypt
-      ;
-    };
   };
 }

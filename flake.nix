@@ -36,12 +36,21 @@
   } {
     imports = builtins.filter builtins.pathExists [
       ./fpentry.nix
-      ./home-manager.nix
-      ./hosts.nix
-      ./my.nix
-      ./nixos.nix
-      ./nixpkgs.nix
-      ./users.nix
+      base/fpentry.nix
+      base/home-manager.nix
+      base/hosts.nix
+      base/my.nix
+      base/nixos.nix
+      base/nixpkgs.nix
+      base/users.nix
+      conf/fpentry.nix
+      conf/news/fpentry.nix
+      conf/nix/fpentry.nix
+      conf/nix/registry.nix
+      conf/shell/command-not-found.nix
+      conf/shell/fpentry.nix
+      conf/tejing/fpentry.nix
+      conf/users.nix
       dev/dev-shell.nix
       dev/expr-generation.nix
       dev/file-generation.nix
@@ -49,7 +58,6 @@
       dev/fpentry.nix
       homeConfigurations/fpentry.nix
       homeConfigurations/tejing/fpentry.nix
-      homeModules/fpentry.nix
       lib/flakeClosureRef.nix
       lib/fpentry.nix
       lib/getImportable.nix
@@ -71,7 +79,6 @@
       nixosConfigurations/fpentry.nix
       nixosConfigurations/tejingdesk/fpentry.nix
       nixosConfigurations/tejingphone/fpentry.nix
-      nixosModules/fpentry.nix
       overlays/fpentry.nix
       overlays/gh-urxvt-fix-termenv/fpentry.nix
       overlays/steam-fix-screensaver/fpentry.nix

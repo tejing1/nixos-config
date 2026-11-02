@@ -1,16 +1,18 @@
-{ config, home-manager, inputs, inputSpecs, lib, my, nixpkgs, pkgs, ... }:
-let
-  inherit (builtins) toFile parseFlakeRef;
-  inherit (inputs) self;
-  inherit (lib) mkEnableOption mkIf;
-  inherit (lib.strings) escapeNixIdentifier;
-  inherit (my.lib) mkFlake repoLockedTestResult flakeClosureRef;
-in
+{ inputs, ... }:
+
 {
-  options.my.customize.registry = mkEnableOption "nix flake registry customization";
-  config = mkIf my.customize.registry {
-    # Let 'nixos-version --json' know about the Git revision
-    # of this flake.
+  perHost.nixos.cfg = { config, home-manager, lib, my, nixpkgs, pkgs, ... }: let
+    inherit (builtins) mapAttrs toFile parseFlakeRef;
+    inherit (inputs) self;
+    inherit (lib) mkEnableOption mkIf;
+    inherit (lib.strings) escapeNixIdentifier;
+    inherit (my.lib) mkFlake repoLockedTestResult flakeClosureRef;
+    flakeNixInputs = (import (inputs.self + "/flake.nix")).inputs;
+    canonicalizeInputSpec = spec: if spec ? url then removeAttrs spec [ "url" ] // parseFlakeRef spec.url else spec;
+    inputSpecs = mapAttrs (_: canonicalizeInputSpec) flakeNixInputs;
+  in {
+    # Let 'nixos-version --configuration-revision' know about the
+    # Git revision of this flake.
     system.configurationRevision = mkIf (self ? rev) self.rev;
 
     system.extraDependencies = [

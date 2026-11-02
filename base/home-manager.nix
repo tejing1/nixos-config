@@ -66,16 +66,6 @@ in
                         description = "Whether the system being built is part of a nixos-rebuild build-vm-with-bootloader";
                         default = false;
                       };
-
-                      # FIXME temporary fix. Use my.using.unstable.pkgs and pkgsFrom.unstable at the use site instead.
-                      options.my.pkgsUnstable = mkOption {
-                        type = types.unspecified;
-                        description = "Packages from self, with dependencies from unstable";
-                        visible = false;
-                        readOnly = true;
-                      };
-                      config.my.pkgsUnstable = my.using.unstable.pkgs;
-                      config._module.args.pkgsUnstable = pkgsFrom.unstable;
                     });
                     default = {};
                     description = "Home-manager configuration settings.";

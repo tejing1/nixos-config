@@ -47,21 +47,4 @@ in
   my.nixpkgs.overlays = [
     my.overlays.gh-urxvt-fix-termenv
   ];
-
-
-  # Keeping the old invocation for comparison purposes
-  flake.nixosConfigurations.tejingdesk2 = nixpkgs.lib.nixosSystem {
-    specialArgs = {
-      inherit inputs nixpkgs home-manager nixpkgsInput home-managerInput;
-    };
-    modules = [
-      {
-        networking.hostName = "tejingdesk";
-        nixpkgs.hostPlatform = "x86_64-linux";
-      }
-    ]
-    ++ listImportablePathsExcept ./. [ "fpentry" ]
-    ++ attrValues inputs.self.nixosModules;
-  };
-
 }

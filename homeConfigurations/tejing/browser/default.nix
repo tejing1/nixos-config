@@ -24,11 +24,11 @@ in
       inputs = [ my.launch.pkg ];
       execer = [ "cannot:${my.launch}" ]; # false. working around it with antiquoting
     } ''
-      exec mylaunch app vieb ${my.pkgsUnstable.vieb}/bin/vieb "$@"
+      exec mylaunch app vieb ${my.using.unstable.pkgs.vieb}/bin/vieb "$@"
     '';
     home.packages = builtins.attrValues {
       inherit (pkgs) brave;
-      inherit (my.pkgsUnstable) vieb;
+      inherit (my.using.unstable.pkgs) vieb;
       mybrowser = my.browser.pkg;
       mypwarun = my.pwarun.pkg;
     };
@@ -77,7 +77,7 @@ in
       imap <C-A-f> <startFollowNewTab>
       call <toInsertMode>
       EOF
-      exec mylaunch app "pwarun-$name" ${my.pkgsUnstable.vieb}/bin/vieb --erwic="$dir/erwic.json" --datafolder="$dir/datafolder" --config-file="$dir/viebrc"
+      exec mylaunch app "pwarun-$name" ${my.using.unstable.pkgs.vieb}/bin/vieb --erwic="$dir/erwic.json" --datafolder="$dir/datafolder" --config-file="$dir/viebrc"
     '';
 
     home.file = {
