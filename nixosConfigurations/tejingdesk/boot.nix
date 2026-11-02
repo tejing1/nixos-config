@@ -1,10 +1,12 @@
 {
-  boot.kernelParams = [ "quiet" ];
-  boot.initrd.verbose = false;
+  hosts.tejingdesk.nixos.cfg = {
+    boot.kernelParams = [ "quiet" ];
+    boot.initrd.verbose = false;
 
-  # Quiet ACPI errors I always see
-  boot.consoleLogLevel = 3;
+    # Quiet ACPI errors I always see
+    boot.consoleLogLevel = 3;
 
-  boot.plymouth.enable = true;
-  boot.plymouth.theme = "spinner";
+    boot.plymouth.enable = true;
+    boot.plymouth.theme = "spinner";
+  };
 }

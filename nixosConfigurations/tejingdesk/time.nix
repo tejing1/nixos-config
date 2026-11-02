@@ -1,3 +1,5 @@
 {
-  time.timeZone = "US/Eastern";
+  hosts.tejingdesk.nixos.cfg = {
+    time.timeZone = "US/Eastern";
+  };
 }

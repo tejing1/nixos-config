@@ -71,7 +71,27 @@
       lib/readSecret.nix
       lib/repoLockedTestResult/fpentry.nix
       nixosConfigurations/fpentry.nix
+      nixosConfigurations/tejingdesk/boot.nix
+      nixosConfigurations/tejingdesk/bootloader.nix
+      nixosConfigurations/tejingdesk/buildvm.nix
+      nixosConfigurations/tejingdesk/console.nix
+      nixosConfigurations/tejingdesk/cpu.nix
+      nixosConfigurations/tejingdesk/customization.nix
+      nixosConfigurations/tejingdesk/disks.nix
+      nixosConfigurations/tejingdesk/displaymanager.nix
+      nixosConfigurations/tejingdesk/emulation.nix
       nixosConfigurations/tejingdesk/fpentry.nix
+      nixosConfigurations/tejingdesk/gaming.nix
+      nixosConfigurations/tejingdesk/hardware.nix
+      nixosConfigurations/tejingdesk/nixos.nix
+      nixosConfigurations/tejingdesk/optin-state.nix
+      nixosConfigurations/tejingdesk/root.nix
+      nixosConfigurations/tejingdesk/security.nix
+      nixosConfigurations/tejingdesk/sound.nix
+      nixosConfigurations/tejingdesk/ssh.nix
+      nixosConfigurations/tejingdesk/time.nix
+      nixosConfigurations/tejingdesk/xserver.nix
+      nixosConfigurations/tejingdesk/zram.nix
       nixosConfigurations/tejingphone/fpentry.nix
       overlays/fpentry.nix
       overlays/gh-urxvt-fix-termenv/fpentry.nix

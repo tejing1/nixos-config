@@ -4,18 +4,9 @@
   ...
 }:
 
-let
-  nixpkgsInput = "nixpkgs";
-  home-managerInput = "home-manager";
-
-  nixpkgs = inputs.${nixpkgsInput};
-  home-manager = inputs.${home-managerInput};
-
-  inherit (builtins) attrValues;
-  inherit (my.lib) listImportablePathsExcept;
-in
-
 {
+  my.flake.modules = my.lib.listFlakePartsModules ./.;
+
   hosts.tejingdesk = {
     enable = true;
     type = "nixos";
@@ -23,17 +14,15 @@ in
     #nixpkgs.system = "x86_64-linux";
     #nixpkgs.name = "stable";
 
-    nixpkgs.src = nixpkgs;
+    nixpkgs.src = inputs.nixpkgs;
     nixpkgs.instantiation = "internal";
     nixos.cfg.nixpkgs.hostPlatform = "x86_64-linux";
 
-    hm.src = home-manager;
+    hm.src = inputs.home-manager;
     hm.module = true;
 
     users.tejing.enable = true;
     users.tejing.type = "hm-module";
-
-    nixos.cfg.imports = listImportablePathsExcept ./. [ "fpentry" ];
   };
 
   # FIXME move all this to the proper locations after they are converted to flake-parts modules

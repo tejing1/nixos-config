@@ -1,5 +1,7 @@
 {
-  boot.kernelModules = [ "kvm-intel" ];
+  hosts.tejingdesk.nixos.cfg = {
+    boot.kernelModules = [ "kvm-intel" ];
 
-  powerManagement.cpuFreqGovernor = "performance";
+    powerManagement.cpuFreqGovernor = "performance";
+  };
 }

@@ -1,4 +1,6 @@
 {
-  zramSwap.enable = true;
-  zramSwap.memoryPercent = 150;
+  hosts.tejingdesk.nixos.cfg = {
+    zramSwap.enable = true;
+    zramSwap.memoryPercent = 150;
+  };
 }

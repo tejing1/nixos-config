@@ -1,3 +1,5 @@
 {
-  system.stateVersion = "17.09";
+  hosts.tejingdesk.nixos.cfg = {
+    system.stateVersion = "17.09";
+  };
 }
