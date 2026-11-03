@@ -1,48 +1,54 @@
-{ my, pkgs, ... }:
+{ my, ... }:
 
 {
-  home.packages = builtins.attrValues {
-    inherit (pkgs)
-      github-cli
-      git-absorb
-      nixpkgs-review
-      coq
-      # perhaps this should be left to individual development environments?
-      ruby
-      ghc
-      calc
-    ;
-  };
+  my.nixpkgs.overlays = [
+    my.overlays.gh-urxvt-fix-termenv
+  ];
 
-  programs.git = {
-    enable = true;
-    ignores = [ "*~" ".#*" "\\#*#" ];
-    signing.key = "963D3AFB8AA4D693153C150046E96F6FF44F3D74";
-    signing.signByDefault = true;
-    settings = {
-      user.name = "Jeff Huffman";
-      user.email = "tejing@tejing.com";
-      tag.gpgSign = true;
-      gcrypt.publish-participants = true;
-      gcrypt.participants = "963D3AFB8AA4D693153C150046E96F6FF44F3D74";
-      gcrypt.gpg-args = "--quiet";
-      init.defaultBranch = "master";
-      push.default = "current";
-      push.autosetupremote = true;
-      branch.autosetupmerge = "simple";
-      advice.detachedHead = false;
-      checkout.guess = false;
+  users.tejing.hm.cfg = { my, pkgs, ... }: {
+    home.packages = builtins.attrValues {
+      inherit (pkgs)
+        github-cli
+        git-absorb
+        nixpkgs-review
+        coq
+        # perhaps this should be left to individual development environments?
+        ruby
+        ghc
+        calc
+      ;
     };
-  };
 
-  programs.direnv.enable = true;
-  programs.direnv.nix-direnv.enable = true;
-  programs.direnv.config.global = {
-    # Regex that matches every string other than "using nix".
-    log_filter = "^($|[^u].*$|u(($|[^s].*$|s(($|[^i].*$|i(($|[^n].*$|n(($|[^g].*$|g(($|[^ ].*$| (($|[^n].*$|n(($|[^i].*$|i(($|[^x].*$|x.+$)))))))))))))))))";
-    hide_env_diff = true;
-  };
+    programs.git = {
+      enable = true;
+      ignores = [ "*~" ".#*" "\\#*#" ];
+      signing.key = "963D3AFB8AA4D693153C150046E96F6FF44F3D74";
+      signing.signByDefault = true;
+      settings = {
+        user.name = "Jeff Huffman";
+        user.email = "tejing@tejing.com";
+        tag.gpgSign = true;
+        gcrypt.publish-participants = true;
+        gcrypt.participants = "963D3AFB8AA4D693153C150046E96F6FF44F3D74";
+        gcrypt.gpg-args = "--quiet";
+        init.defaultBranch = "master";
+        push.default = "current";
+        push.autosetupremote = true;
+        branch.autosetupmerge = "simple";
+        advice.detachedHead = false;
+        checkout.guess = false;
+      };
+    };
 
-  # Retain build deps for building my moonlander firmware
-  xdg.configFile.".moonlander-firmware-buildTools".source = my.pkgs.moonlander-firmware.buildTools;
+    programs.direnv.enable = true;
+    programs.direnv.nix-direnv.enable = true;
+    programs.direnv.config.global = {
+      # Regex that matches every string other than "using nix".
+      log_filter = "^($|[^u].*$|u(($|[^s].*$|s(($|[^i].*$|i(($|[^n].*$|n(($|[^g].*$|g(($|[^ ].*$| (($|[^n].*$|n(($|[^i].*$|i(($|[^x].*$|x.+$)))))))))))))))))";
+      hide_env_diff = true;
+    };
+
+    # Retain build deps for building my moonlander firmware
+    xdg.configFile.".moonlander-firmware-buildTools".source = my.pkgs.moonlander-firmware.buildTools;
+  };
 }

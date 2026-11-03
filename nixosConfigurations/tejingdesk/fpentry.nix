@@ -24,9 +24,4 @@
     users.tejing.enable = true;
     users.tejing.type = "hm-module";
   };
-
-  # FIXME move this to the proper location after it is converted to a flake-parts module
-  my.nixpkgs.overlays = [
-    my.overlays.gh-urxvt-fix-termenv
-  ];
 }

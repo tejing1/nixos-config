@@ -1,15 +1,32 @@
-{ inputs, my, ... }:
+{ lib, my, ... }:
 
 let
-  inherit (my.lib) listImportablePathsExcept;
-
-  modules = (listImportablePathsExcept ./. [ "fpentry" ]);
-
+  legacyModules = [
+    ./bittorrent
+    ./browser
+    ./chat.nix
+    ./editor.nix
+    ./email
+    ./encryption.nix
+    ./gaming.nix
+    ./home-manager.nix
+    ./keyboard.nix
+    ./launching.nix
+    ./media
+    ./news
+    ./notifications.nix
+    ./shell.nix
+    ./sound.nix
+    ./windowmanager.nix
+    ./xterminal.nix
+  ];
 in
 
 {
+  my.flake.modules = lib.subtractLists legacyModules (my.lib.listFlakePartsModules ./.);
+
   users.tejing.hm.cfg = { lib, ... }: {
-    imports = modules;
+    imports = legacyModules;
 
     home.username = lib.mkDefault "tejing";
     home.homeDirectory = lib.mkDefault "/home/tejing";

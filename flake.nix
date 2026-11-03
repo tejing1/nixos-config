@@ -60,14 +60,11 @@
       dev/fpentry.nix
       homeConfigurations/fpentry.nix
       homeConfigurations/tejing/fpentry.nix
+      homeConfigurations/tejing/programming.nix
       lib/flakeClosureRef.nix
       lib/fpentry.nix
-      lib/getImportable.nix
-      lib/getImportableExcept.nix
       lib/importSecret.nix
       lib/isRepoLocked.nix
-      lib/listImportablePaths.nix
-      lib/listImportablePathsExcept.nix
       lib/mkFlake.nix
       lib/mkShellScript.nix
       lib/readSecret.nix

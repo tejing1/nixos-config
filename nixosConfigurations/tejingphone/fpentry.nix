@@ -1,4 +1,4 @@
-{ inputs, my, ...}:
+{ inputs, ...}:
 
 let
   nixpkgsInput = "nixpkgs-unstable";
@@ -6,9 +6,6 @@ let
 
   nixpkgs = inputs.${nixpkgsInput};
   home-manager = inputs.${home-managerInput};
-
-  inherit (builtins) attrValues;
-  inherit (my.lib) listImportablePathsExcept;
 in
 
 {
@@ -22,10 +19,12 @@ in
     specialArgs = {
       inherit inputs nixpkgs home-manager nixpkgsInput home-managerInput;
     };
-    modules = [{
-      networking.hostName = "tejingphone";
-    }]
-    ++ listImportablePathsExcept ./. [ "fpentry" ]
-    ++ attrValues inputs.self.nixosModules;
+    modules = [
+      {
+        networking.hostName = "tejingphone";
+      }
+      ./configuration.nix
+      ./hardware-configuration.nix
+    ];
   };
 }
