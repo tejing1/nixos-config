@@ -8,9 +8,6 @@ in {
     inherit (pkgs)
       lutris
     ;
-    inherit (my.pkgs)
-      starsector
-    ;
   };
 
   # prevent compositing performance hit when gaming

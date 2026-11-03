@@ -1,4 +1,9 @@
 {
+  my.nixpkgs.allowUnfreePackages = [
+    "nvidia-x11"
+    "nvidia-settings"
+  ];
+
   hosts.tejingdesk.nixos.cfg = { lib, config, pkgs, my, ... }: {
     services.xserver.enable = true;
 
@@ -6,7 +11,6 @@
     services.xserver.xkb.options = "caps:none";
 
     # Use proprietary nvidia graphics driver
-    #nixpkgs.config.allowUnfree = true; # FIXME Replace with my.nixpkgs.allowUnfreePackages settings once converted to a flake-parts module
     services.xserver.videoDrivers = [ "nvidia" ];
 
     # GeForce GTX 970 is too old for the open drivers

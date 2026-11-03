@@ -25,14 +25,7 @@
     users.tejing.type = "hm-module";
   };
 
-  # FIXME move all this to the proper locations after they are converted to flake-parts modules
-  my.nixpkgs.allowUnfreePackages = [
-    "nvidia-x11"
-    "nvidia-settings"
-    "steam"
-    "steam-unwrapped"
-    "starsector"
-  ];
+  # FIXME move this to the proper location after it is converted to a flake-parts module
   my.nixpkgs.overlays = [
     my.overlays.gh-urxvt-fix-termenv
   ];

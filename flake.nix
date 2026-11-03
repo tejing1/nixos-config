@@ -44,6 +44,8 @@
       base/nixpkgs.nix
       base/users.nix
       conf/fpentry.nix
+      conf/games/fpentry.nix
+      conf/games/starsector/fpentry.nix
       conf/news/fpentry.nix
       conf/nix/fpentry.nix
       conf/nix/registry.nix
@@ -99,7 +101,6 @@
       pkgs/fpentry.nix
       pkgs/hred/fpentry.nix
       pkgs/moonlander-firmware/fpentry.nix
-      pkgs/starsector/fpentry.nix
       pkgs/vieb.nix
     ];
   };

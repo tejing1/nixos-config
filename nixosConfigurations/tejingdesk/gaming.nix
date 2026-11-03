@@ -1,4 +1,9 @@
 {
+  my.nixpkgs.allowUnfreePackages = [
+    "steam"
+    "steam-unwrapped"
+  ];
+
   hosts.tejingdesk.nixos.cfg = { my, pkgs, ...}: {
     programs.steam.enable = true;
 
