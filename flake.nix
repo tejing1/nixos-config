@@ -59,8 +59,24 @@
       dev/flake-file.nix
       dev/fpentry.nix
       homeConfigurations/fpentry.nix
+      homeConfigurations/tejing/bittorrent/fpentry.nix
+      homeConfigurations/tejing/browser/fpentry.nix
+      homeConfigurations/tejing/chat.nix
+      homeConfigurations/tejing/editor.nix
+      homeConfigurations/tejing/email/fpentry.nix
+      homeConfigurations/tejing/encryption.nix
       homeConfigurations/tejing/fpentry.nix
+      homeConfigurations/tejing/gaming.nix
+      homeConfigurations/tejing/home-manager.nix
+      homeConfigurations/tejing/keyboard.nix
+      homeConfigurations/tejing/launching.nix
+      homeConfigurations/tejing/media/fpentry.nix
+      homeConfigurations/tejing/news/fpentry.nix
+      homeConfigurations/tejing/notifications.nix
       homeConfigurations/tejing/programming.nix
+      homeConfigurations/tejing/sound.nix
+      homeConfigurations/tejing/windowmanager.nix
+      homeConfigurations/tejing/xterminal.nix
       lib/flakeClosureRef.nix
       lib/fpentry.nix
       lib/importSecret.nix
