@@ -15,7 +15,6 @@ let
     ./media
     ./news
     ./notifications.nix
-    ./shell.nix
     ./sound.nix
     ./windowmanager.nix
     ./xterminal.nix
