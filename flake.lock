@@ -162,11 +162,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793749395,
-        "narHash": "sha256-RvCV+i6Cqju5K+wMv3/uDue8w3AD/bIlu/ASwvZRbhQ=",
+        "lastModified": 1793758312,
+        "narHash": "sha256-bN8RckMtEJmoU+LF9EMlqi+jnXzdv+7tmq9GRICGHc4=",
         "owner": "tejing1",
         "repo": "vieb-nix",
-        "rev": "8d1d54897fafcc2ae48ed2f39c4d5c5b99e9e747",
+        "rev": "63c798350e0dcbb80474f568acb8573b895e06e9",
         "type": "github"
       },
       "original": {
